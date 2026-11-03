@@ -1,10 +1,10 @@
-# VibeQuestGuardians — Structure.md
+# VQgemini — Structure.md
 
 **Document ID:** VQ-STRUC-001  
 **Status:** **PRODUCT OWNER APPROVED ARCHITECTURE / OWNERSHIP BASELINE.**  
 Implementation must follow the approved Master Plan, current repository state, the canonical 28-domain ownership model and applicable execution authorization.  
 **Date:** 2026-10-30  
-**Destination:** `funmarket/VibeQuestGuardians` / `vibefoundation`  
+**Destination:** `funmarket/VQgemini` / `main`  
 **Companion:** `Requirements.md` (approved product contract) and the approved `Master Plan.md` (controlling implementation authority). Files under `docs/product-design/*` are think-tank/reference material only and are not governing or canonical implementation authority.
 
 # Post-Baseline Architecture & Ownership Updates — Master Plan Controlled
@@ -341,7 +341,7 @@ Preserve equal tab sizing, mobile-first Midnight Obsidian/neon styling, visible 
 
 ## 6C. Geo, map, external discovery and navigation boundaries — DIRECTED
 
-**Canonical flow:** host-specific device capability → shared location adapter/permission boundary → **D04 Geo & Presence** → PostgreSQL/PostGIS-backed authorized spatial query/evidence → owning domain or read projection → UI. D04 owns consent, precision, accuracy/freshness, temporary presence, proximity assertions and geofence transitions; it does not become the writer of D05 Places, D06 Trails, **D07 Guardian/Legend service-area business rules**, D08 Tours, D09 Businesses, D10 Activities, D11 Events, D17 matches, D18 challenges or D23 notifications. D07 owns any configured Guardian/Legend service-area eligibility or offer boundary while consuming provider-neutral geographic context and D04-authorized spatial evidence/query results. PostGIS is the intended VibeQuest-owned spatial engine; exact types/index definitions remain Database/implementation work. Server-side `ST_DWithin`-style proximity querying is the intended pattern for protected/canonical distance operations—including applicable nearby canonical Places/Trails/Tours/Activities/Events, permitted presence/Find Hub queries and D07 service-area filtering—rather than downloading all coordinates and deciding authority in the client. Client Haversine remains presentation-only.
+**Canonical flow:** host-specific device capability → shared location adapter/permission boundary → **D04 Geo & Presence** → PostgreSQL/PostGIS-backed authorized spatial query/evidence → owning domain or read projection → UI. D04 owns consent, precision, accuracy/freshness, temporary presence, proximity assertions and geofence transitions; it does not become the writer of D05 Places, D06 Trails, **D07 Guardian/Legend service-area business rules**, D08 Tours, D09 Businesses, D10 Activities, D11 Events, D17 matches, D18 challenges or D23 notifications. D07 owns any configured Guardian/Legend service-area eligibility or offer boundary while consuming provider-neutral geographic context and D04-authorized spatial evidence/query results. PostGIS is the intended VQgemini-owned spatial engine; exact types/index definitions remain Database/implementation work. Server-side `ST_DWithin`-style proximity querying is the intended pattern for protected/canonical distance operations—including applicable nearby canonical Places/Trails/Tours/Activities/Events, permitted presence/Find Hub queries and D07 service-area filtering—rather than downloading all coordinates and deciding authority in the client. Client Haversine remains presentation-only.
 
 **Map presentation:** `MapLibre` is the intended interactive in-app renderer for Explore, Place pins, Radar results, Trail route/numbered stops, city Trail/Tour discovery, permitted Find Hub/geofence views and other approved map surfaces. A `MapTileStylePort` keeps style/tile sources replaceable; the current low-cost stage may use a compliant OSM-compatible source. Rendering, tile/style choice and camera state never own canonical geographic facts. Public OSM-compatible tile infrastructure must not be bulk/offline-prefetched where prohibited.
 
@@ -349,13 +349,13 @@ Preserve equal tab sizing, mobile-first Midnight Obsidian/neon styling, visible 
 
 **Geocoding:** address/search/reverse-geocoding use a replaceable provider port; the current stage may use a compliant OSM-derived provider. Provider IDs/provenance may be retained as metadata where permitted, but no `GooglePlace`, `OSMNode` or `OverpassResult` becomes a business owner. Manual city/district selection remains a browse context and cannot satisfy physical-presence proof.
 
-**External navigation:** canonical D05 Place coordinates or canonical D06 ordered Trail stops → `ExternalNavigationPort` → supported device Google Maps/Waze/other navigation application. `Maps Route` / `Navigate Trail` may preserve the historical multi-stop Google Maps handoff when valid, but VibeQuest does not initially own turn-by-turn routing and opening the external app cannot itself complete a Trail, check in, create a Handshake or award VQ. A future routing provider seam may exist without provisioning OSRM/GraphHopper now.
+**External navigation:** canonical D05 Place coordinates or canonical D06 ordered Trail stops → `ExternalNavigationPort` → supported device Google Maps/Waze/other navigation application. `Maps Route` / `Navigate Trail` may preserve the historical multi-stop Google Maps handoff when valid, but VQgemini does not initially own turn-by-turn routing and opening the external app cannot itself complete a Trail, check in, create a Handshake or award VQ. A future routing provider seam may exist without provisioning OSRM/GraphHopper now.
 
 **Truth and privacy:** provider failure permits valid cache, retry, partial/empty/unavailable/offline states only—never fabricated POIs, businesses, coordinates, contacts, movement, routes, ratings, crowd counts, arrivals or success. Device coordinates are untrusted inputs; PostGIS proves geometric relations between supplied facts, not human authenticity. Precise temporary location is disclosed only where specifically authorized; public/social surfaces receive coarse city/area or permitted approximate distance. Find Hub temporary pings retain the 2-hour maximum; blocking/revocation stops disclosure. The directed **23 km** Secrets/Find Hub/near-feed discovery scope is a query policy, not an individual geofence, Secret claim, Place check-in or D18 participation radius.
 
 ## 7. Data and database boundary — schema intentionally deferred
 
-Structure chooses **PostgreSQL with PostGIS spatial capabilities** as the intended transactional persistence/query boundary for VibeQuest-owned geographic records and server-authoritative distance/proximity operations. Exact tables, SQL types, constraints, spatial indexes, migrations and provider/version details belong in later physical implementation work derived from **Database.md**. The database model follows domain ownership, real data sensitivity and transaction requirements; it is **not derived from Gemini's printed ERD**.
+Structure chooses **PostgreSQL with PostGIS spatial capabilities** as the intended transactional persistence/query boundary for VQgemini-owned geographic records and server-authoritative distance/proximity operations. Exact tables, SQL types, constraints, spatial indexes, migrations and provider/version details belong in later physical implementation work derived from **Database.md**. The database model follows domain ownership, real data sensitivity and transaction requirements; it is **not derived from Gemini's printed ERD**.
 
 Proposed persistence partitions: private identity; public profile; consented ephemeral precise location with short retention and separate geofence rules; Places/check-ins; Trails/stop versions/remix links; Guardians/entitlements and Tour availability; social posts/media/reactions; conversations/rooms; challenge state; recognition; VQ ledger and rules; notifications; Marketplace; payments; independent tickets. Avoid shared write tables and invented cross-domain FKs that create circular service authority. A shared DB may enforce legitimate relational constraints while modules retain code-level write boundaries.
 
@@ -408,7 +408,7 @@ As an ongoing architecture-conformance gate, verify independently against Requir
 |---|---|
 | Domain-oriented server modules, layered business logic | **Adapt** as bounded modules, avoid boilerplate/28 deployables |
 | React responsive client and Telegram SDK adapter | **Candidate**, confirm existing repository and target stack before hard lock |
-| PostgreSQL + PostGIS | **Directed target** for VibeQuest-owned spatial records/proximity; verify provider/version/extension, spatial indexes and operational needs during implementation |
+| PostgreSQL + PostGIS | **Directed target** for VQgemini-owned spatial records/proximity; verify provider/version/extension, spatial indexes and operational needs during implementation |
 | MapLibre interactive rendering | **Directed target** presentation adapter; canonical domains remain owners of geographic facts |
 | OSM Overpass external POI discovery | **Directed current low-cost adapter**, bounded/cached/rate-controlled and replaceable; never canonical Place authority |
 | OSM-compatible map style/tile source | **Directed current low-cost seam where compliant**, replaceable and not bulk/offline-prefetched when terms prohibit it |
