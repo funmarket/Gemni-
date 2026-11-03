@@ -1,93 +1,49 @@
-# 🌌 VQgemni — Architecture & DevOps Specification
-## High-Fidelity Domain-Driven Social Geofencing Engine
+# VQgemni — Existing Application Repair and Production Readiness
 
-Welcome to the production-grade rebuild specification for **VQgemni**. This repository contains the system blueprints, migration protocols, and visual design guidelines compiled to deliver a robust, clean-running, and high-performance social networking application.
+**Project identity:** [funmarket/VQgemini](https://github.com/funmarket/VQgemini), default branch `main`  
+**Current web deployment project:** Vercel `vqgemni`  
+**Current nominated auth, database and object storage:** Supabase `avdfessrhbsqwlfmbdau`  
+**Status:** Existing React/Vite app undergoing architecture and content-persistence rehabilitation; *not* proven production ready.
 
-This v2 architecture resolves the technical debt, modularity degradation, and dark/light styling complications identified in the initial prototype.
+## Mission — preserve the product, repair the engineering
 
----
+VQgemni is an existing mobile-first cultural exploration and social application. Keep its current populated look and behavior across **Home / Explore / Share / Vibe / Purse** while separating monolithic UI, data and business responsibilities into the approved **D01–D28 canonical ownership** model. Preserve present posts, profiles, Places, Vibe Trails, Guardians/Local Legends, images and feature journeys; replace hardcoded business data and simulated outcomes with real authenticated, domain-owned records, managed media, permission-aware services and genuine testable workflows. This is **not** a new empty application, MVP-only rebuild, Firebase/Firestore migration or permission to remove current functionality.
 
-## 🚀 1. System Mission & Core Capabilities
+### Source and decision hierarchy
 
-VQgemni coordinates offline, real-world interactions through spatial geofencing, dual-optic capture verifications, gamified streaks, and instant peer-to-peer tipping.
+Latest explicit Product Owner direction → [Master_Plan.md](Master_Plan.md) → [requirements.md](requirements.md) → [structure.md](structure.md) → [Database.md](Database.md) → historical Gemini/old VibeQuest reference evidence. The current Master Plan defines **S00 then S01–S18**, acceptance contracts and release rules. Historical archives and the attached 215-feature CSV guide discovery but are not production-status certification or blanket acceptance of provisional ownership.
 
-### Key Capabilities:
-- **Spatial Proximity Radar & Mapping**: Sub-millisecond nearby node discoveries and live activity maps using PostGIS spatial coordinates.
-- **Dual-Optic Challenge Verification**: Strict 5-minute capture countdowns using sequential front-and-back camera streams to verify real-world presence within a 200m geofence.
-- **Dynamic Check-in Streaks**: Automated database triggers to maintain consecutive daily scan tracking with exponential point multipliers (1.1x to 2.0x).
-- **Immutable Ledger Auditing**: Post-transaction SHA-256 signature hashes and block height allocations simulating secure decentralized wallet ledgers.
-- **Paltalk-Style Local Chatrooms**: Real-time localized messaging panels complete with audio-synthesized ambient soundboards.
+## S00 — mandatory before any S01 refactoring
 
----
+1. **Preserve source and appearance.** Inspect actual main/source/deployment, inventory all sample and existing content, authors, relationships and images, capture full screenshots and recoverable backup/export state.
+2. **Create genuine test users.** Establish authorized **Supabase Auth** development test identities and durable D01/D02 profiles, real handles and permitted account categories. Do not bake test user objects or credentials into React.
+3. **Attribute sample content.** Import existing posts as D12 records owned by identifiable test authors; D06 Trails retain ordered stops/version/remix/author links; D07 Guardians/Legends and service offers link to eligible test users; D05 Places, D08 Tours, D09 Businesses and D16 Communities retain their independent domain ownership. These imported fixtures are test content, not authentic real-person history, verified GPS visits, valid bookings, Handshakes, VQ credits or completed payments.
+4. **Move media into Supabase Storage.** Only upload assets with appropriate rights, attach them by D13 asset metadata and authorized consuming-domain relationships, preserve image composition/order, privacy and media retention. Presentation icons and theme styling remain in React; sample business records and their asset catalogs do not.
+5. **Keep the app populated and prove parity.** Switch each frontend module to authorized persisted data only after data/media import and mapping are verified. Compare post counts, profiles, Places, images, Trails, Guardians, interactions, screen screenshots and navigation. Demonstrate idempotency, RLS, error states, restored backups and controlled retry/rollback before accepting S00.
 
-## 🛠️ 2. Production Tech Stack & DevOps Guidelines
+**No S01 structural refactor until S00 is accepted.** Test users and content remain throughout S01–S18 so every feature can be tested with a populated interface. Final cleanup is a separately approved, dependency-safe task after production readiness and a legitimate nonempty launch-content baseline, never an automatic account deletion that orphans posts.
 
-The v2 application is engineered to run in a containerized environment (e.g., Cloud Run) with a secure, highly scalable runtime profile:
+## S01–S18 — progressive domain-owned completion
 
-```
-                      [ Client-Side Browser ]
-                         (React 18 / Vite)
-                                 │
-           ┌─────────────────────┼─────────────────────┐
-           ▼                     ▼                     ▼
-   [ Geolocation HAL ]    [ Camera HAL ]       [ Audio Synth HAL ]
-           │                     │                     │
-           └─────────────────────┬─────────────────────┘
-                                 │
-                     [ Infrastructure Repositories ]
-                                 │
-                                 ▼
-                   [ Firebase Auth / Firestore ]
-```
+After S00, refactor the actual React/Vite app incrementally, preserving meaningful UI and source-verified feature behavior. One canonical domain writer owns each business fact; React renders authorized projections and maintains only ephemeral UI state. A browser-accessible Supabase client can perform properly authorized reads where appropriate, but must not bypass protected business commands, RLS, server-authenticated identity, D20 journal rules, D04 location proof, D22 Handshake qualification or D13 media policy. API, Worker, migrations, PostGIS, Telegram host parity, CI and staging are verified and adapted from current code/environment; their existence or absence must never be guessed from a proposal.
 
-### Dependency Standards:
-- **UI & View**: React 18+ with Vite (Hot Module Replacement disabled in staging via `DISABLE_HMR=true`).
-- **Icons**: Imported exclusively from `lucide-react` (strictly no custom SVG elements in component views).
-- **Animations**: Fluid layout transformations utilizing `motion/react` layout transitions.
-- **Charts & Vis**: Interactive administrative statistics mapped via `recharts` and canvas heatmaps.
-- **Database / Sync**: Canonical cloud persistence powered by Google Cloud Firestore.
+**Approved product invariants still govern:** VibeCheck 180 seconds, VibeFlash 33 seconds, Place check-in 5 m with adequate evidence, 23 km appropriate discovery scope, server-authoritative 24-hour qualifying Handshake lifecycle, scoped Admin Control Room, independent Ticketing, non-crypto VQ ledger and peer-to-peer Marketplace without default escrow. Do not infer a different policy from older screenshots or Gemini notes.
 
-### 🔌 Ingress Port Protocol:
-- **The Application must bind strictly to PORT 3000** and listen on host `0.0.0.0` (critical for ingress reverse proxy rules). 
-- Do not attempt to dynamically alter or override this configuration at runtime.
+### Current evidence limits
 
----
+- The live GitHub project has React/Vite modules, a Supabase client and embedded example data (including Guardian catalog, curated coordinate/activity data and image URL fallbacks). Their actual source and runtime relationships require S00 inventory.
+- The linked Vercel project, a successful preview build, and visible Supabase tables are not evidence that all 28 domain workflows, migrations, actual Auth profiles, Storage, PostGIS, RLS, tests, Telegram or production readiness are complete.
+- Changes to database records, identities, storage, deployments and releases require separately authorized, evidence-backed implementation tasks. Do not create fake real-world activity or silently alter a user's genuine content.
 
-## 📐 3. The Core Anti-Debt & Styling Commandments
+## Development commands (verify dependency state first)
 
-To prevent code degradation, any developer or automated agent editing this repository must adhere to these structural constraints:
-
-### I. The 200-Line Codebase Limit
-No React component file may exceed **200 lines** of code. If a component grows, it must be modularized.
-- Move static data models to specialized data files (e.g. `src/features/home/data/*`).
-- Move complex helper algorithms to domain utility helpers.
-- Decompose sub-views (like chat sidebars, custom cards, and active soundboards) into dedicated leaf components.
-
-### II. Absolute Styling Separation
-- **No Class-Matching Hacks in CSS**: Never target Tailwind elements using class matching selectors (e.g., `[class*="bg-black/20"]` or `[class*="from-[#"]`). This is fragile and breaks production builds.
-- **Semantic Theme Variables**: All dark and light mode color changes must be driven strictly through the CSS Variables defined in `src/index.css`. All components must consume these variables via standard Tailwind utility tokens.
-- **High Contrast Contrast Minimums**: Light mode colors must remain dark and high-contrast (such as deep emerald `#0D7A5C` or bold dark blue `#1D4ED8` on light backgrounds). Do not use light grey text on light off-white containers.
-
-### III. Zero Tech-Larping
-- Avoid decorating interfaces with mock telemetry pings, system logs, fake compile lines, or unnecessary status indicators (e.g., "CORE_NODE_ONLINE" or "CONTAINER PORT: 3000").
-- Craft comes from structural negative space, responsive layout scaling, and robust user interactions.
-
----
-
-## 🏗️ 4. Quickstart Staging Build
-
-Initialize packages:
 ```bash
 npm install
-```
-
-Start the development container:
-```bash
-npm run dev
-```
-
-Validate type safety and compile structure:
-```bash
 npm run lint
+npm run typecheck
 npm run build
 ```
+
+These commands check parts of the frontend and do **not** alone satisfy product, security, data, visual or release acceptance. The current dependency lockfile and Vercel build state must be reconciled before assuming clean installation.
+
+**This README is an orientation document; the current approved Master Plan is the controlling execution and acceptance authority.**
