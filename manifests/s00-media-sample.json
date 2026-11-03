@@ -1,0 +1,21 @@
+{
+  "importId": "s00_guardian_preview_20261103",
+  "sourceCommit": "e2cc47bc436ce89146f579c51bc1c1c80a0e9559",
+  "allowedImageHosts": [
+    "images.unsplash.com"
+  ],
+  "items": [
+    {
+      "sourceRef": "src/domains/d07_guardians/guardianCatalog.ts#guardian-elena.selfieUrl",
+      "sourceUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
+      "ownerLegacyId": "usr_elena_sf",
+      "domain": "d07_guardian"
+    },
+    {
+      "sourceRef": "src/domains/d07_guardians/guardianCatalog.ts#guardian-malik.selfieUrl",
+      "sourceUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
+      "ownerLegacyId": "usr_malik_tunis",
+      "domain": "d07_guardian"
+    }
+  ]
+}
