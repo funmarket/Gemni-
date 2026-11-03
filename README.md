@@ -1,7 +1,7 @@
-# 🌌 VQgemini — Architecture & DevOps Specification
+# 🌌 VQgemni — Architecture & DevOps Specification
 ## High-Fidelity Domain-Driven Social Geofencing Engine
 
-Welcome to the production-grade rebuild specification for **VQgemini**. This repository contains the system blueprints, migration protocols, and visual design guidelines compiled to deliver a robust, clean-running, and high-performance social networking application.
+Welcome to the production-grade rebuild specification for **VQgemni**. This repository contains the system blueprints, migration protocols, and visual design guidelines compiled to deliver a robust, clean-running, and high-performance social networking application.
 
 This v2 architecture resolves the technical debt, modularity degradation, and dark/light styling complications identified in the initial prototype.
 
@@ -9,7 +9,7 @@ This v2 architecture resolves the technical debt, modularity degradation, and da
 
 ## 🚀 1. System Mission & Core Capabilities
 
-VQgemini coordinates offline, real-world interactions through spatial geofencing, dual-optic capture verifications, gamified streaks, and instant peer-to-peer tipping.
+VQgemni coordinates offline, real-world interactions through spatial geofencing, dual-optic capture verifications, gamified streaks, and instant peer-to-peer tipping.
 
 ### Key Capabilities:
 - **Spatial Proximity Radar & Mapping**: Sub-millisecond nearby node discoveries and live activity maps using PostGIS spatial coordinates.
