@@ -227,7 +227,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 ### S02 — D01 Identity, authorization, application shell and Web/Telegram host authority
 
-**Objective:** Establish one canonical identity/session system and one phone-first product shell for browser and Telegram.
+**Objective:** Harden the existing canonical identity/session and present phone-first product shell for browser and Telegram, **reusing S00 real Supabase Auth test principals and D01/D02 profiles** without creating duplicate identities or destroying the populated UI.
 
 **Requirements covered:** `APP-*`, `ID-001`, identity portions of `NF-001/NF-004`, account-category decisions.
 
@@ -251,7 +251,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 **Tests:** credential/provider/linking uniqueness, Telegram linking attacks, revoked session, guest-to-auth intended action, Web/Telegram canonical user equivalence, authorization middleware, unauthorized Admin-route denial, scoped Admin-capability checks and support/VQ/moderation role separation at the authorization boundary.
 
-**Staging acceptance:** real browser and Telegram test identities resolve to the same backend authority without duplicate user/wallet/profile state; an authorized staging Admin can enter the permanent Control Room shell while ordinary users and under-scoped staff are denied privileged routes.
+**Staging acceptance:** real browser and Telegram test identities, including approved S00 principals when eligible, resolve to the same backend authority without duplicate user/wallet/profile state; an authorized staging Admin can enter the permanent Control Room shell while ordinary users and under-scoped staff are denied privileged routes.
 
 **Exit criteria:** authenticated writes have a trustworthy D01 principal; guest public browsing works; no host-specific business identity.
 
@@ -259,7 +259,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 ### S03 — D13 Global Media and shared camera/microphone/permission capability
 
-**Objective:** Provide secure durable/ephemeral media lifecycle and reusable device capture capability for every dependent feature.
+**Objective:** Extend and harden the **S00 Supabase Storage/D13 media baseline** into secure durable/ephemeral production media lifecycle and reusable device capture for every dependent feature; preserve imported attachments and thumbnails.
 
 **Requirements:** `MEDIA-001`, capture portions of Share/Guardian/challenge/profile requirements and `NF-004` permission behavior.
 
@@ -267,7 +267,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 **Dependencies:** S01–S02.
 
-**Outcome:** permission coordinator; camera/mic adapters; upload initiation/finalization; validation; processing/variants; private/authorized delivery; expiry/retirement intent; durable deletion retries; 24h ephemeral retention where approved; Web/Telegram capability parity.
+**Outcome:** preserve and extend S00 uploaded assets and references; permission coordinator; camera/mic adapters; upload initiation/finalization; validation; processing/variants; private/authorized delivery; expiry/retirement intent; durable deletion retries; 24h ephemeral retention where approved; Web/Telegram capability parity.
 
 **Logical modules:** client `platform/permissions`, `platform/devices/camera`, `microphone`, `capture-session`; API D13; Worker media processing/deletion; storage adapter.
 
@@ -283,7 +283,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 ### S04 — D02 Profiles, D03 Social Graph and D09 Business/operator authority core
 
-**Objective:** Implement real photo-first profiles/preferences, canonical follow/block relationships, and the core Business/organization operator authority required by later Place/Event/business journeys.
+**Objective:** Evolve the genuine **S00 test-backed D01/D02 profiles and media** into complete photo-first profile/preferences behavior, canonical follow/block relationships, and Business/operator authority required by later Place/Event/business journeys.
 
 **Requirements:** `PRO-*`, `SOC-*` social-graph portions, `BIZ-001` authority core, profile/account settings and parity requirements.
 
