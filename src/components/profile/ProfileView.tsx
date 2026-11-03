@@ -16,15 +16,16 @@ const PRESET_TAGS = [
 ];
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel }) => {
-  const { profile, registerProfile, setProfile } = useAuth();
+  const { profile, registerProfile, updateProfile } = useAuth();
   
   // Is this creation mode or editing mode? 
   // If the profile is "hannibal" (the default guest fallback) or doesn't exist, we allow creation
-  const isEditing = profile && profile.handle !== 'hannibal' && profile.handle !== 'cyber_voyager';
+  const isEditing = Boolean(profile);
 
   const [photoUrl, setPhotoUrl] = useState(profile?.photoUrl || '');
-  const [handle, setHandle] = useState(profile?.handle === 'hannibal' || profile?.handle === 'cyber_voyager' ? '' : (profile?.handle || ''));
-  const [password, setPassword] = useState(profile?.password || '');
+  const [handle, setHandle] = useState(profile?.handle || '');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState(profile?.displayName || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [location, setLocation] = useState(profile?.location || '');
@@ -99,10 +100,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
     setSuccessMsg(null);
 
     // Dynamic constraint validator
-    if (!photoUrl) {
-      setError("Avatar Photo Image URL is required.");
-      return;
-    }
     if (!handle) {
       setError("Handle is required.");
       return;
@@ -111,16 +108,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
       setError("Handle is already registered by another citizen!");
       return;
     }
-    if (!password) {
-      setError("A cozy passkey is required to access your traveler logs.");
+    if (!isEditing && (!email.trim() || password.length < 8)) {
+      setError("Email and a password of at least 8 characters are required.");
       return;
     }
     if (!displayName) {
       setError("Display Name is required.");
-      return;
-    }
-    if (tags.length < 3) {
-      setError("At least 3 interest tags are required for the matching index.");
       return;
     }
 
@@ -150,6 +143,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
       photoUrl,
       handle: handle.toLowerCase().trim(),
       password,
+      email,
       displayName,
       bio,
       location,
@@ -162,37 +156,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
 
     try {
       if (isEditing) {
-        // Edit existing profile
-        const pId = profile.id || 'hannibal';
-        try {
-          await supabase.from('profiles').update({
-            display_name: displayName,
-            bio: bio,
-            city: location
-          }).eq('id', pId);
-        } catch (e) {
-          console.warn('Could not update profile in Supabase:', e);
-        }
-        
-        // Update global state directly
-        const updatedProfile = { ...profile, ...payload };
-        localStorage.setItem('vq_simulated_profile', JSON.stringify(updatedProfile));
-        setProfile(updatedProfile);
-        
-        setSuccessMsg("Traveler journal details updated safely!");
-        if (onSuccess) {
-          setTimeout(() => onSuccess(), 1500);
-        }
+        await updateProfile({ displayName, photoUrl });
+        setSuccessMsg("Your display name and profile photo were updated.");
+        if (onSuccess) setTimeout(() => onSuccess(), 900);
       } else {
-        // Create brand new profile
         const created = await registerProfile(payload);
-        setSuccessMsg(`Welcome, ${created.displayName}! Your traveler profile is active with +500 VQ Bonus!`);
-        if (onSuccess) {
-          setTimeout(() => onSuccess(), 2000);
-        }
+        setSuccessMsg(`Welcome, ${created.displayName}! Your account is ready.`);
+        if (onSuccess) setTimeout(() => onSuccess(), 900);
       }
     } catch (err: any) {
-      setError(err?.message || "Failed to save profile details.");
+      const message = err?.message || "Failed to save profile details.";
+      if (message.startsWith("Account created. Verify your email")) setSuccessMsg(message);
+      else setError(message);
     } finally {
       setSubmitting(false);
     }
@@ -206,7 +181,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
         <div>
           <h2 className="text-xl font-extrabold uppercase tracking-tight italic flex items-center gap-2">
             <span className="text-vibe-primary">🎒</span> 
-            {isEditing ? "Edit Traveler Profile" : "Create Your Profile"}
+            {isEditing ? "Edit Traveler Profile" : "Create Your Account"}
           </h2>
           <p className="text-[10px] text-zinc-500 font-mono tracking-wider mt-0.5">
             {isEditing ? "MODIFY YOUR TRAVELER COMPASS" : "JOIN THE COZY VIBE CIRCLE"}
@@ -265,7 +240,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
           
           <div className="space-y-1.5 w-full flex-1">
             <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-1">
-              <Globe className="w-3 h-3 text-vibe-primary" /> Avatar Photo URL (Required)
+              <Globe className="w-3 h-3 text-vibe-primary" /> Avatar Photo URL (Optional)
             </label>
             <input 
               type="text" 
@@ -284,11 +259,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-1">
-              {isCheckingHandle ? "⏳" : "@"} Decoded Handle
+              {isCheckingHandle ? "⏳" : "@"} Unique username (@)
             </label>
             <input 
               type="text" 
-              placeholder="e.g. hack_nord" 
+              placeholder="e.g. yassine_medina" 
               value={handle}
               onChange={(e) => setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
               required
@@ -312,14 +287,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
 
           <div className="space-y-1.5">
             <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">
-              Master Password
+              Password
             </label>
             <input 
               type="password" 
               placeholder="Secret encryption key" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              required={!isEditing}
+              minLength={8}
               className="w-full h-11 px-3.5 bg-zinc-950 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-vibe-primary transition-colors font-mono"
             />
           </div>
@@ -338,6 +314,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
             className="w-full h-11 px-3.5 bg-zinc-950 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-vibe-primary transition-colors"
           />
         </div>
+
+        {!isEditing && (
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Email address</label>
+            <input type="email" autoComplete="email" required value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full h-11 px-3.5 bg-zinc-950 border border-white/10 rounded-xl text-xs text-white outline-none focus:border-vibe-primary" />
+          </div>
+        )}
 
         {/* 3. Vibe Tags (Pills) Selection */}
         <div className="space-y-2 bg-zinc-900/10 p-4 rounded-xl border border-white/5">

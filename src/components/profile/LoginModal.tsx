@@ -10,7 +10,7 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onCancel, onSwitchToRegister }) => {
   const { loginWithHandleAndPassword } = useAuth();
-  const [handle, setHandle] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,8 +18,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onCancel, onS
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!handle.trim()) {
-      setError("Please input your unique citizen handle.");
+    if (!identifier.trim()) {
+      setError("Enter your email address or @username.");
       return;
     }
     if (!password) {
@@ -29,7 +29,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onCancel, onS
 
     setLoading(true);
     try {
-      await loginWithHandleAndPassword(handle, password);
+      await loginWithHandleAndPassword(identifier, password);
       setLoading(false);
       if (onSuccess) onSuccess();
     } catch (err: any) {
@@ -48,7 +48,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onCancel, onS
             <span className="text-vibe-primary">🔑</span> Identify Citizen
           </h3>
           <p className="text-[9px] font-mono tracking-wider text-zinc-500 mt-0.5">
-            DECRYPT LOCAL NODE SEGMENT
+            SECURE ACCOUNT SIGN IN
           </p>
         </div>
         
@@ -75,13 +75,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onCancel, onS
         {/* Handle Input */}
         <div className="space-y-1.5">
           <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-1">
-            <User className="w-3 h-3 text-vibe-primary" /> Traveler Handle (@)
+            <User className="w-3 h-3 text-vibe-primary" /> Email or @username
           </label>
           <input
             type="text"
-            placeholder="e.g. cozy_wanderer"
-            value={handle}
-            onChange={(e) => setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
+            placeholder="Email or @username"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
             className="w-full h-11 px-3.5 bg-zinc-950 border border-white/10 rounded-xl text-xs text-zinc-200 outline-none focus:border-vibe-primary font-mono transition-colors"
           />
@@ -90,7 +90,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onCancel, onS
         {/* Password Input */}
         <div className="space-y-1.5">
           <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-1">
-            <Key className="w-3 h-3 text-vibe-primary" /> Traveler Passkey
+            <Key className="w-3 h-3 text-vibe-primary" /> Password
           </label>
           <input
             type="password"

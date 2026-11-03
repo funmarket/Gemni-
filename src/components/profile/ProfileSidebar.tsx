@@ -144,11 +144,11 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
               <div className="min-w-0 flex-1">
                 {/* Body / main username text EXACTLY 16px */}
                 <h3 className="font-semibold text-[16px] text-white tracking-tight uppercase truncate">
-                  {profile?.handle === 'hannibal' ? 'Hannibal' : profile?.handle?.toUpperCase()}
+                  {profile?.displayName || profile?.handle || 'Profile'}
                 </h3>
                 {/* Small labels text EXACTLY 13px */}
                 <p className="text-[13px] text-zinc-500 font-bold font-mono">
-                  @{profile?.handle || 'hannibal'}
+                  @{profile?.handle || 'username'}
                 </p>
               </div>
 

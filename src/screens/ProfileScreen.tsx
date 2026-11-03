@@ -55,10 +55,10 @@ export const ProfileScreen: React.FC = () => {
         {/* Dynamic Display Details */}
         <div className="text-center space-y-1">
           <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            {profile?.displayName || (profile?.handle === 'hannibal' ? 'Hannibal' : profile?.handle?.toUpperCase())}
+            {profile?.displayName || profile?.handle || 'Profile'}
           </h2>
           <p className="text-xs text-zinc-500 font-semibold font-mono">
-            @{profile?.handle || 'hannibal'}
+            @{profile?.handle || 'username'}
           </p>
         </div>
 
