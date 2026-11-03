@@ -22,7 +22,7 @@ interface ShellProps {
 export const Shell: React.FC<ShellProps> = ({ children, activeTab, onTabChange }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { cityName } = useGeolocation();
   const { unreadCount } = useAppNotifications();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,6 +49,10 @@ export const Shell: React.FC<ShellProps> = ({ children, activeTab, onTabChange }
   // Direct messaging & Notifications coordinators
   useEffect(() => {
     const handleOpenDMs = () => {
+      if (!user) {
+        setSidebarOpen(true);
+        return;
+      }
       setShowMessageModal(true);
     };
     const handleOpenNotifs = () => {
@@ -60,7 +64,7 @@ export const Shell: React.FC<ShellProps> = ({ children, activeTab, onTabChange }
       window.removeEventListener('open-direct-messages', handleOpenDMs);
       window.removeEventListener('open-notifications-center', handleOpenNotifs);
     };
-  }, []);
+  }, [user]);
   
   // Track scroll position for Facebook-style auto-hide
   const [lastScrollTop, setLastScrollTop] = useState(0);

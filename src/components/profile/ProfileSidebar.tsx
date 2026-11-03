@@ -4,6 +4,8 @@ import {
   X, Coins, Mail, MessageSquare, Bell, Settings, HelpCircle, Languages, LogOut, Sparkles, User, ShieldCheck, Cpu, Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { LoginModal } from './LoginModal';
+import { ProfileView } from './ProfileView';
 import { cn } from '@/lib/utils';
 import { useProfileSettings } from '@/features/profile/hooks/useProfileSettings';
 import { useLocalDeviceAiSettings } from '@/features/profile/hooks/useLocalDeviceAiSettings';
@@ -18,7 +20,8 @@ interface ProfileSidebarProps {
 }
 
 export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose, onNavigateToTab }) => {
-  const { profile, logout, updateProfileWallet } = useAuth();
+  const { user, profile, logout, updateProfileWallet } = useAuth();
+  const [authPanel, setAuthPanel] = React.useState<'login' | 'register' | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { unreadCount: unreadNotificationsCount } = useAppNotifications();
   
@@ -116,6 +119,17 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
             </button>
           </div>
 
+          {!user ? (
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-4 space-y-3">
+              <p className="text-base font-semibold text-white">Explore as a visitor</p>
+              <p className="text-xs text-zinc-400">Browse public places, trails and community posts. Sign in to take part.</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setAuthPanel('login')} className="flex-1 rounded-xl bg-vibe-primary text-white px-3 py-2 text-sm font-bold">Sign in</button>
+                <button type="button" onClick={() => setAuthPanel('register')} className="flex-1 rounded-xl border border-zinc-700 text-white px-3 py-2 text-sm font-bold">Create profile</button>
+              </div>
+            </div>
+          ) : (
+            <>
           {/* User Profile Info Card (X/Twitter style) */}
           <div className="bg-zinc-900/40 border border-zinc-900 rounded-2xl p-4 space-y-3.5">
             <div className="flex items-center gap-3">
@@ -165,6 +179,10 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
             </div>
           </div>
 
+            </>
+          )}
+
+          {user && <>
           {/* Wallet Quick Connector (VQ Adaptation) */}
           <div className="space-y-1.5 px-0.5">
             {/* Small text / labels EXACTLY 13px */}
@@ -185,6 +203,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
             </div>
           </div>
 
+          </>}
           {/* Theme Selector (Light / Dark Mode in Profile Dropdown) */}
           <div className="space-y-1.5 px-0.5">
             <div className="flex items-center justify-between">
@@ -252,6 +271,10 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
             <button 
               onClick={() => {
                 triggerHaptic('light');
+                if (!user) {
+                  setAuthPanel('login');
+                  return;
+                }
                 window.dispatchEvent(new CustomEvent('open-direct-messages'));
                 onClose();
               }}
@@ -444,7 +467,8 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
               )}
             </div>
 
-            {/* Platform Admin Console Dashboard (Highlighted) */}
+            {user && <>
+          {/* Platform Admin Console Dashboard (Highlighted) */}
             <button 
               onClick={() => {
                 triggerHaptic('light');
@@ -462,7 +486,8 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
               </span>
             </button>
 
-            {/* Settings */}
+            </>}
+          {/* Settings */}
             <button 
               onClick={() => {
                 triggerHaptic('light');
@@ -493,23 +518,36 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
           </div>
         </div>
 
-        {/* Bottom Logout Session - Futuristic 3D Danger style */}
+        {/* Signed-in users return to the Home feed after logout. */}
         <div className="space-y-4">
-          <button 
+          {user && <button 
             onClick={() => {
               triggerHaptic('heavy');
-              logout();
+              onNavigateToTab('home');
+              onClose();
+              void logout();
             }}
             className="btn-3d-danger text-[16px] font-medium w-full flex items-center justify-center gap-2 h-11"
           >
             <LogOut className="w-3.5 h-3.5" /> {t('profile.terminateSession')}
-          </button>
+          </button>}
           {/* Small text / labels EXACTLY 13px */}
           <div className="text-[13px] text-zinc-600 font-bold tracking-wider uppercase text-center">
             {t('profile.securedNodeSync')} v1.0.4
           </div>
         </div>
       </motion.div>
+      {authPanel && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/85 p-4 overflow-y-auto">
+          {authPanel === 'login' ? (
+            <LoginModal onCancel={() => setAuthPanel(null)} onSuccess={() => { setAuthPanel(null); onClose(); }} onSwitchToRegister={() => setAuthPanel('register')} />
+          ) : (
+            <div className="w-full max-w-lg max-h-full overflow-y-auto">
+              <ProfileView onCancel={() => setAuthPanel(null)} onSuccess={() => { setAuthPanel(null); onClose(); }} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

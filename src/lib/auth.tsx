@@ -41,34 +41,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const STORAGE_USER_KEY = 'vq_auth_user_v2';
 const STORAGE_PROFILE_KEY = 'vq_auth_profile_v2';
 
-const DEFAULT_PROFILE: UserProfile = {
-  id: 'usr_hannibal_1337',
-  handle: 'hannibal',
-  displayName: 'Hannibal',
-  accountType: 'voyager',
-  points: 650,
-  streaks: 5,
-  city: 'Tunis',
-  culturalPassport: ['Tunis Medina', 'Carthage', 'Sidi Bou Said'],
-  lastActive: new Date().toISOString(),
-};
-
-const DEFAULT_USER = {
-  uid: 'usr_hannibal_1337',
-  email: 'hannibal@vibequest.xyz',
-  displayName: 'Hannibal',
-  photoURL: '',
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<{
     uid: string;
     email: string;
     displayName: string;
     photoURL?: string;
-  } | null>(DEFAULT_USER);
+  } | null>(null);
 
-  const [profile, setProfile] = useState<UserProfile | null>(DEFAULT_PROFILE);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Initialize and sync with D20 VQ Ledger
@@ -80,9 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedUser && storedProfile) {
         setUser(JSON.parse(storedUser));
         setProfile(JSON.parse(storedProfile));
-      } else {
-        localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(DEFAULT_USER));
-        localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(DEFAULT_PROFILE));
       }
     } catch {
       // Fallback
