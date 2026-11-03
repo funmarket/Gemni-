@@ -72,9 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let active = true;
-    // Invalidate old simulated browser credentials; Supabase session is the only identity authority.
-    localStorage.removeItem('vq_auth_user_v2');
-    localStorage.removeItem('vq_auth_profile_v2');
+    // Preserve historical browser data for S00 recovery. Supabase alone controls the active session.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       // Defer Supabase queries outside the auth callback to avoid client auth lock reentrancy.
       Promise.resolve().then(() => { if (active) void hydrate(session?.user || null); });
@@ -106,7 +104,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await hydrate(result.user || null);
     const { data: link } = await supabase.from('s00_test_identity_links').select('legacy_profile_id').eq('auth_user_id', result.user?.id || '').maybeSingle();
     const { data: row } = await supabase.from('profiles').select('*').eq('id', link?.legacy_profile_id || 'usr_' + result.user?.id).maybeSingle();
-    if (!row) throw new Error('Signed in, but your profile is not linked yet. Contact the administrator.');
+    if (!row) {
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      throw new Error('Your account exists but its profile is not linked yet. Contact the administrator.');
+    }
     return fromRow(row);
   };
 
@@ -150,7 +153,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw new Error(error.message);
   };
   // Guest means no identity, not an invented authorized user.
-  const loginAsGuest = () => { setUser(null); setProfile(null); };
+  const loginAsGuest = () => {
+    void supabase.auth.signOut().then(({ error }) => {
+      if (error) console.warn('Guest sign-out failed:', error.message);
+      else { setUser(null); setProfile(null); }
+    });
+  };
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
