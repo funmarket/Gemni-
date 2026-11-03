@@ -9,7 +9,6 @@ import { ShareGoodVibesScreen } from '@/screens/ShareGoodVibesScreen';
 import { VibeScreen } from '@/screens/VibeScreen';
 import { CryptoScreen } from '@/screens/CryptoScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
-import { LoginConsole } from '@/components/profile/LoginConsole';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 // Admin screen kept lazy as it is only accessed in special admin mode
@@ -28,7 +27,7 @@ const ScreenFallback = () => (
 );
 
 export function ScreenRouter() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [exploreSearch, setExploreSearch] = useState('');
   const [exploreCategory, setExploreCategory] = useState('');
@@ -53,13 +52,6 @@ export function ScreenRouter() {
     );
   }
 
-  if (!user) {
-    return (
-      <ErrorBoundary>
-        <LoginConsole />
-      </ErrorBoundary>
-    );
-  }
 
   const renderScreen = () => {
     switch (activeTab) {
