@@ -1,6 +1,6 @@
 # Complete Supabase Migration & Domain Ownership Architecture
 
-Transform VibeQuest Guardians into a fully unified, production-grade application running exclusively on Supabase with zero mock backends, zero monolithic scripts, and strict domain ownership matching the approved Master Plan and Database architecture.
+Transform VQgemini into a fully unified, production-grade application running exclusively on Supabase with zero mock backends, zero monolithic scripts, and strict domain ownership matching the approved Master Plan and Database architecture.
 
 ---
 
@@ -77,7 +77,7 @@ Transform VibeQuest Guardians into a fully unified, production-grade application
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                        VIBEQUEST CLIENT APPLICATION                    │
+│                        VQGEMINI CLIENT APPLICATION                    │
 │                                                                        │
 │   ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌──────────┐   │
 │   │  HOME SCREEN  │ │ EXPLORE VIEW  │ │  SHARE FEED   │ │  PURSE   │   │
