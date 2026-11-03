@@ -1,3 +1,7 @@
+> **HISTORICAL PROPOSAL — SUPERSEDED FOR IMPLEMENTATION (2026-11-03).** This Gemini-generated document is retained as source/idea evidence only, not a current governing implementation plan. The current mission is to **repair the existing VQgemni React/Vite app**, not create an empty replacement. The approved `Master_Plan.md` now requires **S00 before S01**: preserve the visual/data baseline, create genuine **Supabase Auth test users** and linked D01/D02 profiles, attribute the existing sample posts/Trails/Guardians to those test accounts, migrate authorized images into Supabase Storage under D13, and prove the app remains populated and functional before refactoring monolithic scripts. The older claims below recommending unrestricted direct Supabase client writes, local-first dual-write as durable truth, unreviewed startup seeding, core-loop features ahead of content preservation or synthetic interactions as real events are **not** governing decisions. Follow the current Master Plan, Requirements, Structure and Database documents and later direct Product Owner instructions. This archival proposal is not proof that depicted backend behavior is actually deployed.
+
+---
+
 # Complete Supabase Migration & Domain Ownership Architecture
 
 Transform VQgemni into a fully unified, production-grade application running exclusively on Supabase with zero mock backends, zero monolithic scripts, and strict domain ownership matching the approved Master Plan and Database architecture.
