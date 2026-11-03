@@ -1,6 +1,6 @@
-# VQgemini — Master Plan.md
+# VQgemni — Master Plan.md
 
-**Document role:** Single living implementation-sequencing, operational-policy and acceptance-control plan for the **complete production-ready VQgemini application**. This is not an MVP, prototype, partial launch plan, replacement Requirements document, replacement Structure document, or physical schema specification. **This Product Owner-approved `Master Plan.md` is the controlling implementation and production-execution authority below any later direct Product Owner instruction.**
+**Document role:** Single living implementation-sequencing, operational-policy and acceptance-control plan for the **complete production-ready VQgemni application**. This is not an MVP, prototype, partial launch plan, replacement Requirements document, replacement Structure document, or physical schema specification. **This Product Owner-approved `Master Plan.md` is the controlling implementation and production-execution authority below any later direct Product Owner instruction.**
 
 > **For agentic workers:** Implement this plan only after explicit Product Owner authorization. Use bounded, source-verified vertical slices. A step is not complete until its acceptance contract is satisfied; a green build, created table, route, or screen is not completion evidence.
 
@@ -97,7 +97,7 @@ The following explicit Product Owner decisions are incorporated into the current
 2. **Handshake — DIRECTED FINAL**: qualifying approved agreement acceptance creates exactly one idempotent D22 Handshake; service-flow provider acceptance is the trigger. No Handshake cancellation state. Server-authoritative lifetime is exactly 24 hours: `ACTIVE → EXPIRED`. Cancellation of the underlying engagement does not revoke/reset/delete the Handshake or its timer. New review creation is allowed only while the Handshake is active and otherwise eligible; after expiry it is denied. D22 owns eligibility proof, not review content.
 3. **Marketplace VQ — DIRECTED FINAL**: optional Marketplace VQ transfer is peer-to-peer, buyer-to-seller via D20, at participant risk. No default escrow, platform guarantee, commission, delivery proof or automatic refund. D26 owns listing/negotiation/deal state; D20 alone posts VQ.
 4. **Marketplace review — DIRECTED FINAL**: an eligible D26 mutual agreement may create one D22 Handshake and a 24-hour review-eligibility window. D26 owns Marketplace product/deal-item review content because the reviewed object is a D26 listing/deal fact; D19 remains the established owner for Guardian/provider reputation review where applicable. D22 never owns review text/rating content and never proves delivery/payment.
-5. **Official app products — DIRECTED BOUNDARY**: no official products are invented now. Future Product Owner-authorized official VQgemini products appear through Vibe Guide and remain distinct from ordinary D26 peer listings.
+5. **Official app products — DIRECTED BOUNDARY**: no official products are invented now. Future Product Owner-authorized official VQgemni products appear through Vibe Guide and remain distinct from ordinary D26 peer listings.
 6. **Place confidence — DIRECTED FINAL OWNERSHIP**: D05 confidence is computed under a versioned, auditable Admin-managed policy. D05 owns observations and confidence result; Admin Control Room changes policy through an authorized contract and audit, not direct SQL or a second writer.
 7. **User enforcement — DIRECTED FINAL**: ordinary confirmed violations use Strike 1 first formal warning → Strike 2 final formal warning → Strike 3 account sanction. Reports are allegations/case inputs, never automatic strikes. Duplicate reports about one incident do not multiply strikes. Standard suspension/ban choices are 3 days, 1 week, 1 month, 3 months or Permanent. Severe safety/security violations may bypass graduated warnings with evidence, reason, actor, case and audit; temporary protective restriction may be used while evidence is reviewed. Eligible sanctions support appeal without automatic suspension removal.
 8. **Admin Control Room — DIRECTED FINAL**: a real permission-scoped Control Room begins with S02 authorization/shell and grows with owner-domain panels through S15, where it reaches integrated operational completeness. Admin is orchestration over D01–D28, never a 29th writer or direct-SQL console.
@@ -586,7 +586,7 @@ Eligible enforcement supports `sanction → appeal → review → uphold/reduce/
 
 #### S15 Support and operational correction
 
-Support cases cover non-misconduct account access, entitlement, reservation, VQ posting, duplicate/failed transaction, media, ticketing, notification, Place contribution, Guardian eligibility and Marketplace application-state issues. Support staff route corrections through owner-domain commands and do not gain VQ/moderation powers by default. Admin may correct legitimate D20 errors with compensating entries, never rewrite history; may correct application state through the owning domain; and may not guarantee/refund off-platform cash or physical Marketplace goods. Future official VQgemini products may later gain separate support/refund policy only after Product Owner authorization.
+Support cases cover non-misconduct account access, entitlement, reservation, VQ posting, duplicate/failed transaction, media, ticketing, notification, Place contribution, Guardian eligibility and Marketplace application-state issues. Support staff route corrections through owner-domain commands and do not gain VQ/moderation powers by default. Admin may correct legitimate D20 errors with compensating entries, never rewrite history; may correct application state through the owning domain; and may not guarantee/refund off-platform cash or physical Marketplace goods. Future official VQgemni products may later gain separate support/refund policy only after Product Owner authorization.
 
 #### S15 Business, Ads, entitlements and account lifecycle
 
@@ -1192,7 +1192,7 @@ These gates do not block other implementation work or acceptance that does not d
 
 Other future/non-blocking decisions:
 
-4. **Future official VQgemini products** — none are authorized now; if later authorized, they enter Vibe Guide under a separate official-product support/responsibility policy and remain distinct from ordinary D26 peer listings.
+4. **Future official VQgemni products** — none are authorized now; if later authorized, they enter Vibe Guide under a separate official-product support/responsibility policy and remain distinct from ordinary D26 peer listings.
 5. **Future stronger Admin-grant approval** — no two-person/amount threshold is directed now. Current implementation uses scoped authority, explicit recipients/amount/reason, preview, audit and idempotent D20 postings while preserving an approval-workflow seam.
 
 **Measured engineering acceptance, not a Product Owner policy gate:** numeric production performance thresholds are established from instrumented staging baselines before production acceptance. Future paid/self-hosted map/POI/geocoding provider migration remains an operational/cost choice inside the already directed replaceable-provider architecture.
