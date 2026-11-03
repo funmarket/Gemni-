@@ -60,7 +60,7 @@ insert into vq_s00_expected (legacy_id,handle,display_name,expected_email) value
  ('usr_hana_tunis','hana_locallens','Hana Khelil','hanakhelil@hanalocallens.com'),
  ('usr_leo_sf','leo_skatehikes','Leo Marquez','leomarquez@leoskatehikes.com'),
  ('usr_malik_tunis','malik_medina','Malik Ben Youssef','malikbenyoussef@malikmedina.com'),
- ('usr_marcus_oakland','marcus_audio','Marcus Vance (Local Legend)','marcusvancelocallegend@marcusaudio.com'),
+ ('usr_marcus_oakland','marcus_audio','Marcus Vance (Local Legend)','marcusvance@marcusaudio.com'),
  ('usr_marcus_exp','marcus_tours_exp','Marcus Brody','marcusbrody@marcustoursexp.com'),
  ('usr_samira_sf','samira_hikes','Samira Mansour','samiramansour@samirahikes.com'),
  ('usr_sarah_carthage','sarah_carthage','Sarah K. (Coast Scout)','sarahkcoastscout@sarahcarthage.com'),
