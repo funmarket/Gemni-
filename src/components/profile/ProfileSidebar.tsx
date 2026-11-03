@@ -271,6 +271,10 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
             <button 
               onClick={() => {
                 triggerHaptic('light');
+                if (!user) {
+                  setAuthPanel('login');
+                  return;
+                }
                 window.dispatchEvent(new CustomEvent('open-direct-messages'));
                 onClose();
               }}
