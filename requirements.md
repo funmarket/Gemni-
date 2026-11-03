@@ -1,8 +1,8 @@
-# VQgemini — Requirements.md
+# VQgemni — Requirements.md
 
 **ID:** VQ-REQ-001  
 **Date:** 2026-10-30  
-**Product:** VQgemini  
+**Product:** VQgemni  
 **Repository:** `funmarket/VQgemini`, default branch `main`  
 **Status:** **PRODUCT OWNER APPROVED GOVERNING PRODUCT REQUIREMENTS.**  
 This document is the approved product-behavior baseline. Implementation remains subject to the approved Master Plan, current source verification, task authorization and acceptance gates.  
@@ -109,7 +109,7 @@ Preserve the latest directed Geo architecture and behavior:
 
 - genuine device location through shared Web/Telegram capability adapters;
 - D04 geographic consent/evidence authority;
-- PostgreSQL + PostGIS for authoritative VQgemini-owned spatial operations;
+- PostgreSQL + PostGIS for authoritative VQgemni-owned spatial operations;
 - MapLibre for in-app interactive map rendering;
 - OSM Overpass as the current replaceable low-cost external POI discovery adapter;
 - replaceable tile/style/geocoding/provider boundaries;
@@ -141,7 +141,7 @@ These gates are slice-local and do not reopen unrelated accepted decisions.
 
 ## 2. Product identity, shell and platform — APP
 
-**APP-001** VQgemini is a mobile-first local exploration, cultural Trails, Guardian, community, social and local commerce product. Preserve Midnight Obsidian, neon/cybernetic smiles, visual radar, expressive camera composition, cultural photography and inviting community feel. Redesign technical implementation independently, preserving the visual language and meaningful original journeys.
+**APP-001** VQgemni is a mobile-first local exploration, cultural Trails, Guardian, community, social and local commerce product. Preserve Midnight Obsidian, neon/cybernetic smiles, visual radar, expressive camera composition, cultural photography and inviting community feel. Redesign technical implementation independently, preserving the visual language and meaningful original journeys.
 
 **APP-002** Five **equal-sized** bottom destinations: **Home / Explore / Share / Vibe / Purse**; Share retains heart imagery but is **not** elevated, floating or oversized. Global bell in the top bar; settings under user/profile menu. Use accessible modals/sheets and consistent back navigation/deep links.
 
@@ -175,7 +175,7 @@ These gates are slice-local and do not reopen unrelated accepted decisions.
 
 **GEO-006** The directed discovery/search scope for **Secrets, Find Hub and applicable nearby-feed discovery is 23 km**. This discovery radius does not become a Secret bounty-claim radius, Place check-in radius, Validate alert radius, matching rule or individual Find Hub geofence radius; each such boundary keeps its separately approved policy.
 
-**GEO-007** Place and Trail navigation hand canonical VQgemini coordinates/ordered stops to a supported external device navigation application where appropriate; opening navigation is not itself a Place check-in, Trail completion or VQ event. In-app map viewing is separate from turn-by-turn navigation. If an offline map/tile/routing capability is not permitted or available, the product must state that limitation while still allowing legitimately cached Trail text, itinerary and permitted media.
+**GEO-007** Place and Trail navigation hand canonical VQgemni coordinates/ordered stops to a supported external device navigation application where appropriate; opening navigation is not itself a Place check-in, Trail completion or VQ event. In-app map viewing is separate from turn-by-turn navigation. If an offline map/tile/routing capability is not permitted or available, the product must state that limitation while still allowing legitimately cached Trail text, itinerary and permitted media.
 
 **SOC-001** D03 owns follow/unfollow/block. Orbit displays accounts followed; Echo displays followers; blocking revokes prohibited discovery/messages and affected shares. Following alone is not a confirmed Vibe match. D17 owns matching invitations and connection confirmation.
 
@@ -763,7 +763,7 @@ These bounded choices do not erase established features. The only current slice-
 
 ## 26. Source coverage, independent QA and governing status
 
-**Sources reviewed for this edition:** Supplied latest Gemini ZIP (`vibequest-fixed-v2 (2).zip`) including specific Explore/Trail/Guardian/Find Hub/Validate/Admin files; attached safe-behavior extraction of Explore, Share, Home, general communication and Purse; historical `funmarket/VibeQuest` reference; the approved VQgemini governing documents and mandatory `AGENTS.md` execution discipline. Historical UI/source observations do **not** certify real old runtime behavior. Think-tank/reference material does not govern implementation or canonical ownership. Do not import legacy schema/provider/structure choices.
+**Sources reviewed for this edition:** Supplied latest Gemini ZIP (`vibequest-fixed-v2 (2).zip`) including specific Explore/Trail/Guardian/Find Hub/Validate/Admin files; attached safe-behavior extraction of Explore, Share, Home, general communication and Purse; historical `funmarket/VibeQuest` reference; the approved VQgemni governing documents and mandatory `AGENTS.md` execution discipline. Historical UI/source observations do **not** certify real old runtime behavior. Think-tank/reference material does not govern implementation or canonical ownership. Do not import legacy schema/provider/structure choices.
 
 **Certification evidence:** The full Gemini source interaction inventory was reconstructed and semantically reconciled against this governing revision, including source-driven failure modes, deep-feature passes and cross-document ownership checks. Mechanical requirement/reference checks are part of that certification evidence. This revision is Product Owner-approved as a governing requirements source; repository publication or replacement remains a separate mutation requiring live-source verification and applicable authorization.
 
