@@ -1,10 +1,10 @@
-# VibeQuestGuardians — Master Plan.md
+# VQgemni — Master Plan.md
 
-**Document role:** Single living implementation-sequencing, operational-policy and acceptance-control plan for the **complete production-ready VibeQuestGuardians application**. This is not an MVP, prototype, partial launch plan, replacement Requirements document, replacement Structure document, or physical schema specification. **This Product Owner-approved `Master Plan.md` is the controlling implementation and production-execution authority below any later direct Product Owner instruction.**
+**Document role:** Single living implementation-sequencing, operational-policy and acceptance-control plan for the **complete production-ready VQgemni application**. This is not an MVP, prototype, partial launch plan, replacement Requirements document, replacement Structure document, or physical schema specification. **This Product Owner-approved `Master Plan.md` is the controlling implementation and production-execution authority below any later direct Product Owner instruction.**
 
 > **For agentic workers:** Implement this plan only after explicit Product Owner authorization. Use bounded, source-verified vertical slices. A step is not complete until its acceptance contract is satisfied; a green build, created table, route, or screen is not completion evidence.
 
-**Goal:** Move `funmarket/VibeQuestGuardians` from the approved pre-S01 documentation baseline to the complete production-ready product covering all 28 approved logical domains, all approved user experiences, real persistence, security, staging, operations, testing, release and production acceptance.
+**Goal:** Restore and complete the existing `funmarket/VQgemini` application as a production-ready, fully domain-owned product with 28 approved logical domains, preserving the current populated UI and its features. First perform S00 content/test-account/media preservation and verified cutover, then S01–S18 engineering rehabilitation and acceptance.
 
 **Architecture source and execution hierarchy:** Latest explicit Product Owner decisions remain highest authority. This Product Owner-approved `Master Plan.md` is the consolidated living implementation/operations authority and may contain newer directed decisions, implementation clarifications, Admin/governance controls and production-readiness requirements that are absent from older design documents. `Requirements.md` remains the full product-behavior source, `structure.md` the architecture/module ownership source, and `Database.md` the conceptual persistence/invariant source. A newer approved Master Plan clarification is not a defect merely because an older file did not mention it. Historical Gemini/old VibeQuest remain behavior/failure references only.
 
@@ -13,6 +13,16 @@
 **Plan status:** `PRODUCT OWNER APPROVED — CONTROLLING IMPLEMENTATION / PRODUCTION-EXECUTION PLAN`. This Master Plan is the controlling implementation, sequencing, operational-policy and acceptance authority below any later explicit Product Owner instruction. It does not itself authorize arbitrary repository, infrastructure, database or production mutation; each implementation task still requires its applicable bounded authorization and live-source verification.
 
 ---
+
+## Current implementation direction — existing-app rehabilitation (2026-11-03)
+
+**DIRECTED / SUPERSEDING:** VQgemni is the **existing** `funmarket/VQgemini` React/Vite application, not an empty repository. Repair and complete its engineering while preserving all approved experiences, the five-tab product, current visual appearance and populated content. The target remains 28 canonical logical domains and the existing S01–S18 functional scope. Earlier claims that application code/client/UI do not exist or must be rebuilt from scratch are superseded. The current selected infrastructure is GitHub `funmarket/VQgemini`, Vercel project `vqgemni`, Supabase project `avdfessrhbsqwlfmbdau`; verify the actual live environment/hosting state before every task, without treating connection as proof of readiness.
+
+**Mandatory dependency:** S00 (defined below) precedes S01 and every structural refactor that could delete, detach or mutate existing content. S00 preserves and inventories every existing post, authored sample, Place, Trail, Guardian/Legend, account/profile, image/media asset, relation and screen; creates genuine Supabase Auth **test accounts** plus D01/D02 profiles; associates sample posts, Trails and Guardians with appropriately authorized test principals; migrates licensed media into Supabase Storage under D13 ownership; and verifies all content and visual parity before replacing the embedded React datasets. These are genuine database test fixtures, **not** invented real-user activity, check-ins, payments, Handshakes, rewards or verified location evidence. The app stays populated throughout development.
+
+**Data authority:** React owns presentation, styling and transient interface state only. Domain-owned backend / authorized RLS interfaces own durable identity, posts, media attachments, Places, Trails, Guardians, relationships and transactional facts. Do not expose service role keys, bypass canonical writers, or treat localStorage/samples as source of truth. Preserve static design tokens and ordinary UI icons; **business datasets and their images** belong in Supabase-authorized persistence/media.
+
+**Lifecycle:** Temporary test users and content remain in development/staging until a verified production-ready, legitimately populated release baseline is established. Cleanup is a **separately authorized** dependency-aware operation that cannot orphan posts, steal authorship, delete genuine user records or leave the launch application unintentionally empty. No content imports, Auth operations, Storage uploads or database changes are authorized merely by this document.
 
 ## 0. Global constraints and execution states
 
@@ -31,7 +41,7 @@
 11. PostgreSQL + PostGIS is the intended authoritative persistence/spatial platform. Physical schema is implemented incrementally from approved invariants, with versioned migrations and compatibility gates.
 12. Security, observability, accessibility, localization, mobile acceptance and operations are built throughout, not appended at the end.
 13. Staging appears early and remains continuously production-shaped, but staging availability is never production launch acceptance.
-14. No slice may use temporary fake business state to simulate completeness.
+14. Genuine Supabase-authenticated development test users and imported, clearly attributed sample business records must populate the app during S00–S18 development. They never count as proof of real external events, payments, Handshakes, check-ins or production-user activity; no browser-local fake authority is allowed.
 15. Any implementation task must re-read current branch/head and governing documents before mutation; this plan does not authorize stale-state execution.
 16. Implementation workers must read the current Product Owner-approved `Master Plan.md` before executing any slice. Authority order is: latest explicit Product Owner decision → approved Master Plan → Requirements → structure → Database → historical/reference evidence.
 17. Master Plan enhancements do **not** require automatic back-edits to older design documents. A blocking contradiction exists only when execution would remove approved functionality, duplicate a canonical writer, violate the 28-domain model, breach privacy/security, recreate prohibited legacy authority, split Web/Telegram into separate products, introduce a 29th business domain, or violate a newer explicit Product Owner decision.
@@ -68,8 +78,8 @@ Never fabricate these fields.
 
 ### 1.1 Live repository checkpoint rule
 
-- Repository: `funmarket/VibeQuestGuardians`
-- Integration branch: `vibefoundation`
+- Repository: `funmarket/VQgemini`
+- Current repository default branch: `main` (no separate integration branch designated here)
 - Stable/release branch: `main`
 - Exact current HEAD MUST be retrieved from GitHub immediately before each implementation or consequential mutation.
 - Current file/tree/runtime presence MUST be verified from live source; this plan must not be used as evidence that a file, application tree, migration, deployment or runtime still does or does not exist.
@@ -97,7 +107,7 @@ The following explicit Product Owner decisions are incorporated into the current
 2. **Handshake — DIRECTED FINAL**: qualifying approved agreement acceptance creates exactly one idempotent D22 Handshake; service-flow provider acceptance is the trigger. No Handshake cancellation state. Server-authoritative lifetime is exactly 24 hours: `ACTIVE → EXPIRED`. Cancellation of the underlying engagement does not revoke/reset/delete the Handshake or its timer. New review creation is allowed only while the Handshake is active and otherwise eligible; after expiry it is denied. D22 owns eligibility proof, not review content.
 3. **Marketplace VQ — DIRECTED FINAL**: optional Marketplace VQ transfer is peer-to-peer, buyer-to-seller via D20, at participant risk. No default escrow, platform guarantee, commission, delivery proof or automatic refund. D26 owns listing/negotiation/deal state; D20 alone posts VQ.
 4. **Marketplace review — DIRECTED FINAL**: an eligible D26 mutual agreement may create one D22 Handshake and a 24-hour review-eligibility window. D26 owns Marketplace product/deal-item review content because the reviewed object is a D26 listing/deal fact; D19 remains the established owner for Guardian/provider reputation review where applicable. D22 never owns review text/rating content and never proves delivery/payment.
-5. **Official app products — DIRECTED BOUNDARY**: no official products are invented now. Future Product Owner-authorized official VibeQuest products appear through Vibe Guide and remain distinct from ordinary D26 peer listings.
+5. **Official app products — DIRECTED BOUNDARY**: no official products are invented now. Future Product Owner-authorized official VQgemni products appear through Vibe Guide and remain distinct from ordinary D26 peer listings.
 6. **Place confidence — DIRECTED FINAL OWNERSHIP**: D05 confidence is computed under a versioned, auditable Admin-managed policy. D05 owns observations and confidence result; Admin Control Room changes policy through an authorized contract and audit, not direct SQL or a second writer.
 7. **User enforcement — DIRECTED FINAL**: ordinary confirmed violations use Strike 1 first formal warning → Strike 2 final formal warning → Strike 3 account sanction. Reports are allegations/case inputs, never automatic strikes. Duplicate reports about one incident do not multiply strikes. Standard suspension/ban choices are 3 days, 1 week, 1 month, 3 months or Permanent. Severe safety/security violations may bypass graduated warnings with evidence, reason, actor, case and audit; temporary protective restriction may be used while evidence is reviewed. Eligible sanctions support appeal without automatic suspension removal.
 8. **Admin Control Room — DIRECTED FINAL**: a real permission-scoped Control Room begins with S02 authorization/shell and grows with owner-domain panels through S15, where it reaches integrated operational completeness. Admin is orchestration over D01–D28, never a 29th writer or direct-SQL console.
@@ -105,25 +115,35 @@ The following explicit Product Owner decisions are incorporated into the current
 
 ---
 
-## 2. Pre-S01 implementation baseline
+## S00 — Mandatory existing-content preservation, test-account attribution and Supabase media migration
 
-The table below records the approved starting condition for S01. Before implementation, live GitHub/Railway/database state must still be inspected; this table does not substitute for that check.
+**Status: PLANNED; no implementation or acceptance claimed.** S00 MUST reach its verified content/data and visual preservation gates before S01 starts. No old source arrays, assets, sample accounts or demo records may be removed beforehand.
 
-| Capability | Pre-S01 baseline | Planning consequence |
+1. **Inventory and recoverability:** Inspect current GitHub HEAD, Vercel serving revision, Supabase schema/Auth/Storage, React templates/assets, localStorage and existing backend data; record every sample/real user and profile, post, Place, Guardian/Legend/offer, Trail/stops/remix, community, image/video/audio, relationship, feed card, event and related record. For each record capture original source/path/key/ID, user-facing placement, media source/rights, dependencies, timestamp, intended owner and status (existing real, imported demo, external suggestion, fake workflow). Capture screenshots at responsive widths for Home/Explore/Share/Vibe/Purse, count visible content, and obtain recoverable, verified source/data/media backups. Historical attached 215-feature CSV is a provisional coverage index (210 REVIEW OPEN, 5 blocked ownership), **not** 215 accepted functional services.
+2. **Authentic test identities:** Create approved restricted **actual Supabase Auth test accounts**, linked canonical D01 IDs and durable D02 profiles, handles and valid account roles; test profiles/avatars are persistent, never JavaScript-user objects. Keep credentials and service keys out of React and repositories, identify test cohorts/provenance and enforce actual authorization/RLS. S00 introduces only the minimal safe identity/media/data migration capabilities necessary for preservation; S02 later extends full authentication, provider linking and Web/Telegram support using those same canonical identities.
+3. **Domain-correct record import and attribution:** Associate old *sample* posts with authorized test-author D01 IDs under D12; preserve captions, ordering, relationships and eligible import dates. Attribute D06 Trails/ordered stops/versions/remix lineage to test authors; D07 Guardian/Legend qualifications and offers to test principals; D08 Tours/reservations remain separate; D05 Places retain their canonical Place facts and permitted images; D09 Business operator records and D16 communities retain proper ownership. Preserve legitimate existing records, never overwrite real users or attach their historical posts to someone else. Imported test provenance must be recoverable, idempotent, duplicate-safe and clearly marked in the controlled dataset. Do not convert fake operational events into genuine check-ins, accepted bookings, rewards, votes, ratings, location proofs, wallet transfers, Handshakes or permissions.
+4. **Supabase Storage and D13:** Inventory all displayed images/media, verify ownership/rights, copy permitted bytes into access-controlled Supabase Storage, record D13 asset identity/metadata/retention, and attach through each consuming domain's authorization. Preserve original photo selection, crop/aspect/order and access scope; enforce approved 24-hour ephemeral vs durable Place/Business media treatment. Never assume a third-party URL is licensed for rehosting; provider map tiles/POI results do not become canonical Place/media records by import.
+5. **Verified visual/data cutover:** Once the equivalent records and media are confirmed, replace React hardcoded **business data reads** with authorized domain/backend/Supabase queries; retain purely presentational constants. Verify source-to-target counts/IDs, legitimate test authors, foreign references, media hashes/access, Trail lineage, Guardian content, Place cards, links, and screenshot/interaction parity. Test rerun idempotency, denial, missing media, failed import recovery and rollback in an isolated scope. Do not delete original business-data source or cut over a module before its persistent replacement is validated.
+6. **S00 acceptance:** Document exact source commit, import manifest, backups/restoration, test Auth identities (without exposing secrets), profile/owner mappings, SQL migration/checksums where used, RLS/auth tests, asset proofs, rendered before/after comparison, failure tests, staging/host checks and Product Owner acceptance. The app remains fully populated and looks and behaves as before, with authoritative data now outside React. If any S00 category cannot be migrated safely, preserve it and mark S00 blocked rather than invent a shortcut.
+
+**S00 implementation/acceptance evidence:** source mapping PENDING; backup PENDING; test users/profiles PENDING; canonical domain records PENDING; media import PENDING; source cutover PENDING; visual and functional parity PENDING; Product Owner acceptance PENDING.
+
+---
+
+## 2. Current-app implementation baseline (S00/S01 preflight)
+
+The historical empty-project table was superseded by verified current source. Revalidate all mutable runtime evidence before the relevant task; code presence is not complete domain acceptance.
+
+| Area | Source-observed baseline | Required work |
 |---|---|---|
-| Governing product/architecture/database documents | PRODUCT OWNER APPROVED GOVERNING SET | Inspect current revisions at execution time and implement under the approved authority hierarchy. |
-| 28-domain ownership model | APPROVED TARGET / documented | Physical modules must preserve single-writer boundaries; do not infer microservices. |
-| Application code | ABSENT | Build cleanly; do not port legacy code. |
-| Frontend Web/Telegram client | ABSENT | Create one responsive client with host adapters. |
-| API | ABSENT | Create typed HTTP/realtime interfaces over canonical modules. |
-| Worker/outbox/schedulers | ABSENT | Create durable timed/retry processing; Redis may assist but not own critical truth. |
-| PostgreSQL/PostGIS migrations | ABSENT | Introduce versioned migrations slice-by-slice from Database.md invariants. |
-| Object storage/media service | ABSENT | Introduce behind D13 adapter with private delivery/retention. |
-| CI | ABSENT | Establish permanent contract before first feature slice. |
-| Automated tests | ABSENT | Establish test harnesses with first implementation work. |
-| Staging environment/config | ABSENT | Bring up early, production-shaped, without declaring partial launch. |
-| Production environment/release evidence | ABSENT | Created only after full readiness gate and explicit authorization. |
-| Historical Gemini/old VibeQuest | HISTORICAL REFERENCE ONLY | Preserve intended behavior; reject architecture and mocks. |
+| Existing app | React/Vite code, source screens, features, domains and a Supabase client exist | Preserve and progressively refactor; do not rebuild from zero |
+| Content/UI | Hardcoded Guardian catalog, curated Places/activities, image URLs and Trail fallbacks exist | S00 inventory, legitimate test attribution, Supabase media and display-parity migration |
+| Hosting | Vercel project `vqgemni` has been connected | Verify exact deployed revision and functional runtime; previews do not equal production |
+| Database | Supabase project `avdfessrhbsqwlfmbdau` and initial public tables inspected | Verify Auth, Storage, PostGIS, actual RLS policies, data, migrations, service capabilities and backups |
+| 28 domains | Approved logical model; some existing `src/domains` modules | Trace and correct canonical writers, do not assume implementation completion |
+| API/Worker/Web/Telegram/CI | Intended complete-product capabilities | Inspect actual state individually; implement or adapt under owning stages |
+| Historical Gemini/VibeQuest | Behavioral and forensic references | Preserve useful UX; do not import mocked backend authority |
+
 
 ---
 
@@ -132,7 +152,8 @@ The table below records the approved starting condition for S01. Before implemen
 This is dependency ordering, **not product-scope phasing**.
 
 ```text
-S01 Engineering/release substrate
+S00 Content, real test identities, domain-owned Supabase data/media and baseline acceptance
+  └─> S01 Engineering/release substrate
   └─> S02 Identity + shell + Web/Telegram host authority + real Admin shell/RBAC
        ├─> S03 Media + camera/mic/permission capability
        ├─> S04 Profiles + Social Graph + Business/operator authority core
@@ -168,7 +189,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 ### S01 — Engineering substrate, permanent CI contract and production-shaped staging path
 
-**Objective:** Create the implementation substrate required by every production slice without treating it as a standalone product milestone.
+**Objective:** Refactor and harden the existing application's engineering substrate after S00 acceptance, without sacrificing the functioning visual product or populated content.
 
 **Requirements covered:** cross-cutting `NF-*`, `LEG-ARCH-*`, architecture/release constraints.
 
@@ -176,9 +197,9 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 **Canonical owner:** platform/application composition only; no new business writer.
 
-**Dependencies:** approved Master Plan and current governing docs.
+**Dependencies:** S00 accepted; current governing documents and the exact live code and environment verified.
 
-**Intended implementation outcome:** repository/workspace skeleton matching `structure.md`; one client app, API, Worker, shared contracts/testing packages, migration mechanism, structured configuration, health/readiness primitives, CI, isolated test database, and early persistent staging deployment path.
+**Intended implementation outcome:** progressively organize existing React/Vite source into the approved domain-owned modular structure, retain the populated shell, and establish/harden actual API/Worker, contracts, tests, migrations, configuration, CI, readiness and staging as needed. Reuse verified components rather than replace them blindly.
 
 **Logical modules/files:** `apps/client`, `apps/api`, `apps/worker`, `packages/contracts`, `packages/testing`, `database/migrations`, `.github/workflows`, `docs/architecture`, `docs/operations` as implementation work later authorizes.
 
@@ -186,7 +207,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 **API/contracts:** versioned error envelope, request/correlation/causation IDs, contract compatibility rules, health/readiness contracts.
 
-**Frontend:** boot/router, five-tab shell placeholders may exist only as navigation scaffolding with explicit unavailable states; they are not feature completion.
+**Frontend:** preserve and regression-test the current five-tab UI, populated S00 test-backed content, navigation, appearance and real feature entry points while extracting monolithic responsibilities; no empty-shell replacement.
 
 **Worker/realtime:** process boot, outbox/inbox framework and durable scheduler interfaces; no fake jobs.
 
@@ -202,11 +223,11 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 **Blockers:** inability to create a production-shaped staging environment when implementation is authorized.
 
-**Not authorized by this step:** launch, production migration, domain-feature placeholders presented as done, or bootstrap/import of legacy VibeQuest code, schemas, migrations or infrastructure definitions.
+**Not authorized by this step:** launch, production data writes, removal of verified S00 content, wholesale screen recreation, fabricated feature completion or import of obsolete historical backend schemas as authority.
 
 ### S02 — D01 Identity, authorization, application shell and Web/Telegram host authority
 
-**Objective:** Establish one canonical identity/session system and one phone-first product shell for browser and Telegram.
+**Objective:** Harden the existing canonical identity/session and present phone-first product shell for browser and Telegram, **reusing S00 real Supabase Auth test principals and D01/D02 profiles** without creating duplicate identities or destroying the populated UI.
 
 **Requirements covered:** `APP-*`, `ID-001`, identity portions of `NF-001/NF-004`, account-category decisions.
 
@@ -230,7 +251,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 **Tests:** credential/provider/linking uniqueness, Telegram linking attacks, revoked session, guest-to-auth intended action, Web/Telegram canonical user equivalence, authorization middleware, unauthorized Admin-route denial, scoped Admin-capability checks and support/VQ/moderation role separation at the authorization boundary.
 
-**Staging acceptance:** real browser and Telegram test identities resolve to the same backend authority without duplicate user/wallet/profile state; an authorized staging Admin can enter the permanent Control Room shell while ordinary users and under-scoped staff are denied privileged routes.
+**Staging acceptance:** real browser and Telegram test identities, including approved S00 principals when eligible, resolve to the same backend authority without duplicate user/wallet/profile state; an authorized staging Admin can enter the permanent Control Room shell while ordinary users and under-scoped staff are denied privileged routes.
 
 **Exit criteria:** authenticated writes have a trustworthy D01 principal; guest public browsing works; no host-specific business identity.
 
@@ -238,7 +259,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 ### S03 — D13 Global Media and shared camera/microphone/permission capability
 
-**Objective:** Provide secure durable/ephemeral media lifecycle and reusable device capture capability for every dependent feature.
+**Objective:** Extend and harden the **S00 Supabase Storage/D13 media baseline** into secure durable/ephemeral production media lifecycle and reusable device capture for every dependent feature; preserve imported attachments and thumbnails.
 
 **Requirements:** `MEDIA-001`, capture portions of Share/Guardian/challenge/profile requirements and `NF-004` permission behavior.
 
@@ -246,7 +267,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 **Dependencies:** S01–S02.
 
-**Outcome:** permission coordinator; camera/mic adapters; upload initiation/finalization; validation; processing/variants; private/authorized delivery; expiry/retirement intent; durable deletion retries; 24h ephemeral retention where approved; Web/Telegram capability parity.
+**Outcome:** preserve and extend S00 uploaded assets and references; permission coordinator; camera/mic adapters; upload initiation/finalization; validation; processing/variants; private/authorized delivery; expiry/retirement intent; durable deletion retries; 24h ephemeral retention where approved; Web/Telegram capability parity.
 
 **Logical modules:** client `platform/permissions`, `platform/devices/camera`, `microphone`, `capture-session`; API D13; Worker media processing/deletion; storage adapter.
 
@@ -262,7 +283,7 @@ S01–S17 ─> S18 Full production-readiness, release and post-deploy acceptance
 
 ### S04 — D02 Profiles, D03 Social Graph and D09 Business/operator authority core
 
-**Objective:** Implement real photo-first profiles/preferences, canonical follow/block relationships, and the core Business/organization operator authority required by later Place/Event/business journeys.
+**Objective:** Evolve the genuine **S00 test-backed D01/D02 profiles and media** into complete photo-first profile/preferences behavior, canonical follow/block relationships, and Business/operator authority required by later Place/Event/business journeys.
 
 **Requirements:** `PRO-*`, `SOC-*` social-graph portions, `BIZ-001` authority core, profile/account settings and parity requirements.
 
@@ -586,7 +607,7 @@ Eligible enforcement supports `sanction → appeal → review → uphold/reduce/
 
 #### S15 Support and operational correction
 
-Support cases cover non-misconduct account access, entitlement, reservation, VQ posting, duplicate/failed transaction, media, ticketing, notification, Place contribution, Guardian eligibility and Marketplace application-state issues. Support staff route corrections through owner-domain commands and do not gain VQ/moderation powers by default. Admin may correct legitimate D20 errors with compensating entries, never rewrite history; may correct application state through the owning domain; and may not guarantee/refund off-platform cash or physical Marketplace goods. Future official VibeQuest products may later gain separate support/refund policy only after Product Owner authorization.
+Support cases cover non-misconduct account access, entitlement, reservation, VQ posting, duplicate/failed transaction, media, ticketing, notification, Place contribution, Guardian eligibility and Marketplace application-state issues. Support staff route corrections through owner-domain commands and do not gain VQ/moderation powers by default. Admin may correct legitimate D20 errors with compensating entries, never rewrite history; may correct application state through the owning domain; and may not guarantee/refund off-platform cash or physical Marketplace goods. Future official VQgemni products may later gain separate support/refund policy only after Product Owner authorization.
 
 #### S15 Business, Ads, entitlements and account lifecycle
 
@@ -993,7 +1014,7 @@ The following table maps every requirement identifier found in the approved `Req
 - Reproducible developer environment and isolated PostgreSQL/PostGIS test database.
 - Explicit test object storage/realtime adapters; no production secrets or user data.
 - Unit/contract/component tests run quickly; integration suites use disposable isolated state.
-- Historical Gemini data is never imported as production-like truth; fixtures are purpose-built and clearly synthetic.
+- S00-approved existing sample content is imported into legitimate test-authored Supabase development records, never presented as genuine production-user or real-world activity; isolated automated fixtures remain clearly synthetic.
 
 ### Staging — brought up in S01 and evolved continuously
 
@@ -1192,7 +1213,7 @@ These gates do not block other implementation work or acceptance that does not d
 
 Other future/non-blocking decisions:
 
-4. **Future official VibeQuest products** — none are authorized now; if later authorized, they enter Vibe Guide under a separate official-product support/responsibility policy and remain distinct from ordinary D26 peer listings.
+4. **Future official VQgemni products** — none are authorized now; if later authorized, they enter Vibe Guide under a separate official-product support/responsibility policy and remain distinct from ordinary D26 peer listings.
 5. **Future stronger Admin-grant approval** — no two-person/amount threshold is directed now. Current implementation uses scoped authority, explicit recipients/amount/reason, preview, audit and idempotent D20 postings while preserving an approval-workflow seam.
 
 **Measured engineering acceptance, not a Product Owner policy gate:** numeric production performance thresholds are established from instrumented staging baselines before production acceptance. Future paid/self-hosted map/POI/geocoding provider migration remains an operational/cost choice inside the already directed replaceable-provider architecture.
@@ -1311,8 +1332,9 @@ After each accepted implementation slice:
 This plan is executable only as a controlled sequence:
 
 ```text
-approved product design
-  → source-verified dependency-safe production-quality vertical slices
+approved product design + currently implemented VQgemni UI
+  → S00 preserved test-authored Supabase content/media and verified visual baseline
+  → S01–S18 source-verified existing-app rehabilitation and production-quality vertical slices
   → continuous production-shaped staging
   → all 28 domains staging-accepted
   → full cross-domain/client/security/data/operations acceptance

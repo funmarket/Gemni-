@@ -1,9 +1,9 @@
-# VibeQuestGuardians — Requirements.md
+# VQgemni — Requirements.md
 
 **ID:** VQ-REQ-001  
 **Date:** 2026-10-30  
-**Product:** VibeQuest  
-**Repository:** `funmarket/VibeQuestGuardians`, integration branch `vibefoundation`  
+**Product:** VQgemni  
+**Repository:** `funmarket/VQgemini`, default branch `main`  
 **Status:** **PRODUCT OWNER APPROVED GOVERNING PRODUCT REQUIREMENTS.**  
 This document is the approved product-behavior baseline. Implementation remains subject to the approved Master Plan, current source verification, task authorization and acceptance gates.  
 **Purpose:** Reconstruct the intended VibeQuest app experience from the user-supplied latest Gemini application ZIP and safe-behavior extraction, with explicit owner-directed updates and independently designed, real engineering.
@@ -11,6 +11,18 @@ This document is the approved product-behavior baseline. Implementation remains 
 # Post-Baseline Product & Policy Updates — Master Plan Controlled
 
 > **Authority notice:** This document remains the full product-behavior requirements baseline. The Product Owner-approved `Master Plan.md` and any later explicit Product Owner decisions supersede conflicting, incomplete, OPEN or UNSPECIFIED wording in this older baseline. Absence of a newer Master Plan rule from this file does not invalidate it. Latest explicit Product Owner direction remains highest authority; the approved `Master Plan.md` is the controlling implementation/production-execution authority beneath it.
+
+## Requirements Delta M — Existing-app rehabilitation, S00 real test accounts and Supabase data/media — DIRECTED 2026-11-03
+
+1. **Preserve and rehabilitate the existing VQgemni app.** The existing `funmarket/VQgemini` React/Vite product is the implementation starting point, not an empty replacement app. Preserve its currently presented five-section UI, navigation, color/themes, imagery, posts, Places, Trails, Guardians/Legends, community/social features and meaningful interactions while correcting monolithic code and domain ownership. No removal of a feature merely because its current code is defective, mocked, embedded or unfinished.
+2. **S00 MUST precede S01 and structural refactoring.** Inventory existing real and sample records, sources and all images/assets; create recoverable pre-change snapshots and visible before-state screenshots; make real, authenticated, restricted **Supabase Auth test users** and linked canonical D01/D02 profiles; attribute the currently displayed sample posts, Trails and Guardian/Legend offers to these controlled test principals with explicit imported/test provenance; populate D05 Places and remaining legitimate sample records under their canonical domains; migrate permitted image/media bytes into authorized **Supabase Storage** with D13 asset references. Compare before/after counts, relations and presentation before removing any hardcoded business-data source.
+3. **No embedded authoritative content.** React/TSX templates may contain UI presentation logic, styles, icons, empty/loading states and static design decoration, but no canonical sample users, posts, Places, Guardian records, Trails, ratings, authored image collections, simulated network identities or fake transactional state. Once verified, records are loaded via authorized domain/API or secured Supabase data-access paths, not hardcoded arrays, invented URLs, random GPS, localStorage truth or silent fallback. Sample content remains visible and functional throughout development as **genuine database data**.
+4. **Accurate authorship and media handling.** Every imported sample post/Trail/Guardian requires a valid linked test-user identity and correct D12/D06/D07/D08 attribution. Preserve captions, timestamps as source context, ordered stops/remix lineage, Guardian qualifications/offers, valid relationships and image composition. Test fixture/import provenance is identifiable; do not represent a test account as a genuine person or its sample posts as historic user-authored actions. D13 owns bytes and media lifecycle; consuming domains own attachment permissions. Verify image rights, uploads, authorized delivery and applicable ephemeral/durable retention.
+5. **Truthful operational state.** Never turn demo text/cards into verified check-ins, consents, GPS presence, accepted reservations, Handshakes, VQ ledger postings, payments, notifications, reviews or social approvals. These require genuine domain-owned transactions/evidence and appropriate test-only lifecycle. Test accounts and development fixtures may participate in actual authorized staging workflows, but fake success is not an implementation.
+6. **Retain content throughout development, controlled eventual cleanup.** S00 fixtures remain for S01–S18 testing and visual population. Cleanup only after complete production acceptance, a legitimately populated launch-content plan and separate explicit authorization, without orphaning retained posts, deleting real users, impersonating new authors or leaving unintended blank screens. Do not silently seed into real public production as genuine community activity.
+7. **Acceptance gate.** Before S01: evidence of full inventory and restoration, valid Supabase Auth/profile/author mappings, RLS/permission coverage, idempotent imports, nonmissing media, ownership/referential integrity, controlled failures and full visual/interaction parity across existing routes and mobile widths. Preserve original content if a safe migration cannot be verified; never destructively refactor to reach an appearance of progress.
+
+**Authority:** This delta is a newer explicit Product Owner decision. It supersedes earlier empty-repository assumptions, historical prohibitions on using **any** sample fixtures during development and proposals to start feature refactoring before preserving the current app. It does **not** relax actual production truth, privacy or the distinct accepted feature/domain policies elsewhere in this document.
 
 ## Requirements Delta A — Handshake — DIRECTED
 
@@ -109,7 +121,7 @@ Preserve the latest directed Geo architecture and behavior:
 
 - genuine device location through shared Web/Telegram capability adapters;
 - D04 geographic consent/evidence authority;
-- PostgreSQL + PostGIS for authoritative VibeQuest-owned spatial operations;
+- PostgreSQL + PostGIS for authoritative VQgemni-owned spatial operations;
 - MapLibre for in-app interactive map rendering;
 - OSM Overpass as the current replaceable low-cost external POI discovery adapter;
 - replaceable tile/style/geocoding/provider boundaries;
@@ -131,7 +143,7 @@ These gates are slice-local and do not reopen unrelated accepted decisions.
 
 ## 1. Non-negotiable scope and source-truth contract
 
-**Preserve the product. Rebuild the engineering.** The supplied `vibequest-fixed-v2 (2).zip` is the primary reference for historical features, functional interactions, screens, flows, labels and visual character. The attached `VIBEQUEST_LEGACY_SAFE_BEHAVIOR_EXTRACTION_EXPLORE_SHARE_HOME_GENERAL_PURSE_2026-10-30.md` and historical `funmarket/VibeQuest` (`phase-0-foundation`) provide complementary evidence and warnings. Never copy the old scripts, services, localStorage authority, database tables, schema, fake workflows, folder topology or deployments. The new application's **28 locked logical domains** and one authoritative owner per business invariant govern engineering; 28 domains do not imply 28 microservices or databases.
+**Preserve the existing VQgemni product and its currently populated presentation. Rebuild the engineering without replacing the app.** The supplied `vibequest-fixed-v2 (2).zip` is the primary reference for historical features, functional interactions, screens, flows, labels and visual character. The attached `VIBEQUEST_LEGACY_SAFE_BEHAVIOR_EXTRACTION_EXPLORE_SHARE_HOME_GENERAL_PURSE_2026-10-30.md` and historical `funmarket/VibeQuest` (`phase-0-foundation`) provide complementary evidence and warnings. Never copy the old scripts, services, localStorage authority, database tables, schema, fake workflows, folder topology or deployments. The existing application's target **28 locked logical domains** and one authoritative owner per business invariant govern engineering; 28 domains do not imply 28 microservices or databases.
 
 **Precedence:** Latest explicit Product Owner decision > approved `Master Plan.md` > approved `Requirements.md` > approved `structure.md` > approved `Database.md` > historical/reference/think-tank material. A source-visible button is evidence of intended interaction, not that any old server completed it. A directed requirement is a product target and does not need to be implemented in Gemini to be authoritative.
 
@@ -141,7 +153,7 @@ These gates are slice-local and do not reopen unrelated accepted decisions.
 
 ## 2. Product identity, shell and platform — APP
 
-**APP-001** VibeQuest is a mobile-first local exploration, cultural Trails, Guardian, community, social and local commerce product. Preserve Midnight Obsidian, neon/cybernetic smiles, visual radar, expressive camera composition, cultural photography and inviting community feel. Redesign technical implementation independently, preserving the visual language and meaningful original journeys.
+**APP-001** VQgemni is a mobile-first local exploration, cultural Trails, Guardian, community, social and local commerce product. Preserve Midnight Obsidian, neon/cybernetic smiles, visual radar, expressive camera composition, cultural photography and inviting community feel. Redesign technical implementation independently, preserving the visual language and meaningful original journeys.
 
 **APP-002** Five **equal-sized** bottom destinations: **Home / Explore / Share / Vibe / Purse**; Share retains heart imagery but is **not** elevated, floating or oversized. Global bell in the top bar; settings under user/profile menu. Use accessible modals/sheets and consistent back navigation/deep links.
 
@@ -175,7 +187,7 @@ These gates are slice-local and do not reopen unrelated accepted decisions.
 
 **GEO-006** The directed discovery/search scope for **Secrets, Find Hub and applicable nearby-feed discovery is 23 km**. This discovery radius does not become a Secret bounty-claim radius, Place check-in radius, Validate alert radius, matching rule or individual Find Hub geofence radius; each such boundary keeps its separately approved policy.
 
-**GEO-007** Place and Trail navigation hand canonical VibeQuest coordinates/ordered stops to a supported external device navigation application where appropriate; opening navigation is not itself a Place check-in, Trail completion or VQ event. In-app map viewing is separate from turn-by-turn navigation. If an offline map/tile/routing capability is not permitted or available, the product must state that limitation while still allowing legitimately cached Trail text, itinerary and permitted media.
+**GEO-007** Place and Trail navigation hand canonical VQgemni coordinates/ordered stops to a supported external device navigation application where appropriate; opening navigation is not itself a Place check-in, Trail completion or VQ event. In-app map viewing is separate from turn-by-turn navigation. If an offline map/tile/routing capability is not permitted or available, the product must state that limitation while still allowing legitimately cached Trail text, itinerary and permitted media.
 
 **SOC-001** D03 owns follow/unfollow/block. Orbit displays accounts followed; Echo displays followers; blocking revokes prohibited discovery/messages and affected shares. Following alone is not a confirmed Vibe match. D17 owns matching invitations and connection confirmation.
 
@@ -763,7 +775,7 @@ These bounded choices do not erase established features. The only current slice-
 
 ## 26. Source coverage, independent QA and governing status
 
-**Sources reviewed for this edition:** Supplied latest Gemini ZIP (`vibequest-fixed-v2 (2).zip`) including specific Explore/Trail/Guardian/Find Hub/Validate/Admin files; attached safe-behavior extraction of Explore, Share, Home, general communication and Purse; historical `funmarket/VibeQuest` reference; the approved VibeQuestGuardians governing documents and mandatory `AGENTS.md` execution discipline. Historical UI/source observations do **not** certify real old runtime behavior. Think-tank/reference material does not govern implementation or canonical ownership. Do not import legacy schema/provider/structure choices.
+**Sources reviewed for this edition:** Supplied latest Gemini ZIP (`vibequest-fixed-v2 (2).zip`) including specific Explore/Trail/Guardian/Find Hub/Validate/Admin files; attached safe-behavior extraction of Explore, Share, Home, general communication and Purse; historical `funmarket/VibeQuest` reference; the approved VQgemni governing documents and mandatory `AGENTS.md` execution discipline. Historical UI/source observations do **not** certify real old runtime behavior. Think-tank/reference material does not govern implementation or canonical ownership. Do not import legacy schema/provider/structure choices.
 
 **Certification evidence:** The full Gemini source interaction inventory was reconstructed and semantically reconciled against this governing revision, including source-driven failure modes, deep-feature passes and cross-document ownership checks. Mechanical requirement/reference checks are part of that certification evidence. This revision is Product Owner-approved as a governing requirements source; repository publication or replacement remains a separate mutation requiring live-source verification and applicable authorization.
 
