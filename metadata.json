@@ -1,0 +1,12 @@
+{
+  "name": "VibeQuest",
+  "description": "Transform from tourist to temporary local. A gamified cultural discovery and P2P community platform with a neon-noir aesthetic.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

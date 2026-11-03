@@ -1,0 +1,1447 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Caveat:wght@700&family=Montserrat:wght@300;400;500;700;850&family=Inter:wght@400;500;600;700&family=Lato:wght@400;700;900&family=Sacramento&family=Great+Vibes&display=swap');
+@import "tailwindcss";
+
+@@theme { 
+  --color-vibe-primary: #FF6D00; /* Vibe Orange default */
+  --color-vibe-secondary: #FF2E93; /* Electric Pink default */
+  --font-sans: "Geist", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Geist", "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-canvas: var(--app-bg);
+  --color-surface: var(--app-card-bg);
+  --color-elevated: var(--app-input);
+  --color-primary: var(--app-text);
+  --color-secondary: var(--app-subtext);
+  --color-outline: var(--app-border);
+  
+  /* Material 3 Custom Theme properties exposed to Tailwind v4 compiler */
+  --color-m3-primary: var(--md-primary);
+  --color-m3-on-primary: var(--md-on-primary);
+  --color-m3-primary-container: var(--md-primary-container);
+  --color-m3-on-primary-container: var(--md-on-primary-container);
+  --color-m3-secondary: var(--md-secondary);
+  --color-m3-on-secondary: var(--md-on-secondary);
+  --color-m3-secondary-container: var(--md-secondary-container);
+  --color-m3-on-secondary-container: var(--md-on-secondary-container);
+  --color-m3-surface: var(--md-surface);
+  --color-m3-on-surface: var(--md-on-surface);
+  --color-m3-surface-container: var(--md-surface-container);
+  --color-m3-outline: var(--md-outline);
+}
+
+:root {
+  /* ================= CORE SYSTEM DARK MODE VARIABLES (DEFAULT & CHROMATED) ================= */
+  --app-bg: #0e0f11; 
+  --app-card-bg: #1e1f22; 
+  --app-text: #f1f3f4; 
+  --app-subtext: #9aa0a6; 
+  --app-border: rgba(161, 66, 244, 0.4); /* Faint Glowing Accent Stroke at 40% Opacity */
+  --app-input: #2a2b2f;
+  
+  --color-vibe-primary: #FF6D00; /* Vibe Orange */
+  --color-vibe-secondary: #FF2E93; /* Electric Pink */
+
+  /* ================= MATERIAL DESIGN 3 LIGHT THEME ================= */
+  --md-primary: #6366f1; /* Vibrant Violet-Indigo main */
+  --md-on-primary: #ffffff;
+  --md-primary-container: #e0e7ff;
+  --md-on-primary-container: #312e81;
+  --md-secondary: #0ea5e9; /* Cyber Cyan secondary energy */
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #e0f2fe;
+  --md-on-secondary-container: #0369a1;
+  --md-surface: #fafafa;
+  --md-on-surface: #171717;
+  --md-surface-container: #f5f5f5;
+  --md-outline: #a3a3a3;
+  --md-background: #ffffff;
+  --md-on-background: #171717;
+}
+
+/* Force dark mode class variables */
+.dark {
+  /* ================= MATERIAL DESIGN 3 DARK THEME ================= */
+  --md-primary: #a5b4fc; /* Soft neon violet accent */
+  --md-on-primary: #1e1b4b;
+  --md-primary-container: #312e81;
+  --md-on-primary-container: #e0e7ff;
+  --md-secondary: #38bdf8; /* Futuristic glowing cyan energy */
+  --md-on-secondary: #0369a1;
+  --md-secondary-container: #075985;
+  --md-on-secondary-container: #e0f2fe;
+  --md-surface: #0e0f11;
+  --md-on-surface: #f1f3f4;
+  --md-surface-container: #1e1f22;
+  --md-outline: #737373;
+  --md-background: #0e0f11;
+  --md-on-background: #f1f3f4;
+}
+
+/* Elegant Light Mode variables (Inspired by premium classifieds & Letgo: Crisp white, slate-gray bg, coral-red details) */
+.light {
+  /* Design Tokens - Light Mode Styles & Color Palette */
+  --vibe-bg: #f8fafc; /* Crisp cool neutral background (Slate 50) */
+  --vibe-card: #ffffff; /* Pure pristine white card surfaces */
+  --vibe-card-hover: #f1f5f9; /* Soft Slate 100 on hover */
+  --vibe-elevated: #f1f5f9; /* Beautiful light gray surfaces (Slate 100) */
+  --vibe-input: #f8fafc; /* Extra clean input background (Slate 50) */
+  --vibe-deep: #e2e8f0; /* Accent separator or shadow layer (Slate 200) */
+
+  --vibe-border: #e2e8f0; /* Thin, premium crisp border color (Slate 200) */
+  --vibe-border-light: #f1f5f9; /* Ultra subtle slate border (Slate 100) */
+
+  --vibe-text: #0f172a; /* Rich, highly legible slate black (Slate 900) */
+  --vibe-text-secondary: #475569; /* Soft charcoal-slate body text (Slate 600) */
+  --vibe-text-muted: #94a3b8; /* Muted slate text (Slate 400) */
+  --vibe-text-inverse: #ffffff; /* Clear crisp high-contrast white text over colors */
+
+  --vibe-overlay: rgba(15, 23, 42, 0.4); /* Elegant slate-tinted overlay shadow */
+
+  /* Constant Accent Colors across both themes - Letgo Inspired Coral Red and Vibrant Orange */
+  --vibe-emerald: #10B981;
+  --vibe-purple: #8B5CF6;
+  --vibe-orange: #ff5a5f; /* Letgo famous signature vibrant coral-red */
+  --vibe-gold: #f59e0b; /* Golden Amber accent */
+  --vibe-pink: #ee46bc; /* Letgo vibe secondary pink accent */
+  --vibe-cyan: #06b6d4;
+  --vibe-red: #ef4444;
+
+  /* Map core system variables to the new Vibe tokens for perfect compatibility */
+  --app-bg: var(--vibe-bg);
+  --app-card-bg: var(--vibe-card);
+  --app-text: var(--vibe-text);
+  --app-subtext: var(--vibe-text-secondary);
+  --app-border: var(--vibe-border);
+  --app-input: var(--vibe-input);
+  
+  /* Meetup vibrant Coral Red & Swarm Gold */
+  --color-vibe-primary: var(--vibe-orange); 
+  --color-vibe-secondary: var(--vibe-pink); 
+
+  /* Material 3 Light Mode mapping override */
+  --md-primary: var(--vibe-orange);
+  --md-on-primary: var(--vibe-text-inverse);
+  --md-primary-container: #ffe4e6;
+  --md-on-primary-container: #881337;
+  --md-secondary: var(--vibe-pink);
+  --md-on-secondary: var(--vibe-text-inverse);
+  --md-secondary-container: #fef9c3;
+  --md-on-secondary-container: #713f12;
+  --md-surface: var(--vibe-card);
+  --md-on-surface: var(--vibe-text);
+  --md-surface-container: var(--vibe-bg);
+  --md-outline: var(--vibe-border);
+  --md-background: var(--vibe-bg);
+  --md-on-background: var(--vibe-text);
+}
+
+/* ================= HIGH-FIDELITY AUTOMATIC LIGHT THEME MAPPINGS ================= */
+
+html.light body {
+  background-color: var(--app-bg) !important;
+  color: var(--app-text) !important;
+}
+
+/* ================= COMPREHENSIVE LIGHT THEME OVERRIDES (MEETUP & SWARM) ================= */
+
+/* Redefining Core Variables in light mode for a premium aesthetic */
+html.light, html.light body {
+  /* Design Tokens - Light Mode Styles & Color Palette */
+  --vibe-bg: #f5f8f5;
+  --vibe-card: #ffffff;
+  --vibe-card-hover: #f0f7f0;
+  --vibe-elevated: #e4ede4;
+  --vibe-input: #e8f0e8;
+  --vibe-deep: #eaf2ea;
+
+  --vibe-border: #d4e4d4;
+  --vibe-border-light: #c0d8c0;
+
+  --vibe-text: #0f1f0f;
+  --vibe-text-secondary: #3d5a3d;
+  --vibe-text-muted: #7c9a7c;
+  --vibe-text-inverse: #f0f7f0;
+
+  --vibe-overlay: rgba(0,0,0,0.3);
+
+  /* Constant Accent Colors across both themes */
+  --vibe-emerald: #10B981;
+  --vibe-purple: #8B5CF6;
+  --vibe-orange: #F97316;
+  --vibe-gold: #FBBF24;
+  --vibe-pink: #EC4899;
+  --vibe-cyan: #22D3EE;
+  --vibe-red: #EF4444;
+
+  /* Map core system variables to the new Vibe tokens for perfect compatibility */
+  --app-bg: var(--vibe-bg) !important;
+  --app-card-bg: var(--vibe-card) !important;
+  --app-text: var(--vibe-text) !important;
+  --app-subtext: var(--vibe-text-secondary) !important;
+  --app-border: var(--vibe-border) !important;
+  --app-input: var(--vibe-input) !important;
+  
+  --color-vibe-primary: var(--vibe-orange); /* Vibe Orange */
+  --color-vibe-secondary: var(--vibe-pink); /* Electric Pink light contrast */
+
+  /* Override Material 3 custom theme mapping */
+  --md-primary: var(--vibe-orange);
+  --md-on-primary: var(--vibe-text-inverse);
+  --md-primary-container: #ffe4e6;
+  --md-on-primary-container: #881337;
+  --md-secondary: #D81B60;
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #fef9c3;
+  --md-on-secondary-container: #713f12;
+  --md-surface: #ffffff;
+  --md-on-surface: #1f1f1f;
+  --md-surface-container: #F3F4F6;
+  --md-outline: #d1d5db;
+  --md-background: #F3F4F6;
+  --md-on-background: #1f1f1f;
+}
+
+/* 1. Backdrop / Modal Overlay Blurs - Elegant semi-transparent dark slate overlay with strong blur, exactly how Meetup and premium iOS apps do it */
+html.light .vibe-modal-backdrop,
+html.light [id*="backdrop"],
+html.light div.fixed.inset-0[class*="bg-black/"]:not(#live-camera-modal-view):not(#vibe-response-portal):not(#vibe-flash-response-portal),
+html.light div.fixed.inset-0[class*="bg-zinc-950/"]:not(#live-camera-modal-view):not(#vibe-response-portal):not(#vibe-flash-response-portal),
+html.light div.fixed.inset-0[class*="bg-slate-950/"]:not(#live-camera-modal-view):not(#vibe-response-portal):not(#vibe-flash-response-portal),
+html.light div.fixed.inset-0[class*="bg-[#020617]/"]:not(#live-camera-modal-view):not(#vibe-response-portal):not(#vibe-flash-response-portal),
+html.light [class*="fixed inset-0 bg-black"] {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Modals outer shadow styling & card container: pristine crisp white with a nice light cool border */
+html.light .vibe-modal-card,
+html.light div.fixed.inset-0 div[class*="bg-zinc-950"],
+html.light div.fixed.inset-0 div[class*="bg-zinc-900"],
+html.light div.fixed.inset-0 div[class*="bg-[#0"],
+html.light div.fixed.inset-0 div[class*="bg-[#1"],
+html.light div.fixed.inset-0 div[class*="bg-[#2"],
+html.light div.fixed.inset-0 [class*="shadow-[0_12px_40px_rgba"] {
+  background-color: var(--vibe-card) !important;
+  background-image: none !important;
+  border: 1px solid var(--vibe-border) !important; /* Premium 1px solid border */
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.12), 0 0 20px -2px rgba(15, 23, 42, 0.04) !important; /* Premium Letgo-inspired tactile depth dropshadow */
+  color: var(--vibe-text) !important;
+}
+
+/* Ensure clean cool lines and borders inside modals in light mode */
+html.light .fixed.inset-0 hr,
+html.light .fixed.inset-0 .border-b,
+html.light .fixed.inset-0 .border-t,
+html.light .fixed.inset-0 .border-zinc-900,
+html.light .fixed.inset-0 .border-zinc-800,
+html.light .fixed.inset-0 .border-white\/5,
+html.light .fixed.inset-0 .border-white\/10 {
+  border-color: var(--vibe-border) !important;
+  border-width: 1px !important;
+}
+
+/* Modal text headers inside fixed overlays */
+html.light .fixed.inset-0 h1,
+html.light .fixed.inset-0 h2,
+html.light .fixed.inset-0 h3,
+html.light .fixed.inset-0 h4,
+html.light .fixed.inset-0 .text-zinc-100,
+html.light .fixed.inset-0 .text-white {
+  color: var(--vibe-text) !important;
+}
+
+/* 2. Intelligent Adaptive Background Mapping - Force all hardcoded deep midnight classes to clean light containers */
+html.light [class*="bg-[#0"],
+html.light [class*="bg-[#1"],
+html.light [class*="bg-[#2"],
+html.light [class*="bg-zinc-950"],
+html.light [class*="bg-zinc-900"],
+html.light [class*="bg-zinc-800"],
+html.light [class*="bg-zinc-900/20"],
+html.light [class*="bg-zinc-950/40"],
+html.light [class*="bg-black"],
+html.light [class*="bg-slate-900"],
+html.light [class*="bg-slate-950"],
+html.light [class*="bg-gray-900"],
+html.light [class*="bg-gray-950"],
+html.light [class*="bg-emerald-950"],
+html.light [class*="bg-purple-950"],
+html.light [class*="bg-rose-950"],
+html.light [class*="bg-orange-950"],
+html.light [class*="bg-amber-950"],
+html.light [class*="bg-[#0c0d12]"],
+html.light [class*="bg-[#111218]"],
+html.light [class*="bg-[#151317]"],
+html.light [class*="bg-[#12131a]"] {
+  background-color: var(--app-card-bg) !important;
+  border: 1px solid var(--vibe-border) !important; /* Premium 1px solid border */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important; /* Premium subtle shadow */
+  color: var(--app-text) !important;
+}
+
+/* Style the discovery categories into stunning soft pastel cards inside light mode, eliminating muddy brown/grey gradients */
+html.light .from-rose-500\/20 {
+  background: #FFF1F2 !important; /* Soft pastel pink */
+  border: 1px solid #FECDD3 !important;
+  color: #9F1239 !important;
+  background-image: none !important;
+}
+html.light .from-rose-500\/20 .text-white {
+  color: #9F1239 !important;
+}
+
+html.light .from-emerald-500\/20 {
+  background: #ECFDF5 !important; /* Soft pastel emerald green */
+  border: 1px solid #A7F3D0 !important;
+  color: #065F46 !important;
+  background-image: none !important;
+}
+html.light .from-emerald-500\/20 .text-white {
+  color: #065F46 !important;
+}
+
+html.light .from-amber-500\/20 {
+  background: #FEF3C7 !important; /* Soft pastel warm gold/amber */
+  border: 1px solid #FDE68A !important;
+  color: #92400E !important;
+  background-image: none !important;
+}
+html.light .from-amber-500\/20 .text-white {
+  color: #92400E !important;
+}
+
+html.light .from-purple-500\/20 {
+  background: #F5F3FF !important; /* Soft pastel purple */
+  border: 1px solid #DDD6FE !important;
+  color: #5B21B6 !important;
+  background-image: none !important;
+}
+html.light .from-purple-500\/20 .text-white {
+  color: #5B21B6 !important;
+}
+
+/* Ensure sub-items inside discovery categories become beautiful crisp white cards sitting inside the pastel parent containers */
+html.light .bg-zinc-950\/40,
+html.light .bg-zinc-950\/60,
+html.light [class*="bg-zinc-950/40"],
+html.light [class*="bg-zinc-950/60"] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important; /* Nice light cool border color! */
+  color: #1E2024 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+html.light .bg-zinc-950\/40 p,
+html.light .bg-zinc-950\/60 p {
+  color: #1E2024 !important;
+}
+
+/* Redesign Hero Card on Share screen - Soft glowing peach-rose-orange light mode gradient */
+html.light div.bg-gradient-to-br[class*="from-[#121"] {
+  background: linear-gradient(135deg, #FFF1F2 0%, #FFF5F5 50%, #FFFAF0 100%) !important;
+  border: 1px solid #FECDD3 !important;
+  box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.05), 0 8px 10px -6px rgba(244, 63, 94, 0.02) !important;
+  background-image: linear-gradient(135deg, #FFF1F2 0%, #FFF5F5 50%, #FFFAF0 100%) !important;
+}
+html.light div.bg-gradient-to-br[class*="from-[#121"] h2 {
+  color: #E0393E !important;
+  text-shadow: none !important;
+}
+html.light div.bg-gradient-to-br[class*="from-[#121"] p {
+  color: #5E6168 !important;
+}
+
+/* Redesign Vibe Guide banner - Soft pastel lavender violet */
+html.light div[class*="from-[#110c2e]"] {
+  background: linear-gradient(90deg, #F5F3FF 0%, #FAF5FF 100%) !important;
+  border: 1px solid #DDD6FE !important;
+  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.04) !important;
+  background-image: linear-gradient(90deg, #F5F3FF 0%, #FAF5FF 100%) !important;
+}
+html.light div[class*="from-[#110c2e]"] h4 {
+  color: #5B21B6 !important;
+}
+html.light div[class*="from-[#110c2e]"] p {
+  color: #5E6168 !important;
+}
+html.light div[class*="from-[#110c2e]"] .bg-\[\#581c87\]\/30 {
+  background-color: #EDE9FE !important;
+  border: 1px solid #DDD6FE !important;
+}
+html.light div[class*="from-[#110c2e]"] .text-purple-300 {
+  color: #6D28D9 !important;
+}
+
+/* Redesign Live Feed System container - Soft sky blue with deep indigo text */
+html.light div.bg-\[\#070d1e\] {
+  background-color: #F0F9FF !important; /* Soft sky blue */
+  border: 1px solid #BAE6FD !important;
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.04) !important;
+}
+html.light div.bg-\[\#070d1e\] h3 {
+  color: #0369A1 !important;
+}
+html.light div.bg-\[\#070d1e\] .text-blue-400 {
+  color: #0284C7 !important;
+}
+html.light div.bg-\[\#070d1e\] .bg-blue-500\/10 {
+  background-color: #E0F2FE !important;
+  color: #0369A1 !important;
+}
+html.light div.bg-\[\#070d1e\] .bg-\[\#181f33\]\/30 {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E2024 !important;
+}
+html.light div.bg-\[\#070d1e\] .bg-amber-500\/15 {
+  background-color: #FEF3C7 !important;
+  border: 1px solid #FDE68A !important;
+  color: #92400E !important;
+}
+
+/* Redesign Local Gems Card - Soft rose peach container with pristine white internal cards */
+html.light div.bg-\[\#1b050f\] {
+  background-color: #FFF1F2 !important; /* Soft pastel rose peach */
+  border: 1px solid #FECDD3 !important;
+}
+html.light div.bg-\[\#1b050f\] h3 {
+  color: #E0393E !important; /* Premium Meetup red */
+}
+html.light div.bg-\[\#1b050f\] .text-pink-400 {
+  color: #E0393E !important;
+}
+html.light div.bg-\[\#2a0c1a\] {
+  background-color: #FFFFFF !important; /* Crisp white card! */
+  border: 1px solid #E2E8F0 !important;
+  color: #1E2024 !important;
+}
+html.light div.bg-\[\#2a0c1a\] h4 {
+  color: #1E2024 !important;
+}
+html.light div.bg-\[\#2a0c1a\] p {
+  color: #5E6168 !important;
+}
+html.light div.bg-\[\#2a0c1a\] .border-b {
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+html.light div.bg-\[\#2a0c1a\] .text-zinc-100 {
+  color: #1E2024 !important;
+}
+
+/* Redesign Radar / Sonar Card on Share screen */
+html.light div.bg-\[\#0b0c10\] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E2024 !important;
+}
+
+/* Redesign Daily Streak / Compass Quest card */
+html.light div.bg-\[\#042014\]\/40 {
+  background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%) !important;
+  border: 1px solid #A7F3D0 !important;
+  background-image: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%) !important;
+}
+html.light div.bg-\[\#042014\]\/40 h3, 
+html.light div.bg-\[\#042014\]\/40 h4 {
+  color: #065F46 !important;
+}
+html.light div.bg-\[\#042014\]\/40 p {
+  color: #047857 !important;
+}
+html.light div.bg-\[\#042014\]\/40 .text-emerald-300 {
+  color: #065F46 !important;
+}
+html.light div.bg-\[\#042014\]\/40 .bg-zinc-900 {
+  background-color: #065F46 !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+}
+
+/* Convert Lime broadcast button to customlytics dark primary / Meetup crimson pill button */
+html.light .bg-lime-950\/20 {
+  background-color: #1E2024 !important; /* Solid black pill */
+  color: #FFFFFF !important;
+  border: 1px solid #1E2024 !important;
+}
+html.light .bg-lime-950\/20 * {
+  color: #FFFFFF !important;
+}
+html.light .bg-lime-950\/20:hover {
+  background-color: #E0393E !important; /* Premium red hover */
+  border-color: #E0393E !important;
+}
+
+/* ================= DETAILED LIGHT MODE MAKE-OVER CORRECTIONS ================= */
+
+/* 1. Modal Overlays, Containers & Modals (Proximity, Flash lists, Secrets Board, Active Flash) */
+html.light div.bg-\[\#121624\], 
+html.light div.bg-\[\#161b2b\],
+html.light div.bg-\[\#121624\]\/60,
+html.light div.bg-\[\#161b2b\]\/60 {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E2024 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light div.bg-\[\#101625\]\/60 {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E2024 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+}
+html.light div.bg-\[\#101625\]\/60:hover {
+  border-color: #f43f5e !important; /* Premium Red Border on hover */
+}
+
+/* Secrets board & Active flash modals */
+html.light div.bg-\[\#0f1320\] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #FECDD3 !important; /* Soft rose border */
+  color: #1E2024 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05) !important;
+}
+html.light div.bg-\[\#181d2a\] {
+  background-color: #FCFAF7 !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E2024 !important;
+}
+
+/* Proximity Validator & Purple Theme cards */
+html.light div.bg-\[\#13111C\] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #DDD6FE !important;
+  box-shadow: 0 20px 25px -5px rgba(109, 40, 217, 0.04) !important;
+}
+html.light div.bg-\[\#24133B\]\/40 {
+  background-color: #F5F3FF !important;
+  border: 1px solid #DDD6FE !important;
+  color: #5B21B6 !important;
+}
+
+/* Vibe Trails Sections & Map cards */
+html.light div.bg-\[\#16141a\],
+html.light div.bg-\[\#121115\] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E2024 !important;
+}
+
+/* Donation Modals & Emerald theme overlays */
+html.light div.bg-\[\#032012\]\/95 {
+  background-color: #ECFDF5 !important;
+  border: 1px solid #A7F3D0 !important;
+  color: #065F46 !important;
+}
+html.light div.bg-\[\#02180e\],
+html.light div.bg-\[\#02180f\],
+html.light div.bg-\[\#02180f\]\/60 {
+  background-color: #FFFFFF !important;
+  border: 1px solid #A7F3D0 !important;
+  color: #065F46 !important;
+}
+
+/* Live Events & Blue panels */
+html.light div.bg-\[\#081022\],
+html.light div.bg-\[\#0c162f\] {
+  background-color: #F0F9FF !important;
+  border: 1px solid #BAE6FD !important;
+  color: #0369A1 !important;
+}
+
+/* Rose, Ruby, and Pink Highlights inside lists */
+html.light div.bg-\[\#4a121a\]\/30 {
+  background-color: #FFF1F2 !important;
+  border: 1px solid #FECDD3 !important;
+  color: #9F1239 !important;
+}
+
+/* Profile screen and specific list components */
+html.light div.bg-\[\#1f102c\] {
+  background: linear-gradient(135deg, #F5F3FF 0%, #FAF5FF 100%) !important;
+  border: 1px solid #DDD6FE !important;
+  color: #1E2024 !important;
+}
+html.light div.bg-\[\#1f102c\] h3,
+html.light div.bg-\[\#1f102c\] h4 {
+  color: #6D28D9 !important;
+}
+html.light div.bg-\[\#0b0c0e\] {
+  background-color: var(--app-card-bg) !important;
+  border: 1px solid var(--app-border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 2. Overrides for Secondary Buttons & Scrollbars */
+html.light .btn-3d-secondary {
+  color: var(--app-text) !important;
+  background-color: var(--app-input) !important;
+  border: 1px solid var(--app-border) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+html.light .btn-3d-secondary:hover {
+  background-color: #E6E4E0 !important;
+}
+html.light * {
+  scrollbar-color: rgba(224, 57, 62, 0.35) #FCFAF7 !important;
+}
+
+/* Convert all other dark/midnight gradient blocks to clean solid white card backgrounds */
+html.light [class*="from-[#0]"],
+html.light [class*="from-[#1]"],
+html.light [class*="from-[#2]"],
+html.light [class*="via-[#0]"],
+html.light [class*="via-[#1]"],
+html.light [class*="via-[#2]"],
+html.light [class*="to-[#0]"],
+html.light [class*="to-[#1]"],
+html.light [class*="to-[#2]"] {
+  --tw-gradient-from: var(--app-card-bg) !important;
+  --tw-gradient-to: var(--app-card-bg) !important;
+  --tw-gradient-stops: var(--app-card-bg), var(--app-card-bg) !important;
+  background-image: none !important;
+  background-color: var(--app-card-bg) !important;
+  border-color: var(--app-border) !important;
+}
+
+/* 3. Inputs, Textareas, and Dropdowns */
+html.light input,
+html.light textarea,
+html.light select,
+html.light [class*="bg-zinc-800/20"],
+html.light [class*="bg-zinc-900/20"],
+html.light [class*="bg-black/20"] {
+  background-color: var(--app-input) !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+}
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: var(--app-subtext) !important;
+  opacity: 0.7;
+}
+
+/* 4. Complete Adaptive Border System - Catch all hardcoded border overrides and soften them */
+html.light [class*="border-[#0"],
+html.light [class*="border-[#1"],
+html.light [class*="border-[#2"],
+html.light [class*="border-zinc-"],
+html.light [class*="border-slate-"],
+html.light [class*="border-white/"],
+html.light [class*="border-gray-"] {
+  border-color: var(--app-border) !important;
+}
+
+/* Preserve styled borders with clean, balanced contrast */
+html.light .border-emerald-500,
+html.light .border-emerald-400 {
+  border-color: #10b981 !important;
+}
+html.light .border-rose-500,
+html.light .border-rose-400 {
+  border-color: #f43f5e !important;
+}
+html.light .border-purple-500,
+html.light .border-purple-400 {
+  border-color: #a855f7 !important;
+}
+
+/* 5. Precision Text Adaptiveness - Map all hardcoded white text to deep, rich charcoal text */
+html.light .text-white,
+html.light [class*="text-zinc-10"],
+html.light [class*="text-zinc-20"],
+html.light [class*="text-zinc-30"],
+html.light [class*="text-slate-10"],
+html.light [class*="text-slate-20"],
+html.light [class*="text-slate-30"],
+html.light [class*="text-gray-10"],
+html.light [class*="text-gray-20"],
+html.light [class*="text-gray-30"],
+html.light [class*="text-[#fdf6e2]"],
+html.light [class*="text-amber-100"],
+html.light [class*="text-pink-100"],
+html.light [class*="text-orange-200"],
+html.light [class*="text-amber-200"] {
+  color: var(--app-text) !important;
+}
+
+/* Map all dark gray labels to a warm, readable subtext */
+html.light [class*="text-zinc-40"],
+html.light [class*="text-zinc-50"],
+html.light [class*="text-zinc-60"],
+html.light [class*="text-slate-40"],
+html.light [class*="text-slate-50"],
+html.light [class*="text-slate-60"],
+html.light [class*="text-gray-40"],
+html.light [class*="text-gray-50"],
+html.light [class*="text-gray-60"] {
+  color: var(--app-subtext) !important;
+}
+
+/* 6. High Contrast Accents & Branding (Swarm & Meetup colors optimized for light background) */
+html.light .text-\[\#ff5f6e\],
+html.light .text-\[\#ff4e5e\],
+html.light .text-[#ff5f6e],
+html.light .text-[#ff4e5e],
+html.light .text-rose-400,
+html.light .text-rose-500,
+html.light .text-red-400,
+html.light .text-red-500 {
+  color: #E0393E !important; /* Meetup high-contrast crimson red */
+}
+
+html.light .text-[#3DDC6C],
+html.light .text-[#10b981],
+html.light .text-\[\#10b981\],
+html.light .text-\[\#34d399\],
+html.light .text-emerald-400,
+html.light .text-emerald-500,
+html.light .text-green-500 {
+  color: #0D7A5C !important; /* Meetup high-contrast rich green */
+}
+
+html.light .text-\[\#ffcb2b\],
+html.light .text-[#ffcb2b],
+html.light .text-amber-400,
+html.light .text-amber-500,
+html.light .text-yellow-400,
+html.light .text-[#ca8a04],
+html.light .text-yellow-500,
+html.light .text-orange-400,
+html.light .text-orange-500 {
+  color: #B57F06 !important; /* Foursquare Swarm deep rich amber gold */
+}
+
+/* Avoid illegible light yellow text on light background - Map to deep high-contrast colors */
+html.light .text-\[\#FBEBA7\],
+html.light .text-\[\#fbeba7\],
+html.light [class*="text-[#FBEBA7]"],
+html.light [class*="text-[#fbeba7]"],
+html.light [class*="text-[#fbeba7"],
+html.light [class*="text-[#FBEBA7"] {
+  color: var(--app-text) !important;
+}
+
+/* Map Rumi's quote container and romantic text specifically to a stunning high-contrast Meetup crimson red with NO glow */
+html.light .font-romantic,
+html.light .vibe-quote-text {
+  color: #E0393E !important;
+  text-shadow: none !important;
+}
+
+/* Also map yellow badge texts like #eab308 to high-contrast deep amber */
+html.light .text-\[\#eab308\],
+html.light .text-[#eab308],
+html.light [class*="text-[#eab308]"],
+html.light [class*="text-[#eab308"] {
+  color: #B57F06 !important;
+}
+
+html.light .text-purple-400,
+html.light .text-purple-300,
+html.light .text-fuchsia-400,
+html.light .text-[#c084fc] {
+  color: #6D28D9 !important; /* Elegant high-contrast deep purple */
+}
+
+/* Overriding unreadable light mint texts commonly found in venue card details */
+html.light .text-\[\#d5ead6\],
+html.light [class*="text-[#d5"] {
+  color: #0D7A5C !important; /* Meetup high-contrast green */
+}
+
+/* 7. Soft Pastel Badges & Alerts (Removes muddy dark colors in favor of Swarm soft translucent pills) */
+html.light .bg-\[\#ff4e5e\]\/10,
+html.light .bg-[#ff4e5e]/10,
+html.light .bg-rose-500\/10,
+html.light .bg-red-500\/10 {
+  background-color: rgba(224, 57, 62, 0.08) !important;
+  color: #E0393E !important;
+}
+
+html.light .bg-\[\#3DDC6C\]\/10,
+html.light .bg-emerald-500\/10,
+html.light .bg-[#3DDC6C]/10,
+html.light .bg-green-500\/10,
+html.light .bg-\[\#10b981\]\/10,
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-500\/10 {
+  background-color: rgba(13, 122, 92, 0.08) !important;
+  color: #0D7A5C !important;
+}
+
+html.light .bg-purple-500\/10,
+html.light .bg-[#9333ea]/15,
+html.light .bg-[#c084fc]/10,
+html.light .bg-purple-950\/40 {
+  background-color: rgba(109, 40, 217, 0.08) !important;
+  color: #6D28D9 !important;
+}
+
+html.light .bg-amber-500\/10,
+html.light .bg-yellow-500\/10 {
+  background-color: rgba(181, 127, 6, 0.08) !important;
+  color: #B57F06 !important;
+}
+
+/* Ensure radar sonar wave alerts are readable */
+html.light .bg-emerald-950\/25 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+/* 8. Active navigation indicators and highlights - Border colored only in light mode */
+html.light nav button.bg-\[\#f97316\]\/95 {
+  background-color: var(--app-card-bg) !important;
+  border: 1.5px solid #FFA700 !important;
+  color: #FFA700 !important;
+  box-shadow: none !important;
+}
+html.light nav button.bg-\[\#f97316\]\/95 * {
+  color: #FFA700 !important;
+}
+
+html.light nav button.bg-\[\#3b82f6\]\/95 {
+  background-color: var(--app-card-bg) !important;
+  border: 1.5px solid #3b82f6 !important;
+  color: #3b82f6 !important;
+  box-shadow: none !important;
+}
+html.light nav button.bg-\[\#3b82f6\]\/95 * {
+  color: #3b82f6 !important;
+}
+
+html.light nav button.bg-\[\#f43f5e\] {
+  background-color: var(--app-card-bg) !important;
+  border: 1.5px solid #f43f5e !important;
+  color: #f43f5e !important;
+  box-shadow: none !important;
+}
+html.light nav button.bg-\[\#f43f5e\] * {
+  color: #f43f5e !important;
+}
+
+html.light nav button.bg-\[\#a855f7\]\/95 {
+  background-color: var(--app-card-bg) !important;
+  border: 1.5px solid #a855f7 !important;
+  color: #a855f7 !important;
+  box-shadow: none !important;
+}
+html.light nav button.bg-\[\#a855f7\]\/95 * {
+  color: #a855f7 !important;
+}
+
+/* 9. Solid Primary Buttons, Badges, and Sliders - Preserve pristine white texts inside colorful elements */
+html.light .bg-rose-500,
+html.light .bg-rose-600,
+html.light .bg-[#ff4e5e],
+html.light .bg-[#f43f5e],
+html.light .bg-[#be185d],
+html.light .bg-red-500,
+html.light .bg-red-600,
+html.light .bg-emerald-500,
+html.light .bg-emerald-600,
+html.light .bg-green-500,
+html.light .bg-green-600,
+html.light .bg-[#3DDC6C],
+html.light .bg-[#3ddc6c],
+html.light .bg-purple-500,
+html.light .bg-purple-600,
+html.light .bg-indigo-500,
+html.light .bg-[#3b82f6],
+html.light .bg-indigo-600,
+html.light .btn-3d-primary,
+html.light .btn-3d-success,
+html.light .btn-3d-danger,
+html.light .btn-3d-info {
+  background-color: revert !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+}
+
+html.light .bg-rose-500 *,
+html.light .bg-rose-600 *,
+html.light .bg-[#ff4e5e] *,
+html.light .bg-red-500 *,
+html.light .bg-[#3DDC6C] *,
+html.light .bg-[#3ddc6c] *,
+html.light .bg-emerald-500 *,
+html.light .bg-purple-500 *,
+html.light .btn-3d-primary *,
+html.light .btn-3d-success *,
+html.light .btn-3d-danger *,
+html.light .btn-3d-info * {
+  color: #FFFFFF !important;
+}
+
+/* 10. Scrollbar & Hover styling */
+html.light ::-webkit-scrollbar {
+  width: 4px !important;
+  height: 4px !important;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background-color: var(--vibe-border-light) !important;
+  border-radius: 99px !important;
+  box-shadow: none !important;
+}
+
+html.light .hover\:bg-zinc-900:hover,
+html.light .hover\:bg-zinc-800:hover {
+  background-color: #F3F1ED !important;
+}
+
+/* Override default non-adapting buttons inside lists */
+html.light .bg-\[\#d5ead6\]\/20,
+html.light .bg-\[\#d5ead6\]\/35 {
+  background-color: #F3F1ED !important;
+  color: var(--app-text) !important;
+  border-color: var(--app-border) !important;
+}
+
+.font-kindness {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+.font-montserrat-light {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+}
+.font-lato {
+  font-family: 'Lato', sans-serif;
+}
+.font-sacramento {
+  font-family: 'Sacramento', cursive;
+}
+.font-romantic {
+  font-family: 'Great Vibes', cursive;
+}
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+@layer base { 
+  body { 
+    @apply bg-black text-white; 
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  } 
+  
+  /* Global Scrollbar Theme Config overrides */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(6, 182, 212, 0.3) #000000;
+  }
+}
+.vibe-gradient { background: linear-gradient(135deg, var(--color-vibe-primary, #FF6D00) 0%, var(--color-vibe-secondary, #FF2E93) 100%); }
+
+/* ================= VIBEQUEST V2 CHROMATED CARD & PILL BUTTON SYSTEM ================= */
+
+/* Premium Rounded 24px Card with theme-responsive backgrounds and borders */
+.vibe-card {
+  border-radius: 24px;
+  background-color: var(--app-card-bg);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(161, 66, 244, 0.25); /* default gradient border fallback */
+}
+
+/* Dark mode subtle 1px accent gradient border stroke @ 40% opacity */
+.dark .vibe-card {
+  background-color: #1e1f22 !important;
+  border-color: rgba(161, 66, 244, 0.4) !important; /* Faint accent gradient glowing neon outline */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Light mode elegant card with subtle border and modern soft shadow */
+.light .vibe-card {
+  background-color: var(--vibe-card) !important;
+  border: 1px solid var(--vibe-border) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.02), 0 2px 8px -1px rgba(0, 0, 0, 0.02) !important;
+  border-radius: 24px;
+}
+
+/* Modern Capsule Pill Buttons - perfectly proportioned 100px radius */
+.vibe-pill-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px !important;
+  padding: 0.625rem 1.25rem !important; /* px-5 py-2.5 micro-padding */
+  font-size: 0.8125rem; /* ~13px text */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  border: none;
+}
+
+.dark .vibe-pill-btn-primary {
+  background-color: #f1f3f4 !important; /* High contrast bright white text on dark */
+  color: #0e0f11 !important;
+}
+
+.light .vibe-pill-btn-primary {
+  background-color: #1f1f1f !important; /* High contrast stark dark text/bg on light */
+  color: #ffffff !important;
+}
+
+.vibe-pill-btn-primary:active {
+  transform: scale(0.95);
+}
+
+/* Secondary Actions: outline style with thin outline and low contrast background */
+.vibe-pill-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px !important;
+  padding: 0.625rem 1.25rem !important;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  background-color: transparent !important;
+}
+
+.dark .vibe-pill-btn-secondary {
+  border: 1px solid rgba(241, 243, 244, 0.2) !important;
+  color: #9aa0a6 !important;
+}
+
+.light .vibe-pill-btn-secondary {
+  border: 1px solid rgba(31, 31, 31, 0.12) !important;
+  color: #5f6368 !important;
+}
+
+.vibe-pill-btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.vibe-pill-btn-secondary:active {
+  transform: scale(0.95);
+}
+
+/* ================= MODERN ELEVATED MATERIAL-STYLE BUTTONS ================= */
+
+/* 1. Primary Button - Soft emerald/teal tone as requested */
+.btn-3d-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.5rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: rgba(16, 185, 129, 0.92); /* Soft emerald/teal filled tonal */
+  backdrop-filter: blur(4px);
+  border-radius: 1.25rem; /* rounded-2xl */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
+.btn-3d-primary:hover {
+  transform: translateY(-0.5px) scale(1.015);
+  background-color: rgba(16, 185, 129, 1);
+  box-shadow: 0 4px 8px 0 rgba(16, 185, 129, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.12);
+}
+.btn-3d-primary:active {
+  transform: translateY(0.5px) scale(0.985);
+  background-color: rgba(5, 150, 105, 0.92);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 2. Secondary Button - Muted deep blue/neutral slate tone */
+.btn-3d-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.5rem;
+  font-size: 15px;
+  font-weight: 550;
+  color: #cbd5e1; /* slate-300 */
+  background-color: rgba(30, 41, 59, 0.85); /* muted deep slate filled tonal */
+  border-radius: 1.25rem; /* rounded-2xl */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.12);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
+.btn-3d-secondary:hover {
+  transform: translateY(-0.5px) scale(1.015);
+  color: #ffffff;
+  background-color: rgba(51, 65, 85, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.18);
+}
+.btn-3d-secondary:active {
+  transform: translateY(0.5px) scale(0.985);
+  background-color: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 3. Success Button - Vibrant but soft emerald green */
+.btn-3d-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.5rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: rgba(16, 185, 129, 0.95);
+  border-radius: 1.25rem; /* rounded-2xl */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
+.btn-3d-success:hover {
+  transform: translateY(-0.5px) scale(1.015);
+  background-color: rgba(16, 185, 129, 1);
+  box-shadow: 0 4px 8px 0 rgba(16, 185, 129, 0.2);
+}
+.btn-3d-success:active {
+  transform: translateY(0.5px) scale(0.985);
+  background-color: rgba(5, 150, 105, 0.95);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 4. Danger Button - Soft brick red / warm rose */
+.btn-3d-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.5rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: rgba(239, 68, 68, 0.9);
+  border-radius: 1.25rem; /* rounded-2xl */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
+.btn-3d-danger:hover {
+  transform: translateY(-0.5px) scale(1.015);
+  background-color: rgba(239, 68, 68, 1);
+  box-shadow: 0 4px 8px 0 rgba(239, 68, 68, 0.2);
+}
+.btn-3d-danger:active {
+  transform: translateY(0.5px) scale(0.985);
+  background-color: rgba(185, 28, 28, 0.9);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 5. Info Button - Clean, semi-opaque sky/cyan blue filled tonal */
+.btn-3d-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.5rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: rgba(14, 165, 233, 0.9); /* soft sky/cyan filled tonal */
+  border-radius: 1.25rem; /* rounded-2xl */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
+.btn-3d-info:hover {
+  transform: translateY(-0.5px) scale(1.015);
+  background-color: rgba(14, 165, 233, 1);
+  box-shadow: 0 4px 8px 0 rgba(14, 165, 233, 0.2);
+}
+.btn-3d-info:active {
+  transform: translateY(0.5px) scale(0.985);
+  background-color: rgba(3, 105, 161, 0.9);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Universal Webkit styling for ultra-thin glowing future scrollbars */
+::-webkit-scrollbar {
+  width: 2.5px;
+  height: 2.5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #10b981, #a855f7, #06b6d4);
+  border-radius: 99px;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #22c55e, #c084fc, #22d3ee);
+}
+
+/* ================= PRECISE LIGHT MODE ADJUSTMENTS ================= */
+
+/* Force Vibe Share button title to remain crisp, glowing white over its premium black/dark background in both themes */
+html.light .vibe-share-title-text,
+.vibe-share-title-text {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;
+}
+
+/* Ensure any sub-icons or texts inside the brand button are protected */
+html.light #share-vibe-cta * {
+  text-shadow: none;
+}
+
+/* Redesign VibeHubTabs: Eliminate all muddy dark gray filters & notice blocks in Light Mode */
+html.light .vibe-hub-tabs-container {
+  background-color: #FCFAF7 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .vibe-hub-tabs-info {
+  background-color: #FCFAF7 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .vibe-hub-tabs-info-text {
+  color: #1E2024 !important; /* Bold, high-contrast black/charcoal text for info */
+  font-weight: 700 !important;
+}
+
+html.light .vibe-hub-tabs-scroll {
+  background-color: #FCFAF7 !important;
+}
+
+/* Default Dark/Cyber Mode Tab Colors */
+:root, .dark {
+  --vibe-tab-gossip-color: #2DD4BF; /* Teal */
+  --vibe-tab-gossip-glow: rgba(45, 212, 191, 0.45);
+  --vibe-tab-drift-color: #FB923C; /* Warm Orange */
+  --vibe-tab-drift-glow: rgba(251, 146, 60, 0.45);
+  --vibe-tab-vibes-color: #22D3EE; /* Cyan */
+  --vibe-tab-vibes-glow: rgba(34, 211, 238, 0.45);
+  --vibe-tab-orbit-color: #3B82F6; /* Blue */
+  --vibe-tab-orbit-glow: rgba(59, 130, 246, 0.45);
+  --vibe-tab-echo-color: #A7F3D0; /* Sage Green */
+  --vibe-tab-echo-glow: rgba(167, 243, 208, 0.45);
+  --vibe-tab-pulls-color: #FCA5A5; /* Peach/Coral */
+  --vibe-tab-pulls-glow: rgba(252, 165, 165, 0.45);
+}
+
+/* Light mode overrides for CSS variables inside VibeHubTabs buttons */
+html.light {
+  /* High contrast background colors for unselected buttons */
+  --vibe-tab-active-bg: #FFFFFF;
+  --vibe-tab-inactive-bg: #EAE8E4; /* Soft warm grey background (highly readable) */
+  --vibe-tab-inactive-border: rgba(0, 0, 0, 0.12); /* Crisp defined border */
+  --vibe-tab-inactive-text: #27272A; /* High contrast dark charcoal text (never light grey on light background!) */
+
+  /* Highly Optimized High-Contrast Light Mode Active Colors */
+  --vibe-tab-gossip-color: #0D7A5C; /* Premium dark emerald green */
+  --vibe-tab-gossip-glow: rgba(13, 122, 92, 0.15);
+  --vibe-tab-drift-color: #B45309; /* Premium rich bronze/brown */
+  --vibe-tab-drift-glow: rgba(180, 83, 9, 0.15);
+  --vibe-tab-vibes-color: #0891B2; /* Rich dark cyan */
+  --vibe-tab-vibes-glow: rgba(8, 145, 178, 0.15);
+  --vibe-tab-orbit-color: #1D4ED8; /* Premium bold ocean blue */
+  --vibe-tab-orbit-glow: rgba(29, 78, 216, 0.15);
+  --vibe-tab-echo-color: #065F46; /* Deep green */
+  --vibe-tab-echo-glow: rgba(6, 95, 70, 0.15);
+  --vibe-tab-pulls-color: #DC2626; /* High contrast red */
+  --vibe-tab-pulls-glow: rgba(220, 38, 38, 0.15);
+}
+
+/* Unselected buttons should be clean warm off-whites, not muddy dark gray */
+html.light .vibe-hub-tab-button {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+html.light .vibe-hub-tab-button:hover {
+  background-color: #DCDAD5 !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Transform all blue-950 container variations (like the event register notice block) into clear, high-contrast pastel-blue alerts */
+html.light [class*="bg-blue-950"] {
+  background-color: #F0F9FF !important; /* Premium sky blue background */
+  border-color: #BAE6FD !important;
+}
+
+html.light [class*="bg-blue-950"] *,
+html.light [class*="bg-blue-950"] p,
+html.light [class*="bg-blue-950"] span,
+html.light [class*="bg-blue-950"] strong,
+html.light [class*="bg-blue-950"] h4 {
+  color: #0369A1 !important; /* High contrast premium deep blue (strictly no light fonts!) */
+}
+
+/* Same high contrast treatment for other status/alert containers */
+html.light [class*="bg-emerald-950"] {
+  background-color: #ECFDF5 !important;
+  border-color: #A7F3D0 !important;
+}
+html.light [class*="bg-emerald-950"] *,
+html.light [class*="bg-emerald-950"] p,
+html.light [class*="bg-emerald-950"] span,
+html.light [class*="bg-emerald-950"] strong {
+  color: #065F46 !important; /* High contrast premium deep green */
+}
+
+html.light [class*="bg-purple-950"] {
+  background-color: #F5F3FF !important;
+  border-color: #DDD6FE !important;
+}
+html.light [class*="bg-purple-950"] *,
+html.light [class*="bg-purple-950"] p,
+html.light [class*="bg-purple-950"] span,
+html.light [class*="bg-purple-950"] strong {
+  color: #5B21B6 !important; /* High contrast premium deep purple */
+}
+
+html.light [class*="bg-rose-950"] {
+  background-color: #FFF1F2 !important;
+  border-color: #FECDD3 !important;
+}
+html.light [class*="bg-rose-950"] *,
+html.light [class*="bg-rose-950"] p,
+html.light [class*="bg-rose-950"] span,
+html.light [class*="bg-rose-950"] strong {
+  color: #9F1239 !important; /* High contrast premium deep rose */
+}
+
+/* ================= THE NEW SPECIFICATION GLOW UTILITIES (LIGHT MODE VALUES) ================= */
+.glow-emerald { box-shadow: 0 0 20px rgba(16,185,129,0.15), 0 0 40px rgba(16,185,129,0.07) !important; }
+.glow-purple { box-shadow: 0 0 20px rgba(139,92,246,0.15), 0 0 40px rgba(139,92,246,0.07) !important; }
+.glow-gold { box-shadow: 0 0 20px rgba(251,191,36,0.15),  0 0 40px rgba(251,191,36,0.07) !important; }
+.glow-orange { box-shadow: 0 0 20px rgba(249,115,22,0.15), 0 0 40px rgba(249,115,22,0.07) !important; }
+.glow-pink { box-shadow: 0 0 20px rgba(236,72,153,0.15), 0 0 40px rgba(236,72,153,0.07) !important; }
+.glow-cyan { box-shadow: 0 0 20px rgba(34,211,238,0.15), 0 0 40px rgba(34,211,238,0.07) !important; }
+
+/* Text Glow Utilities (light mode) */
+.text-glow-emerald { text-shadow: 0 0 12px rgba(16,185,129,0.3) !important; }
+.text-glow-gold { text-shadow: 0 0 12px rgba(251,191,36,0.3) !important; }
+.text-glow-purple { text-shadow: 0 0 12px rgba(139,92,246,0.3) !important; }
+
+/* Gradient Text */
+.gradient-text-emerald {
+  background: linear-gradient(135deg, #10B981, #22D3EE) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.gradient-text-gold {
+  background: linear-gradient(135deg, #FBBF24, #F97316) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.gradient-text-purple {
+  background: linear-gradient(135deg, #8B5CF6, #EC4899) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.gradient-text-legend {
+  background: linear-gradient(135deg, #10B981, #FBBF24, #8B5CF6) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Glass Effect (light mode only, disabled in dark) */
+.light .glass-card {
+  backdrop-filter: blur(16px) saturate(180%) !important;
+}
+
+/* Enforce Geist Sans, antialiased, and flat 2.0 borders/shadows globally in light mode */
+html.light {
+  font-family: "Geist", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.light body {
+  background-color: var(--vibe-bg) !important;
+  color: var(--vibe-text) !important;
+}
+
+html.light nav {
+  background-color: rgba(234, 242, 234, 0.9) !important;
+}
+
+/* Ensure Lucide Icons globally have exactly 1.5 stroke width */
+svg.lucide {
+  stroke-width: 1.5 !important;
+}
+
+/* Ensure all border elements use clean, thin 1px lines in light mode to prevent blocky Adsense-style wireframes */
+html.light .border {
+  border-width: 1px !important;
+}
+html.light .border-t {
+  border-top-width: 1px !important;
+  border-right-width: 0px !important;
+  border-bottom-width: 0px !important;
+  border-left-width: 0px !important;
+}
+html.light .border-b {
+  border-top-width: 0px !important;
+  border-right-width: 0px !important;
+  border-bottom-width: 1px !important;
+  border-left-width: 0px !important;
+}
+html.light .border-l {
+  border-top-width: 0px !important;
+  border-right-width: 0px !important;
+  border-bottom-width: 0px !important;
+  border-left-width: 1px !important;
+}
+html.light .border-r {
+  border-top-width: 0px !important;
+  border-right-width: 1px !important;
+  border-bottom-width: 0px !important;
+  border-left-width: 0px !important;
+}
+html.light hr {
+  border-top-width: 1px !important;
+  border-bottom-width: 0px !important;
+}
+
+/* Provide high-fidelity, ultra-soft shadows in light mode to elevate the depth of cards and elements */
+html.light .vibe-card {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.02), 0 2px 8px -1px rgba(0, 0, 0, 0.02) !important;
+}
+html.light button:not([class*="glow-"]) {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+html.light input,
+html.light textarea,
+html.light select {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+}
+

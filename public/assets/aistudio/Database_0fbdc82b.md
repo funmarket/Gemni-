@@ -1,0 +1,290 @@
+# VibeQuestGuardians — Conceptual Database Architecture and ER Diagrams
+
+**Status:** Conceptual database architecture — local Product Owner review candidate. This document is NOT an executable schema, migration, installed database, or permission to provision Railway. Historical Gemini ZIP and old VibeQuest GitHub are interaction evidence, not schema authorities. Latest explicit owner decisions supersede conflicting older drafts.
+
+## Approved identity and account rules
+
+Three account categories only: `vibe`, `pro`, `business`. A member has one canonical D01 UUID; public `@handle` is for display/lookup. Pro Guardian is a D07 service qualification, Local Legend a Guardian feature, not additional account types. Event publishers may be eligible individual Pro providers or Business operators; eligible publication is immediately public, with moderation/restriction from Admin Control Room. No invented manual preapproval for Events.
+
+## Latest Product Owner operating rules
+
+- D01/D02/D21: each member controls their own information; authorized app administrators handle reports, policies, suspensions, revocations and abusive content through an auditable Control Room. Admin permissions are scoped, not blanket unrestricted secret/private chat reading.
+- D09/D05: one Business profile for each Business user; one Business can display multiple physical branch addresses. Business-profile certification badge is automatic upon eligible Business onboarding, subject to subsequent Admin suspension/revocation. Distinguish profile badge from proven authority to seize/edit an existing canonical Place.
+- D07/D08: Guardian may set a positive `max_clients` or leave it `NULL` for no numeric cap; the Hire action is available/green if capacity and eligibility permit, disabled/red once applicable capacity is full. Guardian still accepts/declines a real pending request; the button state is not booking confirmation. Capacity is evaluated against applicable currently accepted commitments for the offer/date context; no accepted engagement may exceed the Guardian-defined limit.
+- D20: internal noncrypto VQ ledger with Telegram-style send/receive UI if desired. A small Python command worker is an implementation option, not authority to bypass PostgreSQL posting, balance checks or idempotency. Do not introduce crypto keys, mintable user-side points or cashout.
+- D27: no app-handled fiat payment service at launch. Service providers state direct/cash payment/refund terms; platform does not attest payment merely because a Tour or Hire is accepted. D27 remains a future design boundary, not a launch payment processor.
+- D07/D21/platform: seven-day in-app Guardian selfie freshness; Redis on Railway may trigger/retry timers, while PostgreSQL timestamps and scheduled actions remain authoritative and recoverable after Redis restart. Admin controls suspension and revocation.
+- D13/D12/D14: do not expose unrestricted personal profile-photo downloads or permanent public object URLs. Personal chat and Gossip media expire after 24h; VibeCheck and VibeFlash media expire after 24h. Business/Place profile media persist until owner/Admin deletion. Event/Activity posts and associated media expire with the Event/Activity lifecycle. Expired or deleted media must lose access immediately, and durable worker deletion must remove bytes/variants with retries. The explicit 24-hour rule applies to personal chat/Gossip media; do not silently impose it on text-only records.
+- D18: VibeCheck and VibeFlash use authorized friend/match/Vibe/Pull-related invitation paths or shared D16 Share Community membership as allowed by their specific stage, subject to blocks and privacy; these sources remain distinct; eligibility or sending alone never creates a confirmed Vibe. The Product Owner explicitly authorizes a completed qualifying **reciprocal VibeCheck** to establish a confirmed D17 Vibe between previously unconnected eligible participants, after D18 verifies both responses and the deadline. Neither challenge has a geographic/proximity/area-match participation gate. VibeCheck addressed by user ID, shown as `@handle`, incoming modal allows Ignore/refuse or Prove It/accept; genuine camera response, reveal and eligible reactions. Exact server clock 180 seconds. VibeFlash separate collective challenge, 33 seconds; media 24h. Preserve current approved Fire/Electric/Chill/Respect reaction vocabulary pending explicit replacement; historical Fire/Cap/Vibing is evidence, not automatic supersession.
+
+## Purpose, interpretation and relationship notation
+
+This document describes **what information the product needs and how it relates**. It intentionally **does not** define physical table names, PostgreSQL schemas, columns, SQL types, migrations, Redis keys, provider endpoints, or deployment operations. The former 121-table SQL candidate is **not** a mandatory database blueprint. Future bounded implementation may use an ORM and versioned migrations against isolated PostgreSQL before reviewed Railway release.
+
+**Conceptual ER notation:** each `erDiagram` entity is an identifiable business concept, **not** a required SQL table. Relationships show intended business association and cardinality at the conceptual level; they do not promise concrete foreign keys or cascade semantics. `||` is one; `o{` is zero or more; `o|` is zero or one. Names prefixed by their domain code show the **sole canonical business owner**. Relationships across diagrams reuse the same named entity, not additional copies. Read projections such as Home feeds and Explore search are intentionally omitted as business writers.
+
+**Source/decision hierarchy:** newest Product Owner directions in this conversation; current `Requirements.md` baseline; `structure.md` and 28-domain ownership register (design candidates); historical Gemini and original `funmarket/VibeQuest` (`phase-0-foundation`) for observable interaction and safe cleanup mechanisms only. No historical simulation is authoritative persistence.
+
+## Connected conceptual entity maps
+
+### A. Identity, public profiles, connections, communities and organizations
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--|| D02_PROFILE : presents
+    D01_MEMBER ||--o{ D01_SESSION : authenticates
+    D01_MEMBER ||--o{ D03_FOLLOW : initiates_or_receives_directed_follow
+    D01_MEMBER ||--o{ D17_DRIFT_PROPOSAL : recommended_or_seen
+    D01_MEMBER ||--o{ D03_BLOCK : initiates
+    D01_MEMBER ||--o{ D17_PULL : sends_or_receives
+    D17_PULL o|--o| D17_CONFIRMED_VIBE : acceptance_when_eligible
+    D18_CHALLENGE_RESPONSE o|--o| D17_CONFIRMED_VIBE : after_verified_reciprocal_vibecheck
+    D01_MEMBER ||--o{ D17_CONFIRMED_VIBE : mutually_confirms
+    D17_DRIFT_PROPOSAL o|--o{ D17_PULL : may_initiate
+    D01_MEMBER ||--o{ D16_MEMBERSHIP : participates
+    D16_COMMUNITY ||--o{ D16_MEMBERSHIP : includes
+    D16_COMMUNITY ||--o{ D16_INVITATION : invites
+    D16_COMMUNITY ||--o{ D16_MEMBERSHIP_DECISION : approves_or_rejects
+    D16_MEMBERSHIP ||--o{ D16_MEMBERSHIP_ACTION : manages_roles_and_leaving
+    D01_MEMBER ||--o| D09_BUSINESS_PROFILE : owns_when_business_category
+    D09_BUSINESS_PROFILE ||--o{ D09_BRANCH : lists_locations
+    D09_BUSINESS_PROFILE ||--o{ D09_OPERATOR_AUTHORITY : delegates
+    D01_MEMBER ||--o{ D09_OPERATOR_AUTHORITY : can_hold
+```
+
+**Ownership:** D01 controls canonical identity, account category (`vibe`, `pro`, `business`), sessions and verified Web/Telegram linkage. D02 controls handle, display and preferences. D03 controls follows/blocks, which never equal accepted Vibes. Orbit/Echo are opposite read projections of that same directed Follow record, not two more persistent business entities. D17 owns Pulls and confirmed mutual Vibes. D16 owns community membership. D09 owns the *one Business profile per eligible Business user*, automatic profile badge and multiple branches, while existing Place control remains a separate claim/authority issue under D05/D09. An administrator is a scoped staff permission, **not a fourth account category**.
+
+**Community concepts:** discovery/creation and member administration are distinct from D14 room messages, polls and pinned bulletins and D15 live audio/presence; D16 owns invitation, membership and authorized role changes.
+
+**Connected onward:** `D01_MEMBER` appears in maps B–H; `D17_CONFIRMED_VIBE` and `D16_MEMBERSHIP` authorize eligible challenge participants in map E; `D09_BUSINESS_PROFILE` is an eligible Event organizer in map D.
+
+### B. Geo, Place, Trails, tourism and Guardian engagements
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--o{ D04_GEO_CONSENT : controls
+    D01_MEMBER ||--o{ D04_TEMPORARY_PRESENCE : permits
+    D01_MEMBER ||--o{ D04_GEOFENCE_RULE : creates
+    D04_GEOFENCE_RULE ||--o{ D04_GEOFENCE_TRANSITION : emits_qualifying_enter_exit
+    D04_GEOFENCE_TRANSITION ||--o{ D23_NOTIFICATION : requests_delivery
+    D05_PLACE ||--o{ D05_CHECKIN : validated_at
+    D01_MEMBER ||--o{ D05_CHECKIN : performs
+    D05_PLACE ||--o{ D05_VALIDATION : receives
+    D04_TEMPORARY_PRESENCE o|--o{ D05_CHECKIN : supplies_eligible_evidence
+    D09_BRANCH o|--o| D05_PLACE : may_reference_canonical_place
+    D06_TRAIL ||--o{ D06_TRAIL_VERSION : evolves_as
+    D06_TRAIL_VERSION ||--|{ D06_ORDERED_STOP : contains
+    D06_ORDERED_STOP o|--o| D05_PLACE : may_reference
+    D06_TRAIL ||--o{ D06_REMIX_LINK : has_derivative_lineage
+    D06_REMIX_LINK }o--|| D06_TRAIL : derived_from_original
+    D06_TRAIL ||--o{ D06_PASSPORT_SAVE : saved_by_member
+    D01_MEMBER ||--o{ D06_PASSPORT_SAVE : saves
+    D06_TRAIL ||--o{ D06_QUALIFIED_COMPLETION : completed_with_proof
+    D01_MEMBER ||--o{ D06_QUALIFIED_COMPLETION : completes
+    D06_TRAIL_VERSION ||--o{ D06_OFFLINE_CACHE_AUTHORIZATION : permits_versioned_local_cache
+    D01_MEMBER ||--o{ D06_TRAIL : authors
+    D01_MEMBER ||--o{ D07_GUARDIAN_QUALIFICATION : qualifies_for
+    D07_GUARDIAN_QUALIFICATION ||--o{ D07_SERVICE_OFFER : offers
+    D07_SERVICE_OFFER ||--o{ D08_HIRE_REQUEST : receives
+    D06_TRAIL o|--o{ D08_HIRE_REQUEST : optional_hire_context
+    D07_GUARDIAN_QUALIFICATION ||--o{ D08_TOUR_OFFER : creates_if_pro
+    D08_TOUR_OFFER o|--o| D06_TRAIL_VERSION : may_reuse_attributed_itinerary
+    D08_TOUR_OFFER ||--o{ D08_AVAILABILITY_SLOT : schedules
+    D08_AVAILABILITY_SLOT ||--o{ D08_TOUR_RESERVATION : receives
+```
+
+**Find Hub/Trail relationship detail:** D04 geofence rules own detected enter/exit transitions, which are forwarded to D23 notification delivery/inbox with per-recipient read/dismiss state; notifications never own the geo event. D06 saves/Passport, originals/derived adoption/remix attribution, ordered versions/stops and evidence-qualified completion are independent conceptual relations. Offline caches are **on-device copies**, not new PostgreSQL tables; the D06 offline-authorization concept records source version/provenance, permission and invalidation need. A Tour or Guardian engagement can reference a Trail without taking its identity.
+
+**Ownership and invariants:** D04 handles consented position evidence, geofences and the 2-hour temporary live-position limit. D05 owns Place facts, check-ins and Yes/No/Not Here validation. D06 owns ordered photographed Trail stops, saves, versions and remix attribution. A Tour may reuse a Trail/version or begin from scratch; no Tour transaction takes over D06 authorship. D07 owns Guardian/Legend qualification, pricing/offers, seven-day selfie freshness, and optional numeric client limit. D08 owns pending/accepted/declined/cancelled Hire/Tour requests and availability, with real Guardian acceptance and capacity accounting. Free Local Legend Meet/Vibe and Pro paid Hire remain separate offers; no platform cash collection.
+
+**Connected onward:** accepted engagement is referenced by D22 Handshake in map C; Place/Trail evidence can create **eligible** D20 reward events in map G; media attachments are mapped in F.
+
+### C. Accepted engagements, Handshakes and recognition
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--o{ D08_HIRE_REQUEST : requests
+    D01_MEMBER ||--o{ D08_TOUR_RESERVATION : requests
+    D08_HIRE_REQUEST o|--o| D22_HANDSHAKE : if_accepted
+    D08_TOUR_RESERVATION o|--o| D22_HANDSHAKE : if_accepted
+    D22_HANDSHAKE ||--o{ D22_HANDSHAKE_HISTORY : records_transitions
+    D22_HANDSHAKE ||--o{ D19_GUARDIAN_REVIEW : enables_eligible_review
+    D01_MEMBER ||--o{ D19_GUARDIAN_REVIEW : authors
+    D01_MEMBER ||--o{ D19_PASSPORT_STAMP : earns
+    D19_BADGE ||--o{ D19_BADGE_AWARD : awarded_as
+    D01_MEMBER ||--o{ D19_BADGE_AWARD : receives
+```
+
+**One genuine agreement:** D22 records **at most one qualifying Handshake for the accepted request/reservation**. An invitation, chat, automatic booking simulation, accepted Pull, GPS proximity or payment assertion does not create a Handshake. Accepted status is not proof of physical attendance or cash settlement. D19 owns eligible Guardian reviews (111 characters; Good/Chill/Cool) and recognition; D20 reward posting is distinct.
+
+### D. Activities, public Events, independent Tickets and advertising
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--o{ D10_ACTIVITY : hosts
+    D10_ACTIVITY ||--o{ D10_PARTICIPATION : receives
+    D01_MEMBER ||--o{ D10_PARTICIPATION : joins
+    D01_MEMBER ||--o{ D11_EVENT : publishes_if_eligible_pro
+    D09_BUSINESS_PROFILE ||--o{ D11_EVENT : publishes_if_eligible_business
+    D11_EVENT ||--o{ D11_RSVP : receives
+    D01_MEMBER ||--o{ D11_RSVP : records
+    D11_EVENT o|--o{ D28_TICKET_PRODUCT : optionally_links_products
+    D28_TICKET_PRODUCT ||--o{ D28_ISSUED_TICKET : issues
+    D01_MEMBER ||--o{ D28_ISSUED_TICKET : holds
+    D28_ISSUED_TICKET ||--o| D28_REDEMPTION : redeemed_once
+    D24_CAMPAIGN ||--o{ D24_PLACEMENT : displays
+    D24_PLACEMENT ||--o{ D24_IMPRESSION : records
+```
+
+**Owner rules:** D10 Activities differ from D11 organized Events. Eligible Pro/Business Events publish **immediately**; D21 Control Room may later remove prohibited posts. D28 Ticketing has its own issuer, inventory, optional Event reference, valid scannable code and exactly-once redemption; a Ticket product does **not** need an Event. D24 ads are labeled placements on Home/Explore/Share, not fabricated editorial prominence. D27 launch has no platform fiat processor: service provider payment terms remain seller-direct/cash; future billing design remains separate.
+
+### E. Social content, community conversations, VibeCheck and VibeFlash
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--o{ D12_POST : authors
+    D12_POST ||--o{ D12_REACTION : receives
+    D12_POST ||--o{ D12_COMMENT : receives
+    D12_POST ||--o{ D12_ECHO_PARTICIPATION : contextual_share_echo_contributions
+    D16_COMMUNITY o|--o{ D12_ECHO_PARTICIPATION : optional_origination_context_for_creator_action
+    D01_MEMBER ||--o{ D14_CONVERSATION_MEMBERSHIP : joins
+    D14_CONVERSATION ||--o{ D14_CONVERSATION_MEMBERSHIP : allows
+    D14_CONVERSATION ||--o{ D14_MESSAGE : contains
+    D16_COMMUNITY o|--o{ D14_CONVERSATION : provides_chat_context
+    D16_COMMUNITY ||--o{ D15_LIVE_ROOM : provides_rooms
+    D15_LIVE_ROOM ||--o{ D15_ROOM_PARTICIPATION : hosts
+    D01_MEMBER ||--o{ D18_CHALLENGE : initiates
+    D18_CHALLENGE ||--o{ D18_CHALLENGE_INVITATION : directs_if_vibecheck
+    D01_MEMBER ||--o{ D18_CHALLENGE_INVITATION : selected_recipient
+    D18_CHALLENGE_INVITATION ||--o| D18_INVITATION_DECISION : accepted_skipped_refused_expired
+    D18_CHALLENGE ||--o{ D18_CHALLENGE_RESPONSE : receives
+    D18_CHALLENGE_INVITATION o|--o| D18_CHALLENGE_RESPONSE : accepted_vibecheck_response
+    D18_CHALLENGE_RESPONSE ||--o| D18_REVEAL : can_reveal
+    D18_REVEAL ||--o{ D18_CHALLENGE_REACTION : permits_display_of_reactions
+    D18_CHALLENGE ||--o{ D18_FLASH_PARTICIPATION : collects_collective_responses
+    D01_MEMBER ||--o{ D18_CHALLENGE_RESPONSE : submits
+    D18_CHALLENGE_RESPONSE ||--o{ D18_CHALLENGE_REACTION : receives
+    D17_CONFIRMED_VIBE o|--o{ D18_CHALLENGE : eligible_vibes_audience
+    D16_COMMUNITY o|--o{ D18_CHALLENGE : eligible_shared_community
+    D18_CHALLENGE ||--o{ D23_NOTIFICATION : alerts_eligible_people
+```
+
+**Share Echo provenance:** Creator-facing **Add to Circle**, **Add to Community**, and **Form Community from this Circle** reflect authorized Echo contributions and optionally prefill a D16 Community creation flow; a contributor is not automatically enrolled or promoted to a confirmed Vibe. `D12_ECHO_PARTICIPATION` is a conceptual contribution/context fact, not a new backend business domain or mandatory physical table.
+
+**Audience and interaction:** An eligible direct VibeCheck selects a specific recipient using the authorized friend/match/Vibe/Pull-related invitation path or a shared Share Community eligibility path. These are separate proofs, not automatic Vibes; **neither VibeCheck nor VibeFlash requires location or proximity**. It preserves the historical incoming **Ignore / Prove It** modal (refuse/accept), selected prompt, camera response, reveal and expressive reactions; the authoritative response window is **180 seconds**. VibeFlash is separate, collective and **33 seconds**, with audience validated through approved relationship/Pull/community eligibility and responder-only Mosaic. Blocks and membership revocation constrain access; following alone does not grant eligibility or ordinary DMs. D17 owns the Vibes relationship; D16 membership; D18 challenge lifecycle and proof of successful reciprocal completion; D23 notification delivery only. A qualifying two-participant completed reciprocal VibeCheck causes D17 confirmation even without a preexisting Vibe, but no one-sided, refused, skipped, expired or VibeFlash response does. **The depicted Vibes/community association is an eligibility relationship, not a claim that every challenge has both.**
+
+**Six Vibe primitives:** **Gossip** (D12) is broadcast content without DM entitlement; **Drift** (D17) is explainable matching discovery; **Pulls** (D17) is inbound invitation + Accept/Pass; **Vibes** (D17) is confirmed mutual double-opt-in; **Orbit** and **Echo** are outbound/inbound views of **one directed D03 follow fact**, not independent follow entities. A valid accepted Pull creates Vibes; following (even reciprocally) never does. D14 ordinary personal DMs require confirmed Vibes; Guardian consultation, Community chat, Marketplace deal and Event discussion have their own scoped permissions. One timed VibeCheck response does not create a Vibe; **two qualifying reciprocal completed responses** to the same authorized VibeCheck can establish exactly one confirmed D17 Vibe by D18 proof and D17 idempotent confirmation. No Vibe formation creates a Handshake or +75 VQ.
+
+**Other social rules:** D12 Gossip and Share retain distinct publication lifecycles; D14 messages serve contextual DMs, Guardian consultations, marketplace deals, event discussions and community chat without shadow stores; D15 is distinct for realtime room presence/audio. D17 matching proposals (Polar and Social/Activity) remain independent of follows and VibeCheck. D12 Home feed is a projection, never a second post record.
+
+### F. Global media, authorization and retention
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--o{ D13_MEDIA_ASSET : uploads
+    D13_MEDIA_ASSET ||--o{ D13_MEDIA_VARIANT : has
+    D13_MEDIA_ASSET ||--o{ D13_ATTACHMENT : attached_by_authorized_owner
+    D13_MEDIA_ASSET ||--o| D13_RETIREMENT_INTENT : retires
+    D13_RETIREMENT_INTENT ||--o{ PLATFORM_CLEANUP_ATTEMPT : retried_by_worker
+    D12_POST ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D14_MESSAGE ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D18_CHALLENGE_RESPONSE ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D05_PLACE ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D09_BUSINESS_PROFILE ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D10_ACTIVITY ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D11_EVENT ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D06_TRAIL_VERSION ||--o{ D13_ATTACHMENT : uses_authorized_media
+    D02_PROFILE ||--o{ D13_ATTACHMENT : profile_photo
+```
+
+**Access and retention:** A conceptual attachment is a domain-authorized association; it does **not** create a general cross-domain write privilege. The feature owner decides who may attach/read/remove, while D13 owns media asset state, verified bytes, derived formats, retirement and storage lifecycle. Personal chat/Gossip media, Share ephemeral posts and VibeCheck/VibeFlash assets expire in **24 hours**. Event/Activity content/media expires with its owning lifecycle. Business/Place images persist until owner/Admin deletion; profile image download is not offered unrestrictedly. Text-only Gossip/chat lifespan is not silently changed. After expiry/deletion: deny retrieval promptly, create durable retirement intent, remove physical object/variants via retryable cleanup. **Redis can schedule work; PostgreSQL/outbox remains recoverable authority**. This is adapted from the historical app's retirement/retry mechanics, not a claim they are deployed in the new app.
+
+### G. VQ, Marketplace, subscriptions and future fiat
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--o{ D20_VQ_ACCOUNT : holds
+    D20_VQ_RULE ||--o{ D20_ELIGIBLE_AWARD : governs
+    D20_VQ_JOURNAL ||--|{ D20_VQ_POSTING : balanced_entries
+    D20_VQ_ACCOUNT ||--o{ D20_VQ_POSTING : receives_or_sends
+    D20_ELIGIBLE_AWARD ||--o| D20_VQ_JOURNAL : may_generate
+    D20_ADMIN_GRANT ||--o{ D20_GRANT_RECIPIENT : selects_individual_group_broad
+    D01_MEMBER ||--o{ D20_GRANT_RECIPIENT : eligible_selected_user
+    D20_GRANT_RECIPIENT ||--o| D20_VQ_JOURNAL : idempotent_posting
+    D22_HANDSHAKE ||--o| D20_ELIGIBLE_AWARD : qualifies_if_accepted
+    D01_MEMBER ||--o{ D26_LISTING : posts
+    D26_LISTING ||--o{ D26_DEAL : negotiates
+    D26_DEAL o|--o| D20_VQ_JOURNAL : optional_vq_settlement
+    D26_DEAL ||--o| D22_HANDSHAKE : eligible_agreement_only
+    D01_MEMBER ||--o{ D25_ENTITLEMENT : holds
+    D27_FUTURE_FIAT_TRANSACTION o|--o| D25_ENTITLEMENT : future_integration_only
+```
+
+**Grant allocation:** Each authorized Admin grant selects explicit eligible recipients (individual, group or broad cohort) and attributes one separately idempotent journal posting per recipient. Qualifying accepted D22 Handshake can authorize a rule-defined +75 VQ award; Vibe creation alone cannot.
+
+**Single truth:** D20 is the only writer of internal, noncrypto VQ: Admin-versioned rules, eligible rewards, individual/group/bulk grants, tip and transfer debits/credits, immutable journals, limits, idempotent retries and compensating corrections. D19 badges/reputation never become spendable VQ or Admin authority. D26 handles local peer listings/deals and agreement status, not independent wallet balances. D27 is a **future-only boundary**; launch is direct/cash seller payment without platform commission, escrow or payment-confirmation fiction. D25 entitlement data is a separate access fact, not automatic Business ownership or Guardian identity verification.
+
+### H. Moderation, notifications, timed jobs and platform operations
+
+```mermaid
+erDiagram
+    D01_MEMBER ||--o{ D21_REPORT : may_submit
+    D21_REPORT ||--o{ D21_MODERATION_ACTION : may_result_in
+    D21_MODERATION_ACTION ||--o{ PLATFORM_AUDIT_EVENT : audited_as
+    D01_MEMBER ||--o{ D23_NOTIFICATION : receives
+    D23_NOTIFICATION ||--o{ D23_DELIVERY_ATTEMPT : delivered_using
+    D23_NOTIFICATION ||--o{ D23_INBOX_STATE : read_or_dismissed_by_recipient
+    PLATFORM_OUTBOX_EVENT ||--o{ PLATFORM_DELIVERY_ATTEMPT : retried_as
+    PLATFORM_SCHEDULED_ACTION ||--o{ PLATFORM_DELIVERY_ATTEMPT : triggers
+    D07_GUARDIAN_QUALIFICATION o|--o{ PLATFORM_SCHEDULED_ACTION : selfie_expiry
+    D18_CHALLENGE o|--o{ PLATFORM_SCHEDULED_ACTION : challenge_deadline
+    D13_RETIREMENT_INTENT o|--o{ PLATFORM_SCHEDULED_ACTION : cleanup_due
+```
+
+**No additional business domain:** Control Room is scoped application orchestration and staff authorization, with D21 owning sanctions and policy actions, D20 owning VQ rule changes and D11 owning Event publication state. D23 owns delivery/inbox, **not** the event that generated it. Platform outbox, scheduled actions and audit are technical services rather than a 29th business writer. Redis timers are recoverable from durable due dates; device clock never defines a canonical expiry.
+
+## Canonical ownership cross-reference: all 28 business domains
+
+| Domain | Conceptual record owner | Diagram |
+|---|---|---|
+| D01 Identity & Authentication | Member/account, credentials, sessions | A |
+| D02 Profiles & Preferences | Public profile, handles, preference facts | A, F |
+| D03 Social Graph | Follows and blocks | A |
+| D04 Geo & Presence | Consent, temporary presence, geofence | B |
+| D05 Places & Contributions | Place, check-in, validation | B, F |
+| D06 Trails | Versions, ordered stops, saves, remix lineage | B, F |
+| D07 Guardians & Local Legends | Qualification, selfie freshness, service offers | B, H |
+| D08 Tours & Reservations | Tour offers, slots, Hire/Tour requests | B, C |
+| D09 Businesses & Organizations | Business profile, branch, operator authority | A, D |
+| D10 Activities | Activity and participation | D, F |
+| D11 Events | Organizer event and RSVP | D, F |
+| D12 Social Content | Gossip/Share posts, reactions and comments | E, F |
+| D13 Global Media | Assets, variants, attachment/retirement mechanics | F |
+| D14 Messaging | Conversation, membership, message/receipt | E, F |
+| D15 Live Rooms | Session, presence, speaker participation | E |
+| D16 Communities | Community membership and invitations | A, E |
+| D17 Matching & Connections | Pulls, Vibes, proposals and acceptance | A, E |
+| D18 Challenges & Live Vibes | Check/Flash windows, response, reactions | E, F |
+| D19 Recognition & Reputation | Passport stamps, badges and Guardian reviews | C |
+| D20 VQ Rewards & Ledger | Rules, awards, grants, balanced journals | G |
+| D21 Moderation & Trust | Reports, sanctions and policy actions | H |
+| D22 Handshakes | Accepted agreements and history | C, G |
+| D23 Notifications | Notification inbox, preferences/delivery | E, H |
+| D24 Advertising & Promotions | Campaigns, placements, impressions | D |
+| D25 Subscriptions & Entitlements | Entitlement and access state | G |
+| D26 Marketplace | Listings, deals and negotiations | G |
+| D27 Payments & Billing | Future-only platform fiat boundary | G |
+| D28 Ticketing | Ticket product, issuance, redemption | D |
+
+## Reading and implementation boundary
+
+Read diagrams **A → B → C → D → E → F → G → H**; repeated entity names are cross-diagram anchors. Diagram labels and multiplicities are **conceptual** and may be refined during feature design without weakening the Product Owner's established behaviors. For example, a conceptual D13 attachment can be implemented through owning-domain association records plus D13 asset IDs; this document does not impose a universal polymorphic physical table.
+
+**When development is separately authorized:** derive a narrowly scoped persistence change for a bounded feature; check its owner's actual invariants, privacy, capacity, indexes, cross-domain access and migrations; apply via isolated testing and controlled Railway release. Do not use this document to auto-create a giant `Schema.sql` or provision future-only services. Guest-first public discovery, shared browser/Telegram identity, equal-sized five-tab frontend and location/camera/microphone permission lifecycles remain governed by Requirements/Structure rather than physical database diagrams.
+
+## Provenance and review limits
+
+- Governing product baseline: `funmarket/VibeQuestGuardians`, `vibefoundation`, `Requirements.md`, with latest explicit Product Owner changes in this conversation taking precedence.
+- Architecture context: same repository `structure.md` and `docs/product-design/02_DOMAIN_OWNERSHIP_FINAL_LEAN.md`, the latter still a final candidate awaiting formal approval.
+- Historical media implementation reference: `funmarket/VibeQuest`, `phase-0-foundation`, media retirement/cleanup and retries; historical Gemini ZIP for modal/camera/user interactions only.
+- **This is a conceptual design review artifact.** It does not assert that Railway tables, uploads, timers, billing or integration tests exist. Source comparisons and diagram syntax checks do not constitute application/runtime acceptance. Owner approval is required before GitHub publication.

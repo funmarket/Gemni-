@@ -1,0 +1,2663 @@
+
+Loading older messages…
+When you fucking answer with "cannot yet certify that every existing function is defect-free" and "Explicit repositories and domain interfaces; not yet proven across every planned" and we have the database issue that you don't seem to fucking find a solution for "Older version serving; newer version failed readiness
+
+Railway Web
+
+Separate build failure
+
+Latest failed build previously traced to Railway's BuildKit connection
+
+Release controls
+
+Incomplete
+
+Current CI does not enforce live database schema compatibility" how the fuck u want le to take your word for it untill week keep going deep in a loophole of fixing and patching ,check everything fucking thing that ur not sure of "When you fucking answer with "cannot yet certify that every existing function is defect-free" and "Explicit repositories and domain interfaces; not yet proven across every planned" and fucking reply with a clear answer based in facts no fucking guessing and not sure type of answer ,you have all the fucking files and access to GitHub so inspect everything u Wonder about and reply with a clear strict answer based on facts on GitHub not ur fucking opinion
+…
+VibeQuest — strict source-evidence verdict
+I checked the current GitHub integration commit, the actual architecture checker, API and database composition, migration runner, installation verifier, CI workflow, master-plan revision, and Railway service state.
+
+There is no evidence in those sources that VibeQuest needs a new GitHub repository, a new database engine, or a new Railway project.
+
+There are confirmed engineering gaps. They are identifiable and correctable without restarting the application.
+
+Question
+
+Evidence-based answer
+
+Is the GitHub code an unstructured mess?
+
+No. It has explicit module, package, dependency and database-ownership boundaries.
+
+Does GitHub currently contain every planned feature?
+
+No. The master plan explicitly identifies incomplete milestones beyond R10.
+
+Does the architecture checker prove every function is correct?
+
+No. It checks structural rules, not every function's business behavior.
+
+Is the database migration design completely implemented?
+
+No. The 140-table extension remains candidate SQL outside the migration runner.
+
+Is the failing Web build evidence of broken application code?
+
+No. Railway recorded a BuildKit infrastructure failure before application build execution.
+
+Is the new API's readiness failure confirmed?
+
+Yes. It returned HTTP 503 during the attempted release.
+
+Is database corruption confirmed?
+
+No. Neither the source nor the inspected Railway evidence establishes corruption.
+
+Does the existing CI enforce live database compatibility?
+
+No. The workflow does not run a live database preflight.
+
+The GitHub foundation inspected is daf273e1e3c1d1a9a3cbf39c97160fa26df92884. There are no open PRs, and the exact PR #43 head passed Foundation checks in run 40812375992.
+
+Confirmed root causes, not a guessing list
+1. API readiness failure — the exact code path
+The current packages/database/src/index.ts defines createDatabase(). Its readiness() method executes SQL referencing:
+
+geo_preferences, geo_positions, geo_sessions
+
+content_posts, content_comments, content_reactions, content_reports
+
+Existing Identity, Profile, Social, Media, Business, Activities and Events tables.
+
+The Railway API deployment abda73cd... successfully built and started, but /health/ready returned HTTP 503 eight times.
+
+The last documented direct database inspection reported migrations 0001–0013, while GitHub defines migrations through 0020.
+
+The source proves a schema compatibility requirement that the deployment does not install automatically. The exact current missing objects and runtime grants still require a live SQL result; the readiness failure alone cannot identify which query failed.
+
+The corrective boundary is already established: reconcile the live migration ledger, execute approved pending migrations with the appropriate migration role, verify checksums and permissions, then release the compatible API. Replacing the database is not part of that correction.
+
+2. Web deployment failure — unrelated to schema
+Railway's failed Web deployment ffb95702... records a BuildKit daemon connection failure before installing dependencies or running next build.
+
+That failure is infrastructure-side, not evidence of a TypeScript, Next.js or database defect. The previous successful Web deployment remains active.
+
+A controlled retry of the same GitHub revision is the appropriate verification, not a code rewrite.
+
+3. Release-gate defect — confirmed in GitHub
+The complete .github/workflows/checks.yml runs:
+
+pnpm install --frozen-lockfile followed by pnpm check.
+
+The repository's pnpm check performs formatting, lint, typechecking, architecture checks, unit tests and a Web build.
+
+It does not execute the PostgreSQL integration suite, inspect the actual Railway migration ledger, validate runtime grants, or prove API/database compatibility.
+
+This is an established release-governance gap, not a hypothetical one. It explains how an application revision can pass source CI while remaining incompatible with an older installed database.
+
+4. Domain ownership — what the source actually enforces
+tooling/architecture/check.ts is not merely documentation. It checks package and source dependency cycles, undeclared dependencies, private cross-module imports, browser-to-database imports, domain-to-infrastructure violations, and cross-domain database table access.
+
+The API explicitly composes Identity, Profile, Media, Social, Content, Geo, Places, Business, Activities and Events repositories.
+
+Verdict: The implemented domains have concrete architectural enforcement. There is no demonstrated need to replace that structure.
+
+However, planned domains without implementation cannot pass a runtime ownership audit. Their ownership is specified by the master plan, not magically implemented by the architecture checker. That is a measurable completion distinction, not a reason to restart.
+
+Final decision
+KEEP the current GitHub and Railway foundation
+Based on the verified source and service evidence
+
+Do not create a replacement database or new Railway project to resolve the current failures.
+
+The existing problem has three defined correction boundaries: database schema compatibility, Web builder retry, and release-gate enforcement.
+
+The shortest evidence-backed path to a stable foundation is:
+
+Database: Obtain the current live catalog and reconcile 0001–0020; install only approved, verified-safe migrations after backup and permission checks.
+
+API: Verify the same schema with the restricted runtime role, then deploy the exact compatible revision and confirm readiness.
+
+Web: Retry the failed revision and verify the build and served result.
+
+GitHub governance: Enforce migration, permission and API compatibility checks before promotion.
+
+Product completion: Continue R10–R50 against the existing domain architecture, preserving the reference ZIP's behavior.
+
+What I will not misrepresent
+The current checks prove specific architectural boundaries and reveal specific defects. They do not constitute a successful execution of every function in the repository or a line-by-line proof of the full original reference app's behavior. Those are separate tests that have not been executed in this audit.
+
+The engineering decision is nevertheless clear: the verified issues do not justify throwing away the current database or project. Preserve the foundation and correct the release/database synchronization path. No files, PRs or Railway resources were changed during this inspection.
+
+This is Gemini suggested idea for a cleaner app , Gemini was the creator of the old zip and provided this plan for a cleaner app check it inspect and compare it to our current app "VibeQuest
+Gemini 3.8 Flash
+Ran for 1m 43s
+
+summarize_auto
+Action history
+chevron_right
+Here are key actions taken for the app:
+
+edit
+Edited 4 files
+src/features/explore/components/TrailDetailModal.tsx
+check_circle
+src/features/explore/components/VibeTrailsSection.tsx
+check_circle
+src/features/explore/hooks/useVibeTrails.ts
+check_circle
+src/screens/ExploreScreen.tsx
+check_circle
+build
+Built
+Fix Applied
+The runtime error was caused by accessing .includes(userId) on trail.savedBy when savedBy was undefined (e.g. on newly synthesized routes or trails loaded without an initialized array):
+TrailDetailModal.tsx: Updated isSaved computation to safely verify array existence: userId && Array.isArray(trail.savedBy) ? trail.savedBy.includes(userId) : false.
+VibeTrailsSection.tsx: Added the same defensive Array.isArray(trail.savedBy) check to prevent errors when rendering trail cards in the horizontal feed.
+useVibeTrails.ts: Protected toggleSaveTrail against undefined savedBy lists when filtering or appending user IDs.
+ExploreScreen.tsx: Initialized savedBy: [] on fallback trail instances when opening trails by reference or from Guardian cards.
+flag
+Checkpoint
+https://www.tripadvisor.com/AttractionProductReview-g295401-d33307105-Fun_prestige_tour_Tunis_Bardo_Medina_Carthage_and_Sidi_Boussaid-Sousse_Sousse_Gove.html
+Gemini 3.8 Flash
+Canceled
+error
+The task was canceled.
+Updated Follow-up Prompt for Gemini
+Copy and paste this:
+Prompt: Vibe Trails + Vibe Tours Update + Pro Guardian Hire Visibility
+Update the Vibe Guardians and Vibe Trails features with the following changes. Follow every detail carefully.
+Important note: Only Pro Guardians can create Tours. Local Legends and regular users can only create normal Vibe Trails.
+1. Vibe Trails Menu Update
+Change the main Vibe Trails section menu to two tabs:
+Vibe Trails | Vibe Tours
+Vibe Trails = regular trails (can be created by anyone, including Local Legends).
+Vibe Tours = paid tours that only Pro Guardians can create.
+2. When a Pro Guardian Creates a Trail
+When a Pro Guardian creates a new trail, give them a clear option to label it as a Tour.
+Add a toggle or checkbox: “Label this as a Tour”.
+If they leave it unchecked → it stays a normal Vibe Trail.
+If they check it → it becomes a Vibe Tour.
+Local Legends and regular users must not see this option. They can only create normal Vibe Trails.
+3. What Happens When a Trail Is Labeled as a Tour
+When a Pro Guardian labels a trail as a Tour, show these extra fields (similar to the TripAdvisor sample):
+Required / Main fields:
+Tour title
+About / description (longer text)
+Duration (example: 6h)
+Price (flat rate for this tour)
+Meeting / pickup point
+What’s included (list)
+Languages the guide speaks
+Optional but recommended fields:
+Ages (example: 18–99)
+Accessibility notes
+What to expect
+Cancellation policy (example: Free cancellation up to 24 hours before)
+Start time note or “Check availability”
+On the public Tour view:
+Show all the information above.
+Add a green rounded button: Check dates (or Reserve now).
+When tapped, open the reservation calendar so users can see available dates and request a booking.
+Price must be shown clearly before booking.
+4. Pro Guardian Profile Form – Hire Visibility Checkbox
+In the Pro Guardians profile creation / edit form, add a checkbox:
+“Show me in Hire suggestions on trails”
+If checked → this Pro Guardian will appear in the Hire dropdown on public Vibe Trails (when users look for a guide near that trail).
+If unchecked → they will not appear in those suggestions.
+Default can be checked.
+5. Keep Existing Rules
+Do not remove or change the previous rules unless they conflict with this update:
+Maximum 5 trails per card.
+On cards: show only Trail Title + small green Explore now button.
+Handshake is still required to leave a review (only verified users with handshake).
+Pro Guardians still choose either hourly rate (shown on profile) or flat rate per tour — never both.
+Local Legends stay free.
+Vibe Trails remain sharable and clickable from anywhere in the app.
+Only Pro Guardians can create Tours.
+Summary for Gemini
+Menu becomes: Vibe Trails | Vibe Tours
+Only Pro Guardians can create Tours.
+Pro Guardians can label a trail as a Tour.
+When labeled as Tour → show full tour details (description, duration, price, what’s included, meeting point, etc.) + Check dates reservation button.
+Add checkbox on Pro Guardian profile: “Show me in Hire suggestions on trails”.
+Keep all previous Vibe Guardians, pricing, handshake, and trail display rules.
+Implement exactly as written.
+This version now clearly states that only Pro Guardians can create Tours. You can send it directly to Gemini.
+Gemini 3.8 Flash
+Ran for 0s
+error
+Quota limits exceeded
+VibeQuest
+Gemini 3.8 Flash
+Ran for 3m 9s
+summarize_auto
+Action history
+chevron_right
+Here are key actions taken for the app:
+edit
+Edited 2 files
+src/features/explore/components/VibeGuardians/VibeGuardiansSection.tsx
+check_circle
+src/screens/ExploreScreen.tsx
+check_circle
+build
+Built
+Summary of Vibe Guardians Updates
+All 6 rules have been implemented:
+Handshake Proof System (🤝)
+Tapping Hire (on a Pro Guardian) or Vibe (on a Local Legend) awards and displays the black handshake icon 🤝 as official proof of interaction.
+Review Gating: Only users with a recorded handshake can leave a review. Non-handshake users see a locked notice ("🤝 Handshake Required to Review").
+Review Constraints: Strict 111-character maximum limit and tag selection restricted to exactly one badge: Good Vibe, Chill Vibe, or Cool Vibe.
+Offered Trails (Max 5) & Card Display
+Pro Guardians and Local Legends can add up to 5 Vibe Trails in their profile setup via the (+ Trail) button (create new or paste existing trail link). The button disables automatically upon reaching 5.
+Card display rule strictly enforced: Public cards display only the Trail Title paired with a small green rounded "Explore now" button. Full trail content is omitted from the card.
+Tapping "Explore now" opens the complete interactive Vibe Trail modal.
+Pricing Rules for Pro Guardians
+Pro Guardians must set and show their price upfront. They select one option only (never both):
+Option A (Hourly rate): e.g., $35/hour displayed prominently on their main profile card.
+Option B (Flat rate): e.g., $85 flat tour displayed with the specific trail or tour.
+Local Legends remain 100% free ("Free Local Hangout" badge, no pricing controls).
+Pre-Made Tours + Reservation System
+Pro Guardians can showcase bookable pre-made tours with duration, meeting point, included items, and price.
+Each tour card features a small green rounded "Check dates" button.
+Tapping opens the interactive Reservation Calendar Modal with real-time party size selection, date/slot choice, and instant handshake verification upon confirmation.
+"Hire" Button on Public Trails
+Every public Vibe Trail card and the Trail Detail modal now features a "Hire" guide button.
+Tapping opens a selector of verified nearby Pro Guardians.
+Selecting a guide opens their chat pre-filled with an inquiry referencing the specific trail.
+Universal Vibe Trail Linking
+Clicking trail titles, links, or "Explore now" buttons across Guardian cards, chats, and lists seamlessly opens the full Vibe Trail modal.
+flag
+Checkpoint
+Fix the errors in the app
+Gemini 3.8 Flash
+Ran for 1m 55s
+summarize_auto
+Action history
+chevron_right
+Here are key actions taken for the app:
+edit
+Edited 4 files
+src/features/explore/components/TrailDetailModal.tsx
+check_circle
+src/features/explore/components/VibeTrailsSection.tsx
+check_circle
+src/features/explore/hooks/useVibeTrails.ts
+check_circle
+src/screens/ExploreScreen.tsx
+check_circle
+build
+Built
+Fix Applied
+The runtime error was caused by accessing .includes(userId) on trail.savedBy when savedBy was undefined (e.g. on newly synthesized routes or trails loaded without an initialized array):
+TrailDetailModal.tsx: Updated isSaved computation to safely verify array existence: userId && Array.isArray(trail.savedBy) ? trail.savedBy.includes(userId) : false.
+VibeTrailsSection.tsx: Added the same defensive Array.isArray(trail.savedBy) check to prevent errors when rendering trail cards in the horizontal feed.
+useVibeTrails.ts: Protected toggleSaveTrail against undefined savedBy lists when filtering or appending user IDs.
+ExploreScreen.tsx: Initialized savedBy: [] on fallback trail instances when opening trails by reference or from Guardian cards.
+flag
+Checkpoint
+https://www.tripadvisor.com/AttractionProductReview-g295401-d33307105-Fun_prestige_tour_Tunis_Bardo_Medina_Carthage_and_Sidi_Boussaid-Sousse_Sousse_Gove.html
+Gemini 3.8 Flash
+Canceled
+error
+The task was canceled.
+Updated Follow-up Prompt for Gemini
+Copy and paste this:
+Prompt: Vibe Trails + Vibe Tours Update + Pro Guardian Hire Visibility
+Update the Vibe Guardians and Vibe Trails features with the following changes. Follow every detail carefully.
+Important note: Only Pro Guardians can create Tours. Local Legends and regular users can only create normal Vibe Trails.
+Vibe Trails Menu Update
+Change the main Vibe Trails section menu to two tabs:
+Vibe Trails | Vibe Tours
+Vibe Trails = regular trails (can be created by anyone, including Local Legends).
+Vibe Tours = paid tours that only Pro Guardians can create.
+When a Pro Guardian Creates a Trail
+When a Pro Guardian creates a new trail, give them a clear option to label it as a Tour.
+Add a toggle or checkbox: “Label this as a Tour”.
+If they leave it unchecked → it stays a normal Vibe Trail.
+If they check it → it becomes a Vibe Tour.
+Local Legends and regular users must not see this option. They can only create normal Vibe Trails.
+What Happens When a Trail Is Labeled as a Tour
+When a Pro Guardian labels a trail as a Tour, show these extra fields (similar to the TripAdvisor sample):
+Required / Main fields:
+Tour title
+About / description (longer text)
+Duration (example: 6h)
+Price (flat rate for this tour)
+Meeting / pickup point
+What’s included (list)
+Languages the guide speaks
+Optional but recommended fields:
+Ages (example: 18–99)
+Accessibility notes
+What to expect
+Cancellation policy (example: Free cancellation up to 24 hours before)
+Start time note or “Check availability”
+On the public Tour view:
+Show all the information above.
+Add a green rounded button: Check dates (or Reserve now).
+When tapped, open the reservation calendar so users can see available dates and request a booking.
+Price must be shown clearly before booking.
+Pro Guardian Profile Form – Hire Visibility Checkbox
+In the Pro Guardians profile creation / edit form, add a checkbox:
+“Show me in Hire suggestions on trails”
+If checked → this Pro Guardian will appear in the Hire dropdown on public Vibe Trails (when users look for a guide near that trail).
+If unchecked → they will not appear in those suggestions.
+Default can be checked.
+Keep Existing Rules
+Do not remove or change the previous rules unless they conflict with this update:
+Maximum 5 trails per card.
+On cards: show only Trail Title + small green Explore now button.
+Handshake is still required to leave a review (only verified users with handshake).
+Pro Guardians still choose either hourly rate (shown on profile) or flat rate per tour — never both.
+Local Legends stay free.
+Vibe Trails remain sharable and clickable from anywhere in the app.
+Only Pro Guardians can create Tours.
+Summary for Gemini
+Menu becomes: Vibe Trails | Vibe Tours
+Only Pro Guardians can create Tours.
+Pro Guardians can label a trail as a Tour.
+When labeled as Tour → show full tour details (description, duration, price, what’s included, meeting point, etc.) + Check dates reservation button.
+Add checkbox on Pro Guardian profile: “Show me in Hire suggestions on trails”.
+Keep all previous Vibe Guardians, pricing, handshake, and trail display rules.
+Implement exactly as written.
+Gemini 3.8 Flash
+Ran for 15m 3s
+
+summarize_auto
+Action history
+chevron_right
+Here are key actions taken for the app:
+
+edit
+Edited 11 files
+src/features/explore/types.ts
+check_circle
+src/features/explore/components/VibeGuardians/types.ts
+check_circle
+src/features/explore/components/VibeGuardians/HireGuardianForTrailModal.tsx
+check_circle
+src/features/explore/components/VibeGuardians/data/defaultGuardians.ts
+check_circle
+src/features/explore/components/VibeGuardians/InAppSelfieModal.tsx
+check_circle
+src/features/explore/hooks/useVibeTrails.ts
+check_circle
+src/features/explore/components/VibeGuardians/services/vibeGuardianStorage.ts
+check_circle
+src/features/explore/components/CreateTrailModal.tsx
+check_circle
+src/features/explore/components/VibeTrailsSection.tsx
+check_circle
+src/features/explore/components/TrailDetailModal.tsx
+check_circle
+src/screens/ExploreScreen.tsx
+check_circle
+build
+Built
+Vibe Trails, Vibe Tours & Pro Guardian Hire Visibility Update
+All updates from the specification have been implemented and verified:
+1. Vibe Trails & Vibe Tours Tabs
+Main Menu: The Explore section now features two primary tabs:
+Vibe Trails: Regular multi-stop trails curated by locals, creators, and community members.
+Vibe Tours: Guided tours and excursions exclusive to verified Pro Guardians.
+Creation Gate: If a regular user or Local Legend taps to create a Tour, a gated modal explains that only Pro Guardians can create Tours and offers an instant link to create a Pro account.
+2. "Label this as a Tour" (Pro Guardians Only)
+In the trail creator (CreateTrailModal), Pro Guardians see a “Label this as a Tour” toggle.
+When toggled on, it activates a third setup tab (3. Tour Offer 🛡️) with TripAdvisor-style specifications.
+Regular users and Local Legends only have access to standard Vibe Trail creation.
+3. TripAdvisor-Style Tour Specifications
+Key Fields Configured & Displayed:
+Tour title & detailed About/description.
+Duration (e.g., 6h).
+Price: Clear upfront flat rate (e.g., $85 flat tour).
+Meeting / pickup point (e.g., Hotel pickup in Tunis / Sousse, or Avenue Habib Bourguiba).
+What's included: Multi-item list with green checkmarks (Private AC transport, Certified local guide, Entrance fees to Bardo & Carthage, Fresh mint tea).
+Languages spoken: (e.g., English, French, Arabic, Italian).
+Ages: (e.g., 18–99).
+Accessibility notes, What to expect, Cancellation policy (Free cancellation up to 24 hours before), and Start time note (Daily departures at 09:00 AM).
+Reservation Action: Tours feature a prominent green rounded Check dates button showing the flat price upfront, which opens the interactive ReservationCalendarModal. Completing a booking records an official Handshake (🤝).
+Seeded Tour: Includes the reference "Fun Prestige Tour: Tunis, Bardo, Medina, Carthage & Sidi Bou Said" with complete specs.
+4. Pro Guardian "Show me in Hire suggestions on trails" Checkbox
+Added to the Pro Guardian profile setup/edit screen (InAppSelfieModal).
+Defaults to checked:
+Checked: Guardian appears in the "Hire Guide" suggestions and booking drawer across public Vibe Trails.
+Unchecked: Guardian is excluded from trail-specific Hire suggestions.
+5. Preserved Integrity of Core Rules
+Max 5 Trails: Cards strictly display a maximum of 5 trails.
+Card Display: Shows only the Trail Title + small green rounded Explore now button; full trail details open in the modal.
+Handshake Proof (🤝): Reviews remain gated strictly to users with a verified handshake, capped at 111 characters with one badge (Good Vibe, Chill Vibe, or Cool Vibe).
+Pricing: Pro Guardians select either hourly or flat rate (never both); Local Legends remain free.
+flag
+Checkpoint
+As you can see our app ideas and end goal is good but our current project getting to heavy and clumsy with no clean domain ownership and monolothics scripts ,I want you to produce new plan and files to start a fresh clean app with clean structure clean domain ownership and clean schema for railway database ,this will be an attempt to build a new cleaner app not to change the current app ,You are a Principal Software Architect specializing in Clean Architecture, Domain-Driven Design (DDD), and scalable cloud infrastructures.
+Objective
+I am completely rebuilding an existing monolithic social media and travel application (similar to Facebook with heavy image data and high user activity). The current application suffers from monolithic scripts, poor separation of concerns, tight coupling, and lacks clear domain ownership.
+I need you to act as the architect and generate a comprehensive, production-ready blueprint to launch a brand-new, clean, highly structured GitHub repository. The backend infrastructure will utilize a PostgreSQL database hosted on Railway, and Object Storage (like AWS S3 or Supabase Storage) for heavy image handling.
+Your output must be delivered exclusively as a single, comprehensive Markdown (.md) document containing the files, structure, and schema specified below. Avoid high-level hand-waving or placeholders; provide concrete, production-ready configurations.
+Architectural Requirements to Enforce:
+Domain Ownership: Code must be organized strictly by business capabilities (e.g., identity, travel content, media management), not by technical layers.
+Anti-Monolith Isolation: Business logic (Services) must be completely decoupled from data access (Repositories) and transport protocols (Controllers/APIs).
+Optimized Media Pipeline: Do not store raw media in the database. Use pre-signed URLs to upload media directly from the frontend to Object Storage. The database should only store image metadata, global CDN URLs, and performance anchors (like blurhash).
+Please generate the following 4 foundational files within your Markdown output:
+1. FULL PROJECT STRUCTURE & DEPENDENCIES (FILE: REPO_STRUCTURE.md)
+Provide a complete, production-grade directory layout implementing Domain-Driven Module Isolation. Explicitly show the folder hierarchy down to the files for the following domains: Users/Identity, Travel/Posts, and Media. Include a curated list of production-ready dependencies for a clean modern backend framework (specify your recommended framework like Node.js TypeScript/Express, Go, or Python FastAPI) ensuring they cover ORM/database drivers, security, environment management, and cloud storage SDKs.
+2. DOMAIN-DRIVEN DATABASE SCHEMA (FILE: DATABASE_SCHEMA.md)
+Provide raw, production-ready SQL (DDL) migrations for PostgreSQL (optimized for hosting on Railway). Ensure the schema includes:
+Users & Profiles (with proper indexing on lookup fields).
+Travel Posts, Check-ins, and Trips (handling geo-coordinates for travel mappings).
+Media Metadata Table (linked to posts, containing s3_url, dimensions, and blurhash string for instant UI loading).
+Relationships, Foreign Key constraints, ON DELETE CASCADE cascading strategies, and performance Indexing (B-Tree indexes for foreign keys and timestamp-ordered feeds).
+3. COMPLETE REPOSITORY README (FILE: README.md)
+Write a professional, comprehensive GitHub README.md for the new repository. It must include:
+A clear system architecture overview detailing the request-response cycle through the clean architectural layers.
+Step-by-step local development setup instructions (cloning, dependency installation, running migrations).
+Detailed integration steps for linking the GitHub repository directly to Railway for automated CI/CD deployment.
+Environment Variable Blueprint (.env.example setup containing database connections, object storage tokens, and security configurations).
+4. SYSTEM REQUIREMENTS & INFRASTRUCTURE MATRIX (FILE: REQUIREMENTS.md)
+Define the functional and non-functional engineering boundaries of the app:
+Functional specs for User Authentication, Content/Travel Posting, and Media pipelines.
+Non-functional limits (target latency under database loads, security implementations like JWT and CORS, image compression requirements before CDN distribution).
+Clear mapping of infrastructural responsibilities (What Railway handles vs. what Object Storage handles).
+Ensure all code blocks, file boundaries, and markdown formatting are meticulously clean, fully written out, and production-ready without any '// TODO: implement later' comments.
+Gemini 3.8 Flash
+Ran for 2m 14s
+
+summarize_auto
+Action history
+chevron_right
+Here are key actions taken for the app:
+
+edit
+Edited 1 file
+ARCHITECTURAL_BLUEPRINT.md
+check_circle
+Enterprise Architectural Blueprint: Modern Social & Travel Platform
+Engineered by: Principal Software Architect
+Architecture Paradigm: Domain-Driven Design (DDD) & Clean/Hexagonal Architecture
+Infrastructure Stack: PostgreSQL with PostGIS (Railway) + S3-Compatible Object Storage (Cloudflare R2 / AWS S3) + Node.js 22 LTS / TypeScript / Fastify
+SECTION 1: FULL PROJECT STRUCTURE & DEPENDENCIES (FILE: REPO_STRUCTURE.md)
+code
+Markdown
+# Repository Structure & Production Dependency Manifest
+
+This repository enforces strict Domain-Driven Module Isolation (Vertical Slice Architecture wrapped in Clean Architecture layers). Code is organized first by business domain (identity, travel, media), and secondarily by architectural layer (domain, application, infrastructure, presentation). Technical layers never cross domain boundaries except through shared domain interfaces or event dispatchers.
+travel-social-core/
+├── .github/
+│ └── workflows/
+│ ├── ci.yml # Lint, type-check, unit & integration tests
+│ └── railway-deploy.yml # Railway trigger & migration execution pipeline
+├── docker/
+│ ├── Dockerfile.production # Multi-stage minimal Node alpine/distroless build
+│ └── docker-compose.dev.yml # Local Postgres 16 (PostGIS) + MinIO (S3 mock)
+├── scripts/
+│ ├── db-migrate.ts # Drizzle / raw SQL migration runner
+│ ├── db-seed.ts # Realistic staging seed dataset
+│ └── generate-openapi.ts # Fastify Swagger spec exporter
+├── src/
+│ ├── config/ # Strongly typed, Zod-validated environment config
+│ │ ├── env.schema.ts
+│ │ ├── env.ts
+│ │ └── database.ts
+│ │
+│ ├── core/ # Cross-cutting foundational primitives
+│ │ ├── errors/
+│ │ │ ├── app-error.base.ts
+│ │ │ ├── domain-error.ts
+│ │ │ └── not-found-error.ts
+│ │ ├── event-bus/
+│ │ │ ├── event-bus.interface.ts
+│ │ │ └── in-memory-event-bus.ts
+│ │ ├── pagination/
+│ │ │ ├── cursor.pagination.ts
+│ │ │ └── page-result.ts
+│ │ └── utils/
+│ │ ├── geo-math.ts
+│ │ └── id-generator.ts # UUIDv7 / ULID generators for time-sorted keys
+│ │
+│ ├── modules/ # Bounded Contexts / Domain Ownership
+│ │ │
+│ │ ├── identity/ # USER & AUTHENTICATION DOMAIN
+│ │ │ ├── domain/
+│ │ │ │ ├── entities/
+│ │ │ │ │ ├── user.entity.ts
+│ │ │ │ │ └── user-profile.entity.ts
+│ │ │ │ ├── value-objects/
+│ │ │ │ │ ├── email.vo.ts
+│ │ │ │ │ ├── username.vo.ts
+│ │ │ │ │ └── password-hash.vo.ts
+│ │ │ │ ├── repositories/
+│ │ │ │ │ ├── user.repository.interface.ts
+│ │ │ │ │ └── user-profile.repository.interface.ts
+│ │ │ │ └── events/
+│ │ │ │ ├── user-registered.event.ts
+│ │ │ │ └── user-followed.event.ts
+│ │ │ ├── application/
+│ │ │ │ ├── dtos/
+│ │ │ │ │ ├── register-user.dto.ts
+│ │ │ │ │ ├── login.dto.ts
+│ │ │ │ │ └── update-profile.dto.ts
+│ │ │ │ ├── use-cases/
+│ │ │ │ │ ├── register-user.usecase.ts
+│ │ │ │ │ ├── authenticate-user.usecase.ts
+│ │ │ │ │ ├── get-profile.usecase.ts
+│ │ │ │ │ └── follow-user.usecase.ts
+│ │ │ │ └── services/
+│ │ │ │ ├── password-hasher.service.ts
+│ │ │ │ └── token-generator.service.ts
+│ │ │ ├── infrastructure/
+│ │ │ │ ├── persistence/
+│ │ │ │ │ ├── user.postgres.repository.ts
+│ │ │ │ │ └── user-profile.postgres.repository.ts
+│ │ │ │ └── security/
+│ │ │ │ ├── argon2-password.service.ts
+│ │ │ │ └── jwt-token.service.ts
+│ │ │ └── presentation/
+│ │ │ ├── controllers/
+│ │ │ │ ├── auth.controller.ts
+│ │ │ │ └── profile.controller.ts
+│ │ │ ├── routes/
+│ │ │ │ ├── auth.routes.ts
+│ │ │ │ └── profile.routes.ts
+│ │ │ └── schemas/
+│ │ │ ├── auth.validation.ts
+│ │ │ └── profile.validation.ts
+│ │ │
+│ │ ├── travel/ # TRAVEL CONTENT, TRIPS & CHECK-INS DOMAIN
+│ │ │ ├── domain/
+│ │ │ │ ├── entities/
+│ │ │ │ │ ├── travel-post.entity.ts
+│ │ │ │ │ ├── trip.entity.ts
+│ │ │ │ │ └── check-in.entity.ts
+│ │ │ │ ├── value-objects/
+│ │ │ │ │ ├── coordinates.vo.ts
+│ │ │ │ │ ├── location-metadata.vo.ts
+│ │ │ │ │ └── vibe-rating.vo.ts
+│ │ │ │ ├── repositories/
+│ │ │ │ │ ├── travel-post.repository.interface.ts
+│ │ │ │ │ ├── trip.repository.interface.ts
+│ │ │ │ │ └── check-in.repository.interface.ts
+│ │ │ │ └── events/
+│ │ │ │ ├── travel-post-created.event.ts
+│ │ │ │ └── check-in-verified.event.ts
+│ │ │ ├── application/
+│ │ │ │ ├── dtos/
+│ │ │ │ │ ├── create-post.dto.ts
+│ │ │ │ │ ├── create-trip.dto.ts
+│ │ │ │ │ ├── feed-query.dto.ts
+│ │ │ │ │ └── check-in.dto.ts
+│ │ │ │ └── use-cases/
+│ │ │ │ ├── create-travel-post.usecase.ts
+│ │ │ │ ├── get-personalized-feed.usecase.ts
+│ │ │ │ ├── get-nearby-experiences.usecase.ts
+│ │ │ │ ├── create-trip.usecase.ts
+│ │ │ │ └── verify-check-in.usecase.ts
+│ │ │ ├── infrastructure/
+│ │ │ │ ├── persistence/
+│ │ │ │ │ ├── travel-post.postgres.repository.ts
+│ │ │ │ │ ├── trip.postgres.repository.ts
+│ │ │ │ │ └── check-in.postgres.repository.ts
+│ │ │ │ └── spatial/
+│ │ │ │ └── postgis-spatial.service.ts
+│ │ │ └── presentation/
+│ │ │ ├── controllers/
+│ │ │ │ ├── travel-post.controller.ts
+│ │ │ │ ├── trip.controller.ts
+│ │ │ │ └── feed.controller.ts
+│ │ │ ├── routes/
+│ │ │ │ ├── travel-post.routes.ts
+│ │ │ │ ├── trip.routes.ts
+│ │ │ │ └── feed.routes.ts
+│ │ │ └── schemas/
+│ │ │ └── travel.validation.ts
+│ │ │
+│ │ └── media/ # MEDIA & ASSET PIPELINE DOMAIN
+│ │ ├── domain/
+│ │ │ ├── entities/
+│ │ │ │ └── media-asset.entity.ts
+│ │ │ ├── value-objects/
+│ │ │ │ ├── blurhash.vo.ts
+│ │ │ │ ├── dimensions.vo.ts
+│ │ │ │ └── s3-storage-key.vo.ts
+│ │ │ ├── repositories/
+│ │ │ │ └── media-asset.repository.interface.ts
+│ │ │ └── services/
+│ │ │ └── object-storage.interface.ts
+│ │ ├── application/
+│ │ │ ├── dtos/
+│ │ │ │ ├── request-upload-ticket.dto.ts
+│ │ │ │ ├── confirm-upload.dto.ts
+│ │ │ │ └── upload-ticket-response.dto.ts
+│ │ │ └── use-cases/
+│ │ │ ├── generate-presigned-upload-url.usecase.ts
+│ │ │ ├── confirm-and-process-media.usecase.ts
+│ │ │ └── link-media-to-post.usecase.ts
+│ │ ├── infrastructure/
+│ │ │ ├── storage/
+│ │ │ │ └── s3-compatible-storage.service.ts
+│ │ │ ├── persistence/
+│ │ │ │ └── media-asset.postgres.repository.ts
+│ │ │ └── processing/
+│ │ │ └── blurhash-metadata-extractor.service.ts
+│ │ └── presentation/
+│ │ ├── controllers/
+│ │ │ └── media.controller.ts
+│ │ ├── routes/
+│ │ │ └── media.routes.ts
+│ │ └── schemas/
+│ │ └── media.validation.ts
+│ │
+│ ├── server.ts # Fastify instance builder & plugin registry
+│ └── index.ts # App entry point & graceful shutdown hooks
+│
+├── tests/
+│ ├── unit/ # Isolated business logic unit tests
+│ ├── integration/ # Repository & database integration tests
+│ └── e2e/ # Fastify endpoint acceptance tests
+│
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── drizzle.config.ts # Drizzle ORM migration configuration
+├── package.json
+├── tsconfig.json
+└── vitest.config.ts
+code
+Code
+### Production Package Dependency Manifest (package.json)
+
+```json
+{
+  "name": "travel-social-core",
+  "version": "1.0.0",
+  "description": "Production Domain-Driven Clean Architecture backend for social travel experiences",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "db:seed": "tsx scripts/db-seed.ts",
+    "lint": "eslint . --ext .ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.670.0",
+    "@aws-sdk/s3-request-presigner": "^3.670.0",
+    "@fastify/cors": "^9.0.1",
+    "@fastify/helmet": "^11.1.1",
+    "@fastify/jwt": "^8.0.1",
+    "@fastify/rate-limit": "^9.1.0",
+    "@fastify/sensible": "^5.5.0",
+    "@fastify/swagger": "^8.15.0",
+    "@fastify/swagger-ui": "^4.0.1",
+    "argon2": "^0.40.3",
+    "blurhash": "^2.0.5",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.33.0",
+    "fastify": "^4.28.1",
+    "pg": "^8.12.0",
+    "pino": "^9.2.0",
+    "pino-pretty": "^11.2.1",
+    "sharp": "^0.33.4",
+    "ulid": "^2.3.0",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "@types/pg": "^8.11.6",
+    "@types/sharp": "^0.31.1",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "drizzle-kit": "^0.24.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}
+code
+Code
+---
+
+# SECTION 2: DOMAIN-DRIVEN DATABASE SCHEMA (`FILE: DATABASE_SCHEMA.md`)
+
+```markdown
+# Production PostgreSQL DDL Migrations (Optimized for Railway)
+
+This migration script establishes the schema for:
+1. identity domain: Users, Profiles, User Follows.
+2. travel domain: Trips, Travel Posts, Check-ins, Post Likes, Post Comments.
+3. media domain: Media Assets with S3/CDN URLs, BlurHash, dimensional anchors, and link associations.
+
+It enables PostGIS for geospatial indexing and uses UUIDv7 / cryptographic UUIDs for distributed indexing performance.
+
+```sql
+-- ==============================================================================
+-- DATABASE INITIALIZATION & EXTENSIONS
+-- ==============================================================================
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "postgis";
+
+-- Enforce standard UTC timestamps across sessions
+SET timezone = 'UTC';
+
+-- ==============================================================================
+-- DOMAIN: IDENTITY
+-- ==============================================================================
+
+-- 1. Users Table (Core Auth Entity)
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    role VARCHAR(32) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'pro_guardian', 'moderator', 'admin')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX uq_users_email_ci ON users (LOWER(email));
+CREATE INDEX idx_users_role_active ON users (role, is_active);
+
+-- 2. User Profiles Table (Public Identity Entity)
+CREATE TABLE user_profiles (
+    user_id UUID PRIMARY KEY,
+    username VARCHAR(40) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    bio TEXT,
+    avatar_url TEXT,
+    location_city VARCHAR(100),
+    location_country VARCHAR(100),
+    followers_count INT NOT NULL DEFAULT 0 CHECK (followers_count >= 0),
+    following_count INT NOT NULL DEFAULT 0 CHECK (following_count >= 0),
+    trips_count INT NOT NULL DEFAULT 0 CHECK (trips_count >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX uq_user_profiles_username_ci ON user_profiles (LOWER(username));
+CREATE INDEX idx_user_profiles_location ON user_profiles (location_country, location_city);
+
+-- 3. User Follows Table (Social Graph)
+CREATE TABLE user_follows (
+    follower_id UUID NOT NULL,
+    following_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id),
+    CONSTRAINT chk_cannot_follow_self CHECK (follower_id <> following_id),
+    CONSTRAINT fk_follows_follower FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_follows_following FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_user_follows_following ON user_follows (following_id, created_at DESC);
+
+-- ==============================================================================
+-- DOMAIN: TRAVEL CONTENT & EXPERIENCES
+-- ==============================================================================
+
+-- 4. Trips Table (Curated Travel Itineraries / Folders)
+CREATE TABLE trips (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    author_id UUID NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    slug VARCHAR(250) NOT NULL,
+    description TEXT,
+    cover_image_url TEXT,
+    destination_city VARCHAR(100) NOT NULL,
+    destination_country VARCHAR(100) NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    is_public BOOLEAN NOT NULL DEFAULT TRUE,
+    is_pro_tour BOOLEAN NOT NULL DEFAULT FALSE,
+    tour_price_cents INT CHECK (tour_price_cents >= 0),
+    currency VARCHAR(3) DEFAULT 'USD',
+    posts_count INT NOT NULL DEFAULT 0 CHECK (posts_count >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_trips_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX uq_trips_author_slug ON trips (author_id, slug);
+CREATE INDEX idx_trips_author_created ON trips (author_id, created_at DESC);
+CREATE INDEX idx_trips_destination ON trips (destination_country, destination_city);
+CREATE INDEX idx_trips_pro_tours ON trips (is_pro_tour, created_at DESC) WHERE is_pro_tour = TRUE;
+
+-- 5. Check-Ins Table (Verified Geolocation Sightings / POIs)
+CREATE TABLE check_ins (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    place_name VARCHAR(200) NOT NULL,
+    place_category VARCHAR(60) NOT NULL,
+    address TEXT,
+    latitude NUMERIC(10, 7) NOT NULL,
+    longitude NUMERIC(10, 7) NOT NULL,
+    location_geom GEOMETRY(Point, 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)) STORED,
+    accuracy_meters NUMERIC(6, 2),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_checkins_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_checkins_user_created ON check_ins (user_id, created_at DESC);
+CREATE INDEX idx_checkins_location_gist ON check_ins USING GIST (location_geom);
+
+-- 6. Travel Posts Table (The Primary Content Feed Entity)
+CREATE TABLE travel_posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    author_id UUID NOT NULL,
+    trip_id UUID,
+    check_in_id UUID,
+    caption TEXT,
+    vibe_category VARCHAR(60) NOT NULL DEFAULT 'Vibe Spot',
+    vibe_score INT CHECK (vibe_score BETWEEN 1 AND 5),
+    latitude NUMERIC(10, 7),
+    longitude NUMERIC(10, 7),
+    location_geom GEOMETRY(Point, 4326),
+    location_name VARCHAR(200),
+    likes_count INT NOT NULL DEFAULT 0 CHECK (likes_count >= 0),
+    comments_count INT NOT NULL DEFAULT 0 CHECK (comments_count >= 0),
+    media_count INT NOT NULL DEFAULT 0 CHECK (media_count >= 0),
+    is_published BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_posts_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE SET NULL,
+    CONSTRAINT fk_posts_checkin FOREIGN KEY (check_in_id) REFERENCES check_ins(id) ON DELETE SET NULL
+);
+
+-- High-performance Feed Indexing
+CREATE INDEX idx_travel_posts_feed_cursor ON travel_posts (created_at DESC, id DESC) WHERE is_published = TRUE;
+CREATE INDEX idx_travel_posts_author_cursor ON travel_posts (author_id, created_at DESC);
+CREATE INDEX idx_travel_posts_trip ON travel_posts (trip_id, created_at ASC) WHERE trip_id IS NOT NULL;
+CREATE INDEX idx_travel_posts_spatial_gist ON travel_posts USING GIST (location_geom) WHERE location_geom IS NOT NULL;
+
+-- 7. Post Likes Table (Engagement Ledger)
+CREATE TABLE post_likes (
+    post_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (post_id, user_id),
+    CONSTRAINT fk_likes_post FOREIGN KEY (post_id) REFERENCES travel_posts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_likes_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_likes_user ON post_likes (user_id, created_at DESC);
+
+-- 8. Post Comments Table
+CREATE TABLE post_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    post_id UUID NOT NULL,
+    author_id UUID NOT NULL,
+    parent_comment_id UUID,
+    content TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_comments_post FOREIGN KEY (post_id) REFERENCES travel_posts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_comment_id) REFERENCES post_comments(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_comments_post_thread ON post_comments (post_id, created_at ASC);
+
+-- ==============================================================================
+-- DOMAIN: MEDIA ASSETS & PERFORMANCE OPTIMIZATION
+-- ==============================================================================
+
+-- 9. Media Assets Table (Object Storage Anchors)
+CREATE TABLE media_assets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    uploader_id UUID NOT NULL,
+    post_id UUID,
+    storage_bucket VARCHAR(100) NOT NULL,
+    storage_key VARCHAR(500) NOT NULL,
+    cdn_url TEXT NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size_bytes BIGINT NOT NULL CHECK (file_size_bytes > 0),
+    width INT NOT NULL CHECK (width > 0),
+    height INT NOT NULL CHECK (height > 0),
+    blurhash VARCHAR(100) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    status VARCHAR(32) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'uploaded', 'verified', 'failed')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    verified_at TIMESTAMPTZ,
+    CONSTRAINT fk_media_uploader FOREIGN KEY (uploader_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_media_post FOREIGN KEY (post_id) REFERENCES travel_posts(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX uq_media_storage_key ON media_assets (storage_key);
+CREATE INDEX idx_media_post_sort ON media_assets (post_id, sort_order ASC) WHERE post_id IS NOT NULL;
+CREATE INDEX idx_media_uploader_status ON media_assets (uploader_id, status);
+
+-- ==============================================================================
+-- DATABASE TRIGGERS FOR DENORMALIZED COUNTERS & AUDIT TIMESTAMPS
+-- ==============================================================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER trg_user_profiles_updated_at BEFORE UPDATE ON user_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER trg_trips_updated_at BEFORE UPDATE ON trips FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER trg_travel_posts_updated_at BEFORE UPDATE ON travel_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER trg_post_comments_updated_at BEFORE UPDATE ON post_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+code
+Code
+---
+
+# SECTION 3: COMPLETE REPOSITORY README (`FILE: README.md`)
+
+```markdown
+# 🌍 TravelSocial Core API
+
+> High-throughput, Domain-Driven Clean Architecture backend for visual social travel experiences, geospatial itineraries, and real-time community exploration.
+
+---
+
+## 🏛️ System Architecture Overview
+
+The system strictly follows **Clean Architecture & Hexagonal Ports/Adapters**. Business logic contains zero references to HTTP transport, SQL queries, or cloud storage SDKs.
+code
+Code
+┌──────────────────────────────────────────────┐
+              │          Client (Web SPA / Mobile)           │
+              └───────────────┬──────────────────────────────┘
+                              │ HTTPS / REST (JSON)
+                              ▼
+┌─────────────────────────────────┼────────────────────────────────────────┐
+│ PRESENTATION LAYER │ │
+│ Fastify Routes & Controllers ▼ │
+│ Input Validation (Zod Schemas) ───► Auth Guard (JWT Verify) │
+└─────────────────────────────────┬────────────────────────────────────────┘
+│ DTOs (Data Transfer Objects)
+▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│ APPLICATION LAYER (USE CASES) │
+│ - CreateTravelPostUseCase │
+│ - GeneratePresignedUploadUrlUseCase │
+│ - GetPersonalizedFeedUseCase │
+└──────────────────┬──────────────────────────────────────┬────────────────┘
+│ Entity Invariants │ Ports / Interfaces
+▼ ▼
+┌──────────────────────────────────────┐ ┌────────────────────────────────┐
+│ DOMAIN CORE LAYER │ │ INFRASTRUCTURE LAYER │
+│ - Entities (TravelPost, User, Media)│ │ - PostgreSQL Repositories │
+│ - Value Objects (Coords, BlurHash) │ │ - AWS S3 / Cloudflare R2 │
+│ - Domain Events & Domain Errors │ │ - PostGIS Spatial Math │
+└──────────────────────────────────────┘ └────────────────────────────────┘
+code
+Code
+### Media Upload Flow (Zero-Server-Load Pipeline)
+1. **Request Ticket**: Client sends image dimensions (width, height, mimeType, fileSizeBytes) to POST /api/v1/media/upload-ticket.
+2. **Pre-Signed Generation**: Backend validates upload rules, generates an immutable S3 storage key (uploads/{user_id}/{ulid}.webp), and produces a 15-minute cryptographically signed AWS S3 PUT URL.
+3. **Direct Binary Push**: Client uploads binary image directly to Object Storage via HTTP PUT.
+4. **Instant BlurHash & Ingestion**: Frontend computes lightweight BlurHash string on-canvas or backend worker verifies header and anchors BlurHash in PostgreSQL. Server memory never consumes high-resolution image streams.
+
+---
+
+## ⚙️ Local Development Setup
+
+### Prerequisites
+- **Node.js**: v22.0.0 or higher
+- **Docker & Docker Compose**: For local PostgreSQL (PostGIS) and MinIO
+- **npm**: v10.0.0 or higher
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/your-org/travel-social-core.git
+cd travel-social-core
+npm install
+2. Configure Environment Variables
+Copy the template and verify configurations:
+code
+Bash
+cp .env.example .env
+3. Spin up Local Database & Storage
+code
+Bash
+docker compose -f docker/docker-compose.dev.yml up -d
+This spins up:
+PostgreSQL 16 with PostGIS on port 5432
+MinIO (S3-compatible) on port 9000 (Console on 9001)
+4. Execute Migrations & Seeds
+code
+Bash
+npm run db:migrate
+npm run db:seed
+5. Launch Development Server
+code
+Bash
+npm run dev
+The server boots at http://localhost:4000. Interactive OpenAPI documentation is accessible at http://localhost:4000/docs.
+🚀 Railway Automated CI/CD Deployment
+Railway directly connects to your GitHub repository for continuous builds.
+Step-by-Step Railway Provisioning:
+Create Railway Project:
+Go to Railway.app, click New Project → Provision PostgreSQL.
+Under database settings, ensure PostGIS is enabled:
+code
+SQL
+CREATE EXTENSION IF NOT EXISTS postgis;
+Connect GitHub Repo:
+In the same project canvas, click New → GitHub Repo → select travel-social-core.
+Configure Build & Start Commands:
+Railway auto-detects package.json.
+Set Build Command: npm run build
+Set Start Command: npm run db:migrate && npm run start
+Supply Environment Variables:
+In Railway dashboard → Service Settings → Variables, input all variables from the .env.example blueprint below. Link the DATABASE_URL directly via Railway's Reference Variable: ${{Postgres.DATABASE_URL}}.
+🔐 Environment Variable Blueprint (.env.example)
+code
+Env
+# ==============================================================================
+# SERVER & RUNTIME ENVIRONMENT
+# ==============================================================================
+NODE_ENV=development
+PORT=4000
+HOST=0.0.0.0
+LOG_LEVEL=debug
+CORS_ORIGIN=http://localhost:3000,https://your-frontend-app.com
+
+# ==============================================================================
+# RAILWAY POSTGRESQL DATABASE (POSTGIS ENABLED)
+# ==============================================================================
+# Format: postgresql://[user]:[password]@[host]:[port]/[database]?sslmode=require
+DATABASE_URL=postgresql://postgres:postgrespassword@localhost:5432/travel_social?sslmode=disable
+DB_POOL_MIN=2
+DB_POOL_MAX=20
+DB_TIMEOUT_MS=5000
+
+# ==============================================================================
+# SECURITY & AUTHENTICATION (JWT & ARGON2)
+# ==============================================================================
+JWT_SECRET=super_secret_cryptographic_key_min_64_characters_long_for_security_production
+JWT_EXPIRES_IN=7d
+REFRESH_TOKEN_SECRET=another_super_secret_cryptographic_key_min_64_characters_production
+REFRESH_TOKEN_EXPIRES_IN=30d
+ARGON2_MEMORY_COST=65536
+ARGON2_TIME_COST=3
+
+# ==============================================================================
+# OBJECT STORAGE (AWS S3 / CLOUDFLARE R2 / SUPABASE STORAGE)
+# ==============================================================================
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+S3_REGION=auto
+S3_ACCESS_KEY_ID=your_s3_or_r2_access_key_id
+S3_SECRET_ACCESS_KEY=your_s3_or_r2_secret_access_key
+S3_BUCKET_NAME=travel-social-media-assets
+CDN_PUBLIC_BASE_URL=https://media-cdn.yourtravelapp.com
+PRESIGNED_EXPIRATION_SECONDS=900
+
+# ==============================================================================
+# RATE LIMITING & SECURITY LIMITS
+# ==============================================================================
+RATE_LIMIT_MAX_REQUESTS_PER_MINUTE=120
+MAX_MEDIA_FILE_SIZE_BYTES=15728640
+code
+Code
+---
+
+# SECTION 4: SYSTEM REQUIREMENTS & INFRASTRUCTURE MATRIX (`FILE: REQUIREMENTS.md`)
+
+```markdown
+# System Requirements & Infrastructure Responsibility Matrix
+
+## 1. Functional Specifications
+
+### 1.1 User & Identity Management
+- **Registration & Authentication**:
+  - Secure credential registration using email + unique username (@handle).
+  - Passwords hashed using memory-hard Argon2id (RFC 9106 standards).
+  - Stateless JSON Web Token authentication with asymmetric signature or high-entropy HS512 secret.
+- **Profiles & Follow Graph**:
+  - Public traveler profiles tracking bio, verified location, check-ins, trips, and follower counts.
+  - Asymmetric follow graph allowing chronological timeline aggregation of followed creators.
+
+### 1.2 Travel Content, Trips & Verified Check-Ins
+- **Trips / Itineraries**:
+  - Multi-stop trip collections with chronological pins, route summaries, and destination city tags.
+  - Support for Pro Guardian bookable experiences with transparent upfront flat pricing and scheduling metadata.
+- **Travel Posts & Visual Feeds**:
+  - Micro-blog and photo-centric posts containing caption, vibe score (1-5), category tags, and geo-anchor.
+  - Keyset-based cursor pagination (created_at DESC, id DESC) preventing feed drift during continuous high-frequency posting.
+- **Verified Geolocation Check-Ins**:
+  - PostGIS coordinate validation (Point, 4326) validating spatial proximity within acceptable accuracy meters.
+
+### 1.3 Optimized Media Pipeline
+- **Strict Anti-Monolith Policy**: Application servers **never receive raw image uploads**.
+- **Pre-Signed Upload Handshake**:
+  1. Frontend submits metadata (MIME type, byte size, image dimensions).
+  2. Server authorizes user and issues an AWS S3 pre-signed PUT URL expiring in 15 minutes.
+  3. Client uploads directly to bucket with strict Content-Length constraints.
+  4. Client registers completion; backend stores CDN URL + BlurHash string for sub-10ms UI placeholder rendering.
+
+---
+
+## 2. Non-Functional Specifications & Engineering Boundaries
+
+| Category | Engineering Metric / Boundary | Implementation Mechanism |
+| :--- | :--- | :--- |
+| **API Latency (p95)** | < 80ms under normal load | Composite B-Tree indexes, keyset pagination, denormalized counter caches |
+| **API Latency (p99)** | < 160ms under peak concurrency | Database connection pooling (pgbouncer/Fastify pg pool), no heavy ORM joins |
+| **Spatial Query Speed** | < 40ms for 25km radius searches | PostGIS GiST spatial indexing (ST_DWithin / ST_MakePoint) |
+| **Media Delivery** | < 200ms worldwide image delivery | Global Cloudflare CDN edge caching directly fronting Object Storage |
+| **Password Security** | Memory Cost: 64MB, Time Cost: 3 iterations | Argon2id resistant to GPU cracking |
+| **Transport Security** | TLS 1.3 only, HSTS enabled | Enforced at Railway Edge and Cloudflare proxy |
+| **Payload Boundaries** | JSON payload max 100KB | Fastify bodyLimit: 10485760 (server only receives metadata) |
+
+---
+
+## 3. Infrastructure Responsibility Matrix
+┌────────────────────────────────────────────────────────────────────────┐
+│ INFRASTRUCTURE RESPONSIBILITY MATRIX │
+├───────────────────────┬────────────────────────────────────────────────┤
+│ COMPONENT │ PRIMARY RESPONSIBILITIES │
+├───────────────────────┼────────────────────────────────────────────────┤
+│ Railway App Engine│ - Fastify Node.js HTTP Application Runtime │
+│ │ - Zod Schema Validation & Auth Guard │
+│ │ - Business Domain Use-Case Orchestration │
+│ │ - Pre-signed S3 URL generation │
+│ │ - Continuous GitHub automated deployments │
+├───────────────────────┼────────────────────────────────────────────────┤
+│ Railway PostgreSQL│ - ACID Transactions & Relational Data Store │
+│ │ - PostGIS Geographic Indexing & Spatial Math │
+│ │ - Foreign Key constraints & Cascading Deletes │
+│ │ - Denormalized counter triggers │
+│ │ - Connection pooling │
+├───────────────────────┼────────────────────────────────────────────────┤
+│ Object Storage │ - High-durability raw binary media persistence │
+│ (AWS S3 / Cloudflare) │ - Direct frontend PUT upload targets │
+│ │ - Storage lifecycle policies & bucket cors │
+├───────────────────────┼────────────────────────────────────────────────┤
+│ Global Edge CDN │ - Edge caching of optimized images │
+│ (Cloudflare) │ - Automated WebP/AVIF format transcoding │
+│ │ - SSL/TLS Termination & DDoS Mitigation │
+├───────────────────────┼────────────────────────────────────────────────┤
+│ Client Application│ - Canvas-level image resizing prior to upload │
+│ (React / Mobile App) │ - BlurHash client-side placeholder decoding │
+│ │ - Direct binary transfer to pre-signed S3 URL │
+└───────────────────────┴────────────────────────────────────────────────┘
+code
+Code
+flag
+Checkpoint
+Did u keep in mind that the app will be totally new in GitHub and using railway database ,have slip domain ownership in a clean way and avoided all the issue we currently have have you offered a better wiring and clean database ,where the media and users information and other information are saved separately in a clean way ?
+Gemini 3.8 Flash
+Ran for 17s
+Yes, absolutely. The entire blueprint was designed from the ground up as a completely clean, brand-new GitHub repository specifically built around Domain-Driven Design (DDD) and a Railway PostgreSQL + S3 Object Storage infrastructure.
+Here is exactly how the new architecture resolves every pain point from the current monolithic app:
+1. Completely Independent Domain Ownership (No Monolithic Code)
+Instead of giant files where authentication, post feeds, travel trails, and file uploads are tangled together, the new repository is physically split into three isolated business domains:
+code
+Code
+src/modules/
+├── identity/     # ONLY deals with user auth, passwords (Argon2), profiles, and follow graph
+├── travel/       # ONLY deals with posts, trips, Pro Guardian tours, and check-ins
+└── media/        # ONLY deals with pre-signed S3 upload tickets, CDN links, and BlurHash
+Each domain is strictly layered using Clean Architecture:
+Domain Layer: Pure business entities, value objects (coordinates, email format), and repository interfaces. Zero database or HTTP dependencies.
+Application Layer: Isolated Use Cases (CreateTravelPostUseCase, GeneratePresignedUploadUrlUseCase).
+Infrastructure Layer: Concrete implementations (PostgreSQL queries, S3 SDK, PostGIS calculations).
+Presentation Layer: Thin Fastify controllers and Zod input validation schemas.
+2. Clean Separation of Media vs. User vs. Travel Data
+In your current application, heavy media handling and state are entangled with application logic. The new blueprint enforces a strict physical and relational separation:
+A. Media Data is Decoupled from the Database & App Server
+Zero Binary Traffic on Railway: Raw image files never touch your Node.js application server or your Railway database.
+Pre-Signed Upload Handshake: When a user selects an image:
+The client requests a 15-minute cryptographically signed PUT URL from POST /api/v1/media/upload-ticket.
+The mobile/web client uploads the binary directly to Cloudflare R2 or AWS S3.
+The media_assets table in Railway only stores lightweight metadata:
+storage_key (uploads/user-id/ulid.webp)
+cdn_url (fast global CDN link)
+blurhash (instant 30-byte placeholder string for zero-layout-shift UI)
+width, height, file_size_bytes
+Media is linked to posts or profiles simply via a relational foreign key (post_id UUID).
+B. User Auth is Decoupled from User Profiles
+users Table: Contains only sensitive authentication records (email, password_hash, role, is_active).
+user_profiles Table: Public-facing profile data (username, display_name, bio, avatar_url, denormalized followers_count).
+user_follows Table: Clean social graph junction table indexed for sub-10ms follower feed lookups.
+C. Travel & Geospatial Data is Decoupled
+trips Table: Holds multi-stop itinerary containers, travel metadata, and Pro Guardian tour pricing.
+travel_posts Table: Core feed posts linking to a trip or check-in.
+check_ins Table: Native PostGIS geometry points (GEOMETRY(Point, 4326)) with spatial GiST indexing, allowing 25km radius searches in under 40ms without running slow math in Node.js.
+3. Clean Wiring via Dependency Inversion (Ports & Adapters)
+In the current code, modifying a database call or UI component risks breaking unrelated logic. In the new app:
+Controllers do not query the database: A controller only calls a Use Case.
+Use Cases do not write raw SQL: A Use Case only calls an interface (e.g. ITravelPostRepository.save(post)).
+Swappable Infrastructure: If you ever want to move from Railway to Supabase or AWS RDS, or swap S3 for Cloudflare R2, you only change the infrastructure adapter—your core business logic and domain code remain 100% untouched.
+4. Railway-Native Optimization
+The DDL migrations in DATABASE_SCHEMA.md are tailored for Railway:
+Keyset Pagination (created_at DESC, id DESC): Feeds stream seamlessly with cursor tokens instead of slow OFFSET queries that degrade as the database grows.
+Cascading Deletes: When a user or post is deleted, related comments, likes, and media links clean up automatically via PostgreSQL constraints.
+Connection Pooling: Configured for Railway's connection limits using environment-driven pool boundaries (DB_POOL_MIN, DB_POOL_MAX).
+Summary
+The generated specification is ready to be initialized as a fresh GitHub repository with zero baggage from the previous monolithic implementation, giving you a clean, enterprise-grade foundation for production scaling.
+Can you orovid the railway database schema in a clean organised way that separate Every storage and calls in a clean scalable manner for a big app like we currently have ,the Api, the web ,Media ,etc ....,provide the schema database
+Gemini 3.8 Flash
+Ran for 1m 23s
+edit
+Edited 1 file
+RAILWAY_DATABASE_SCHEMA.sql
+check_circle
+Here is the complete, production-ready Railway PostgreSQL Database Schema designed specifically for a large-scale social travel platform.
+It is organized into isolated PostgreSQL schemas (namespaces) so that each business domain, API module, and storage system operates independently without data pollution or monolithic coupling.
+The complete executable SQL file has also been saved to your repository as:
+📁 /RAILWAY_DATABASE_SCHEMA.sql
+High-Level Domain Separation Architecture
+code
+Code
+PostgreSQL (Railway)
+  ┌──────────────────────────────────────────────────────────────────────────────────┐
+  │                                                                                  │
+  │  1. identity_auth          2. core_media                3. user_profiles         │
+  │  ├── accounts              ├── assets                   ├── profiles             │
+  │  └── refresh_tokens        └── (S3/R2 metadata only)    ├── follows              │
+  │                                                         └── handshakes (Proof)   │
+  │                                                                                  │
+  │  4. travel_experiences     5. social_feed               6. notifications         │
+  │  ├── check_ins (PostGIS)   ├── posts                    └── events               │
+  │  ├── trails                ├── post_media (Junction)                             │
+  │  └── trail_stops           ├── post_likes                                        │
+  │                            ├── comments                                          │
+  │                            └── guardian_reviews (111 char)                       │
+  └──────────────────────────────────────────────────────────────────────────────────┘
+How Every Storage & Call Type is Separated
+Category	Storage Location	Schema Table	Why this scales cleanly
+Raw Media & Videos	Cloudflare R2 / AWS S3	core_media.assets	Zero binary files hit Railway. Railway only stores immutable CDN URLs, byte sizes, dimensions, and BlurHash strings.
+User Authentication	Railway Postgres	identity_auth.accounts	Isolated credentials (password_hash, email, role). Never exposed to public profile queries.
+Public Profiles & Guardians	Railway Postgres	user_profiles.profiles	Public handles, bios, Pro Guardian hourly/flat pricing rates, and verified handshakes.
+Social Graph	Railway Postgres	user_profiles.follows	Lightweight composite-key table for sub-5ms follower queries.
+Feed Streaming	Railway Postgres	social_feed.posts	Uses keyset cursor pagination (created_at DESC, id DESC), eliminating slow OFFSET queries as the database grows.
+Geolocation & POIs	Railway Postgres (PostGIS)	travel_experiences.check_ins	PostGIS GEOMETRY(Point, 4326) with spatial GiST indexing enables 25km radius searches in under 40ms.
+Handshake Reviews	Railway Postgres	social_feed.guardian_reviews	Hard foreign-key constraint on handshake_id enforcing that reviews can only be submitted if a verified handshake exists.
+Complete Production SQL DDL (Ready for Railway)
+code
+SQL
+-- ==============================================================================
+-- RAILWAY ENTERPRISE POSTGRESQL SCHEMA BLUEPRINT
+-- Platform: Railway (PostgreSQL 16+ with PostGIS)
+-- Architecture: Domain-Driven Separation of Concerns (PostgreSQL Schemas)
+-- ==============================================================================
+
+-- ------------------------------------------------------------------------------
+-- EXTENSIONS & GLOBAL SETTINGS
+-- ------------------------------------------------------------------------------
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "postgis";
+
+SET timezone = 'UTC';
+
+-- ------------------------------------------------------------------------------
+-- SEPARATE DOMAIN SCHEMAS (Namespaces)
+-- ------------------------------------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS identity_auth;
+CREATE SCHEMA IF NOT EXISTS user_profiles;
+CREATE SCHEMA IF NOT EXISTS core_media;
+CREATE SCHEMA IF NOT EXISTS travel_experiences;
+CREATE SCHEMA IF NOT EXISTS social_feed;
+CREATE SCHEMA IF NOT EXISTS notifications;
+
+-- Standardized updated_at trigger function
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ==============================================================================
+-- 1. DOMAIN: IDENTITY & AUTHENTICATION (Schema: identity_auth)
+-- ==============================================================================
+
+CREATE TYPE identity_auth.user_role AS ENUM (
+  'user',
+  'local_legend',
+  'pro_guardian',
+  'moderator',
+  'admin'
+);
+
+-- Core credentials & security account (Isolated from public profile)
+CREATE TABLE identity_auth.accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL, -- Argon2id hash
+    role identity_auth.user_role NOT NULL DEFAULT 'user',
+    is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_banned BOOLEAN NOT NULL DEFAULT FALSE,
+    ban_reason TEXT,
+    last_login_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX uq_accounts_email ON identity_auth.accounts (LOWER(email));
+CREATE INDEX idx_accounts_role_active ON identity_auth.accounts (role, is_active);
+
+-- User Refresh Tokens (for stateless JWT rotation)
+CREATE TABLE identity_auth.refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) NOT NULL,
+    user_agent TEXT,
+    client_ip INET,
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_refresh_tokens_account ON identity_auth.refresh_tokens (account_id, is_revoked);
+CREATE INDEX idx_refresh_tokens_expires ON identity_auth.refresh_tokens (expires_at);
+
+CREATE TRIGGER set_timestamp_accounts
+BEFORE UPDATE ON identity_auth.accounts
+FOR EACH ROW EXECUTE FUNCTION trigger_set_timestamp();
+
+-- ==============================================================================
+-- 2. DOMAIN: OBJECT STORAGE & MEDIA METADATA (Schema: core_media)
+-- NOTE: Raw binaries NEVER hit Railway. Only verified CDN links & BlurHash.
+-- ==============================================================================
+
+CREATE TYPE core_media.asset_status AS ENUM (
+  'pending_upload', -- Upload ticket issued to client
+  'uploaded',       -- Binary arrived in S3 / R2
+  'verified',       -- Validated dimensions, blurhash generated, CDN active
+  'rejected'        -- Size/mime violation
+);
+
+CREATE TYPE core_media.media_category AS ENUM (
+  'avatar',
+  'post_photo',
+  'post_video',
+  'trip_cover',
+  'trail_stop_photo',
+  'guardian_verification_id'
+);
+
+CREATE TABLE core_media.assets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    uploader_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    category core_media.media_category NOT NULL,
+    status core_media.asset_status NOT NULL DEFAULT 'pending_upload',
+    
+    -- Object Storage References (AWS S3 / Cloudflare R2)
+    storage_bucket VARCHAR(100) NOT NULL,
+    storage_key VARCHAR(500) NOT NULL UNIQUE, -- e.g., 'uploads/users/uuid/photo.webp'
+    cdn_url TEXT,                             -- e.g., 'https://cdn.yourapp.com/uploads/users/uuid/photo.webp'
+    
+    -- File Properties
+    mime_type VARCHAR(100) NOT NULL,          -- e.g., 'image/webp', 'image/jpeg'
+    file_size_bytes BIGINT NOT NULL CHECK (file_size_bytes > 0),
+    width INT CHECK (width > 0),
+    height INT CHECK (height > 0),
+    aspect_ratio NUMERIC(5, 3),
+    
+    -- Fast placeholder string (instant UI paint with zero layout shift)
+    blurhash VARCHAR(100),
+    
+    -- Expiry for cleanup cron if upload never finished
+    upload_expires_at TIMESTAMPTZ NOT NULL,
+    verified_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_media_uploader_status ON core_media.assets (uploader_id, status);
+CREATE INDEX idx_media_pending_cleanup ON core_media.assets (status, upload_expires_at) 
+    WHERE status = 'pending_upload';
+
+-- ==============================================================================
+-- 3. DOMAIN: USER PROFILES & SOCIAL GRAPH (Schema: user_profiles)
+-- ==============================================================================
+
+CREATE TABLE user_profiles.profiles (
+    account_id UUID PRIMARY KEY REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    username VARCHAR(40) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    bio VARCHAR(250),
+    avatar_media_id UUID REFERENCES core_media.assets(id) ON DELETE SET NULL,
+    
+    -- Location & Privacy
+    city VARCHAR(100),
+    country VARCHAR(100),
+    age INT CHECK (age >= 13),
+    show_age BOOLEAN NOT NULL DEFAULT FALSE,
+    
+    -- Vibe Guardian & Local Legend Specific Profile Data
+    is_guardian_active BOOLEAN NOT NULL DEFAULT FALSE,
+    guardian_headline VARCHAR(150),
+    guardian_experience_years INT DEFAULT 0,
+    guardian_hourly_rate_cents INT CHECK (guardian_hourly_rate_cents >= 0),
+    guardian_flat_rate_cents INT CHECK (guardian_flat_rate_cents >= 0),
+    currency VARCHAR(3) DEFAULT 'USD',
+    
+    -- Denormalized Engagement Counters (Maintained via triggers for sub-millisecond reads)
+    followers_count INT NOT NULL DEFAULT 0 CHECK (followers_count >= 0),
+    following_count INT NOT NULL DEFAULT 0 CHECK (following_count >= 0),
+    posts_count INT NOT NULL DEFAULT 0 CHECK (posts_count >= 0),
+    handshakes_count INT NOT NULL DEFAULT 0 CHECK (handshakes_count >= 0),
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX uq_profiles_username_ci ON user_profiles.profiles (LOWER(username));
+CREATE INDEX idx_profiles_location ON user_profiles.profiles (country, city);
+CREATE INDEX idx_profiles_guardian_active ON user_profiles.profiles (is_guardian_active) 
+    WHERE is_guardian_active = TRUE;
+
+-- Social Follow Relationship
+CREATE TABLE user_profiles.follows (
+    follower_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    following_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id),
+    CONSTRAINT chk_no_self_follow CHECK (follower_id <> following_id)
+);
+
+CREATE INDEX idx_follows_following_created ON user_profiles.follows (following_id, created_at DESC);
+
+-- Verified Handshake Proof System (Proof of real in-person interaction)
+CREATE TABLE user_profiles.handshakes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    host_account_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    guest_account_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    interaction_type VARCHAR(50) NOT NULL DEFAULT 'vibe_guide', -- 'hire_pro', 'vibe_local'
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_no_self_handshake CHECK (host_account_id <> guest_account_id),
+    CONSTRAINT uq_host_guest_interaction UNIQUE (host_account_id, guest_account_id, interaction_type)
+);
+
+CREATE INDEX idx_handshakes_host ON user_profiles.handshakes (host_account_id, created_at DESC);
+CREATE INDEX idx_handshakes_guest ON user_profiles.handshakes (guest_account_id, created_at DESC);
+
+CREATE TRIGGER set_timestamp_profiles
+BEFORE UPDATE ON user_profiles.profiles
+FOR EACH ROW EXECUTE FUNCTION trigger_set_timestamp();
+
+-- ==============================================================================
+-- 4. DOMAIN: TRAVEL EXPERIENCES & CHECK-INS (Schema: travel_experiences)
+-- ==============================================================================
+
+-- Verified Geolocation POIs (PostGIS Powered)
+CREATE TABLE travel_experiences.check_ins (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    place_name VARCHAR(200) NOT NULL,
+    category VARCHAR(80) NOT NULL,
+    address TEXT,
+    city VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    
+    -- Spatial coordinates using standard EPSG 4326 (WGS 84 GPS Lat/Long)
+    latitude NUMERIC(10, 7) NOT NULL,
+    longitude NUMERIC(10, 7) NOT NULL,
+    location_geom GEOMETRY(Point, 4326) GENERATED ALWAYS AS (
+        ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)
+    ) STORED,
+    accuracy_meters NUMERIC(6, 2),
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_checkins_location_gist ON travel_experiences.check_ins USING GIST (location_geom);
+CREATE INDEX idx_checkins_user_created ON travel_experiences.check_ins (account_id, created_at DESC);
+CREATE INDEX idx_checkins_city ON travel_experiences.check_ins (country, city);
+
+-- Trips & Vibe Trails / Tours
+CREATE TABLE travel_experiences.trails (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    slug VARCHAR(250) NOT NULL,
+    description TEXT,
+    cover_media_id UUID REFERENCES core_media.assets(id) ON DELETE SET NULL,
+    
+    -- Distinction: Regular Vibe Trail vs Pro Guardian Vibe Tour
+    is_tour BOOLEAN NOT NULL DEFAULT FALSE,
+    tour_price_cents INT CHECK (tour_price_cents >= 0),
+    tour_duration_label VARCHAR(50), -- e.g., '6h', 'Full Day'
+    meeting_point TEXT,
+    languages VARCHAR(100)[],         -- Array of spoken languages
+    whats_included TEXT[],           -- Items included
+    cancellation_policy TEXT,
+    
+    -- Geo aggregation
+    city VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    total_stops INT NOT NULL DEFAULT 0 CHECK (total_stops >= 0),
+    is_public BOOLEAN NOT NULL DEFAULT TRUE,
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX uq_trails_creator_slug ON travel_experiences.trails (creator_id, slug);
+CREATE INDEX idx_trails_city_tour ON travel_experiences.trails (country, city, is_tour, created_at DESC);
+CREATE INDEX idx_trails_creator ON travel_experiences.trails (creator_id, created_at DESC);
+
+-- Itinerary Stops inside a Vibe Trail / Tour
+CREATE TABLE travel_experiences.trail_stops (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    trail_id UUID NOT NULL REFERENCES travel_experiences.trails(id) ON DELETE CASCADE,
+    stop_number INT NOT NULL CHECK (stop_number > 0),
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    cover_media_id UUID REFERENCES core_media.assets(id) ON DELETE SET NULL,
+    check_in_id UUID REFERENCES travel_experiences.check_ins(id) ON DELETE SET NULL,
+    latitude NUMERIC(10, 7),
+    longitude NUMERIC(10, 7),
+    estimated_minutes INT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (trail_id, stop_number)
+);
+
+CREATE INDEX idx_trail_stops_order ON travel_experiences.trail_stops (trail_id, stop_number ASC);
+
+CREATE TRIGGER set_timestamp_trails
+BEFORE UPDATE ON travel_experiences.trails
+FOR EACH ROW EXECUTE FUNCTION trigger_set_timestamp();
+
+-- ==============================================================================
+-- 5. DOMAIN: SOCIAL FEED & ENGAGEMENT (Schema: social_feed)
+-- ==============================================================================
+
+-- Travel Posts (The Core Feed)
+CREATE TABLE social_feed.posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    author_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    trail_id UUID REFERENCES travel_experiences.trails(id) ON DELETE SET NULL,
+    check_in_id UUID REFERENCES travel_experiences.check_ins(id) ON DELETE SET NULL,
+    
+    caption TEXT,
+    vibe_category VARCHAR(60) NOT NULL DEFAULT 'Vibe Spot',
+    vibe_score INT CHECK (vibe_score BETWEEN 1 AND 5),
+    
+    -- Optional post-specific location pin
+    location_name VARCHAR(200),
+    latitude NUMERIC(10, 7),
+    longitude NUMERIC(10, 7),
+    location_geom GEOMETRY(Point, 4326),
+    
+    -- Denormalized Counters
+    likes_count INT NOT NULL DEFAULT 0 CHECK (likes_count >= 0),
+    comments_count INT NOT NULL DEFAULT 0 CHECK (comments_count >= 0),
+    media_count INT NOT NULL DEFAULT 0 CHECK (media_count >= 0),
+    
+    is_published BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Crucial High-Throughput Keyset Pagination Index (Cursor Pagination)
+CREATE INDEX idx_posts_feed_cursor ON social_feed.posts (created_at DESC, id DESC) 
+    WHERE is_published = TRUE;
+CREATE INDEX idx_posts_author_cursor ON social_feed.posts (author_id, created_at DESC);
+CREATE INDEX idx_posts_trail ON social_feed.posts (trail_id) WHERE trail_id IS NOT NULL;
+CREATE INDEX idx_posts_spatial_gist ON social_feed.posts USING GIST (location_geom) 
+    WHERE location_geom IS NOT NULL;
+
+-- Post Media Junction (Associates multiple media assets to a single post with ordering)
+CREATE TABLE social_feed.post_media (
+    post_id UUID NOT NULL REFERENCES social_feed.posts(id) ON DELETE CASCADE,
+    media_asset_id UUID NOT NULL REFERENCES core_media.assets(id) ON DELETE CASCADE,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (post_id, media_asset_id)
+);
+
+CREATE INDEX idx_post_media_order ON social_feed.post_media (post_id, sort_order ASC);
+
+-- Reactions / Likes
+CREATE TABLE social_feed.post_likes (
+    post_id UUID NOT NULL REFERENCES social_feed.posts(id) ON DELETE CASCADE,
+    account_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (post_id, account_id)
+);
+
+CREATE INDEX idx_post_likes_user ON social_feed.post_likes (account_id, created_at DESC);
+
+-- Threaded Post Comments
+CREATE TABLE social_feed.comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    post_id UUID NOT NULL REFERENCES social_feed.posts(id) ON DELETE CASCADE,
+    author_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    parent_comment_id UUID REFERENCES social_feed.comments(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_comments_post_thread ON social_feed.comments (post_id, created_at ASC);
+
+-- Verified Guardian Reviews (Restricted strictly to validated handshakes)
+CREATE TYPE social_feed.guardian_badge AS ENUM (
+  'Good Vibe',
+  'Chill Vibe',
+  'Cool Vibe'
+);
+
+CREATE TABLE social_feed.guardian_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    handshake_id UUID NOT NULL REFERENCES user_profiles.handshakes(id) ON DELETE CASCADE,
+    guardian_account_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    reviewer_account_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    badge social_feed.guardian_badge NOT NULL,
+    note VARCHAR(111) NOT NULL, -- Strict 111-char max rule
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_review_per_handshake UNIQUE (handshake_id)
+);
+
+CREATE INDEX idx_guardian_reviews_target ON social_feed.guardian_reviews (guardian_account_id, created_at DESC);
+
+CREATE TRIGGER set_timestamp_posts
+BEFORE UPDATE ON social_feed.posts
+FOR EACH ROW EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp_comments
+BEFORE UPDATE ON social_feed.comments
+FOR EACH ROW EXECUTE FUNCTION trigger_set_timestamp();
+
+-- ==============================================================================
+-- 6. DOMAIN: NOTIFICATIONS & ACTIVITY (Schema: notifications)
+-- ==============================================================================
+
+CREATE TYPE notifications.notification_type AS ENUM (
+  'post_liked',
+  'post_commented',
+  'user_followed',
+  'handshake_requested',
+  'handshake_confirmed',
+  'review_received',
+  'system_alert'
+);
+
+CREATE TABLE notifications.events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    recipient_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    actor_id UUID REFERENCES identity_auth.accounts(id) ON DELETE SET NULL,
+    type notifications.notification_type NOT NULL,
+    
+    -- Polymorphic entity linkage
+    entity_id UUID,
+    entity_type VARCHAR(50), -- 'post', 'trail', 'handshake', 'comment'
+    
+    message VARCHAR(255) NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    read_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_notifications_recipient ON notifications.events (recipient_id, is_read, created_at DESC);
+Key Architectural Safeguards in This Schema:
+Strict Data Privacy: Public API endpoints only ever query the user_profiles schema. They have zero access to password hashes or token salts in identity_auth.
+Infinite Scale Media: Heavy photos and videos are stored in S3/R2. The core_media.assets table only handles metadata and links, preventing database bloat.
+No Drift / No N+1 Slowdowns: Feed queries use (created_at DESC, id DESC) cursor pagination, keeping feed loading instant whether there are 1,000 posts or 10,000,000 posts.
+Enforced Handshake Gating: A user cannot write a review without an existing, verified record in user_profiles.handshakes.
+flag
+Checkpoint
+How u respected the dependencies and relation between functions and pages such feeds and places and other features that depends on each other ?
+Gemini 3.8 Flash
+Ran for 22s
+In a large application, the biggest reason code becomes messy and fragile is tight coupling—where modifying a Place or Trail breaks the Feed, or deleting a user breaks image loading.
+In this architecture, dependencies and relationships between features (Feeds, Places, Trails, Media, Guardians, and Notifications) are handled using four core architectural patterns:
+1. The Clean Dependency Hierarchy (Unidirectional Flow)
+Dependencies between domains never form circular loops. They flow strictly in one direction from foundation to feature:
+code
+Code
+┌────────────────────────────────────────────────────────┐
+│                   FOUNDATION DOMAINS                   │
+│   [ identity_auth ]               [ core_media ]       │
+│   (User accounts & security)      (Images, CDN, S3)    │
+└───────────────────────┬──────────────────────┬─────────┘
+                        │                      │
+                        ▼                      ▼
+┌────────────────────────────────────────────────────────┐
+│                    CONTEXT DOMAINS                     │
+│   [ user_profiles ]          [ travel_experiences ]    │
+│   (Handles, bios, roles)     (Places/Check-ins, Trails)│
+└───────────────────────┬──────────────────────┬─────────┘
+                        │                      │
+                        ▼                      ▼
+┌────────────────────────────────────────────────────────┐
+│                   CONSUMER DOMAINS                     │
+│   [ social_feed ]               [ notifications ]      │
+│   (Posts, Feed, Comments)       (Event-driven alerts)  │
+└────────────────────────────────────────────────────────┘
+Places & Check-ins (travel_experiences) do not know what a Post is. A Place exists on the map independently, whether 0 people or 1,000 people post about it.
+The Feed (social_feed) references Places and Trails optionally.
+Notifications only listen to events; no feature depends on the notification system to complete its own work.
+2. Resilient Database Foreign Key Relationships (ON DELETE SET NULL)
+If a user deletes a Trail or a Place is archived, it will never break or crash the Feed:
+code
+SQL
+-- Inside social_feed.posts
+CREATE TABLE social_feed.posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    author_id UUID NOT NULL REFERENCES identity_auth.accounts(id) ON DELETE CASCADE,
+    
+    -- LOOSE COUPLING TO PLACES & TRAILS:
+    trail_id UUID REFERENCES travel_experiences.trails(id) ON DELETE SET NULL,
+    check_in_id UUID REFERENCES travel_experiences.check_ins(id) ON DELETE SET NULL,
+    ...
+);
+If a Place is modified or removed: check_in_id safely becomes NULL. The user's post, photos, and comments remain intact with their caption.
+If an Author is deleted: The post cascades and cleans up cleanly without leaving orphaned records.
+3. Decoupling Features via Domain Events (Publish/Subscribe)
+In the old monolith, when a user liked a post or a Guardian interaction happened, one giant function tried to:
+Save the like to the database.
+Increment the post counter.
+Call the notification system.
+Send a push notification.
+If the notification service failed, the like failed.
+In the new architecture, domains communicate through Events:
+code
+Code
+[User Taps Like] 
+       │
+       ▼
+[social_feed Domain] ───► Emits: "PostLikedEvent"
+       │
+       ├─────────────────────────────────┐
+       ▼                                 ▼
+(Instant HTTP 200 to user)    [Event Bus / Queue]
+                                         │
+                                         ▼
+                             [notifications Domain]
+                             (Creates in-app notification)
+The Feed code never imports or calls the Notification code. It simply publishes an event. If the notification system is ever rewritten or paused, the Feed continues operating at 100% speed.
+4. How Pages Connect Without Spaghetti Code (CQRS Read Projections)
+When a user opens the Feed Page, they need data from four different tables:
+The post text and vibe score (social_feed.posts)
+The author's name and avatar (user_profiles.profiles + core_media.assets)
+The attached images and BlurHash placeholders (core_media.assets)
+The location/place tag (travel_experiences.check_ins)
+❌ The Monolithic Way (How it was failing):
+The frontend makes 4-5 chained requests: fetch posts ➔ loop through authors ➔ fetch pictures ➔ fetch places. This causes screen flickering and N+1 network lag.
+The Clean Architecture Way:
+The Travel Feed Use Case returns a unified, optimized FeedItemDTO in a single database query using PostgreSQL JSON aggregation:
+code
+SQL
+-- Sub-40ms unified feed query combining related entities
+SELECT 
+    p.id,
+    p.caption,
+    p.vibe_category,
+    p.created_at,
+    -- Joined Author Projection
+    json_build_object(
+        'userId', pr.account_id,
+        'username', pr.username,
+        'displayName', pr.display_name,
+        'avatarUrl', m_avatar.cdn_url
+    ) AS author,
+    -- Joined Place / Check-in Projection
+    CASE WHEN c.id IS NOT NULL THEN
+        json_build_object(
+            'id', c.id,
+            'placeName', c.place_name,
+            'category', c.category,
+            'city', c.city
+        )
+    ELSE NULL END AS place,
+    -- Joined Media Array Projection with BlurHash
+    COALESCE(
+        json_agg(
+            json_build_object(
+                'id', m.id,
+                'url', m.cdn_url,
+                'blurhash', m.blurhash,
+                'width', m.width,
+                'height', m.height
+            ) ORDER BY pm.sort_order
+        ) FILTER (WHERE m.id IS NOT NULL), '[]'
+    ) AS media
+FROM social_feed.posts p
+JOIN user_profiles.profiles pr ON p.author_id = pr.account_id
+LEFT JOIN core_media.assets m_avatar ON pr.avatar_media_id = m_avatar.id
+LEFT JOIN travel_experiences.check_ins c ON p.check_in_id = c.id
+LEFT JOIN social_feed.post_media pm ON p.id = pm.post_id
+LEFT JOIN core_media.assets m ON pm.media_asset_id = m.id
+WHERE p.is_published = TRUE
+GROUP BY p.id, pr.account_id, pr.username, pr.display_name, m_avatar.cdn_url, c.id;
+5. Frontend Page Interaction Contracts
+When the user moves between pages in your app, they pass through clean, isolated routes and IDs:
+User Action on Feed	Frontend Action	Clean API Call
+Taps on an Author's Avatar	Navigates to /profile/:username	GET /api/v1/users/:username (Queries user_profiles)
+Taps on a Place Tag	Opens Place Modal / Drawer	GET /api/v1/places/:placeId (Queries travel_experiences)
+Taps on a Trail / Tour Link	Opens Tour Detail View	GET /api/v1/trails/:trailSlug (Queries travel_experiences)
+Taps Handshake / Hire Guide	Triggers Handshake Flow	POST /api/v1/guardians/handshake (Creates verified interaction)
+This structure ensures that every page has a single responsibility. The Feed only renders posts, the Explore page only renders places and trails, and the Profile page only renders user information—all querying their respective, clean API endpoint
+Gemini's clean architecture versus the current VibeQuest
+Verdict: Gemini has some useful architectural ideas, but its proposed replacement is not cleaner or more complete than the existing VibeQuest foundation in several important respects. I would not adopt its SQL or rebuild the app around its three-domain structure.
+
+The GitHub source confirms that the current project already implements much of the separation Gemini proposes: a modular Fastify API, independent domain repositories, typed contracts, a dedicated database integration package, and object storage for media.
+
+The biggest difference is that Gemini presents a simplified new foundation as if it solves the entire original product, when its demonstrated SQL covers only a fraction of VibeQuest's actual feature requirements.
+
+Design question
+
+Gemini proposal
+
+Current VibeQuest
+
+Assessment
+
+Domain modules
+
+Identity, Travel, Media
+
+Identity, Profile, Social, Content, Geo, Places, Media, Business, Activities, Events
+
+Current source has more appropriate ownership boundaries
+
+Business logic isolation
+
+Ports and adapters
+
+Separate repositories, domain packages and API modules
+
+The core pattern already exists
+
+Database organization
+
+Six PostgreSQL schemas
+
+Domain-prefixed tables with ownership enforcement
+
+Different organization, not automatically better isolation
+
+Migration protection
+
+Basic migration scripts
+
+Transactional, locked, SHA-256-checked runner
+
+Current implementation has stronger demonstrated replay protection
+
+Media storage
+
+Direct S3 uploads, CDN URLs, BlurHash
+
+Object storage, metadata and a server-mediated processing lifecycle
+
+Direct upload is a possible optimization, not a complete replacement
+
+Complete product features
+
+Approximately 16 core tables in the supplied six-schema SQL
+
+35 source-defined application tables plus 140 planned target tables
+
+Gemini's supplied schema is substantially less complete
+
+App deployment
+
+Run migrations in API startup command
+
+Separate migration command and API startup
+
+Current separation is safer
+
+The key distinction is that a database namespace does not by itself create a domain boundary. Domain separation depends on which component is authorized to modify data, how transactions work, what interfaces other domains consume, and what database grants are enforced.
+
+1. Specific problems in Gemini's SQL
+These are defects in the SQL you provided, not speculative concerns.
+
+Severity
+
+Finding
+
+Why it matters
+
+Critical
+
+Tour creation is not restricted to Pro Guardians in the database
+
+trails.is_tour is a boolean with no constraint or authorization mechanism tying it to verified Pro Guardian status
+
+Critical
+
+Handshake verification is not enforced
+
+handshakes has no confirmation or verification state; inserting a row is enough to create purported proof
+
+Critical
+
+Guardian reviews are not bound to the handshake participants
+
+guardian_reviews.handshake_id has an FK, but the separate guardian/reviewer IDs are not constrained to match that handshake
+
+High
+
+Cross-post comment parenting is possible
+
+A comment references its parent by ID without enforcing that the parent belongs to the same post
+
+High
+
+Pricing rules are not enforced
+
+Hourly and flat-rate fields can both be populated, despite Gemini's stated exclusive-pricing rule
+
+High
+
+Geographic integrity is incomplete
+
+Check-ins do not enforce latitude and longitude bounds or validated accuracy; independently stored post coordinates and geometry can disagree
+
+High
+
+Media ownership and lifecycle are incomplete
+
+The schema lacks complete protections against attaching another user's media or deleting physical storage while references remain
+
+High
+
+Referential deletion is overly broad
+
+Deleting an account cascades into posts, media records and handshake evidence without a specified retention or recovery lifecycle
+
+Medium
+
+Performance guarantees are unsupported
+
+The promised 40ms queries and sub-80ms API latency have no benchmark, load model or execution-plan evidence
+
+There is also a significant documentation contradiction. Gemini says the app will use a verified handshake to gate reviews, but its SQL only requires a reference to a handshake row. Existence is not verification.
+
+Its API startup recommendation, npm run db:migrate && npm run start, is another issue. It couples application availability to schema-migration privileges and execution. That would be a poor replacement for VibeQuest's existing migration-role boundary.
+
+2. The most consequential architectural difference
+Gemini's model
+
+Identity
+Travel
+Media
+Social feed
+Notifications
+Simplified proposal; several product responsibilities are grouped under Travel.
+
+Current VibeQuest source
+
+Fastify composition
+Identity / Profile
+Social / Content
+Geo / Places
+Activities / Events
+Business / Media
+PostGIS
+Based on registered domain modules and database repository composition.
+
+The current system separates social posting, location, activities and business ownership instead of putting all of them in a generic Travel domain.
+
+That matters when VibeQuest grows into reservations, verified Guardians, private conversations, venue ownership, location privacy, moderation and payments.
+
+Gemini's three initial domains would need to expand substantially before covering those requirements. Otherwise, its Travel module risks becoming the new monolith.
+
+3. What Gemini gets right
+There are useful ideas worth retaining for specific future implementations, rather than adopting its entire blueprint.
+
+Presigned direct-to-storage uploads: Potentially reduce API bandwidth and memory use for large files. They still require server-side verification of actual uploaded bytes, content type, size, ownership, processing and cleanup.
+
+BlurHash or comparable image placeholders: Useful for visual loading performance, but separate from image validation and object ownership.
+
+Explicit database privilege separation: Valuable when enforced through PostgreSQL roles and grants, not merely separate schema names.
+
+Read projections: A feed can assemble data from multiple owners efficiently without granting the Feed domain permission to mutate another domain's tables.
+
+Asynchronous domain events: Appropriate for notification delivery and other independently retryable work, provided events are durably persisted rather than relying only on an in-memory event bus.
+
+None of these requires a new GitHub repository or Railway project.
+
+4. Where the existing master plan is stronger
+The current master plan covers considerably more functionality than the Gemini proposal, including the ownership and lifecycle contracts for Identity, Profile, Content, Media, Geo, Places, Activities, Events, Guardians, Trails, Reservations, messaging, notifications and other later-stage capabilities.
+
+It also explicitly requires transactional consistency, media-retirement ownership, idempotency, integrity guards and policy approval boundaries.
+
+Those are not decorative complexities. They address real problems that appear when multiple independent features share identities, media, payments, permissions and user-generated content.
+
+The current master plan's complete SQL candidate specification is therefore the more comprehensive design basis. Its missing piece is safe executable implementation and deployment, not another simplified database schema.
+
+5. Recommendation
+Do not replace VibeQuest's current architecture with Gemini's blueprint.
+
+Instead, keep the current foundation and apply the useful techniques where they solve demonstrated problems.
+
+The immediate engineering priorities remain:
+
+Reconcile the existing database's installed migrations and privileges with the canonical GitHub schema.
+
+Complete approved, dependency-ordered migrations for the full planned architecture.
+
+Enforce database compatibility before API promotion.
+
+Resolve the existing API readiness failure and independently retry the Railway Web infrastructure failure.
+
+Continue original-product reconstruction, including Vibe Trails, Tours and Guardians, using their established owners and approved policy decisions.
+
+Gemini's work is valuable as reference product behavior—particularly the Trails, Tours, Guardian hire visibility, handshake and reservation interactions. However, its generated SQL should not supersede the current master plan or be executed as-is.
+
+Final conclusion: The current VibeQuest architecture has a stronger foundation for the full intended application than Gemini's proposed replacement. The critical work is completing its implementation and release controls, not starting over.
+
+No source files, database objects or infrastructure were changed during this comparison.
+
+Is there any information or domains or features you want to ask Gemini directly about that can help with our current app you can write a prompt the way it will deliver helpful information for our current clean app
+Yes. Gemini can provide something extremely valuable that GitHub, Railway, and our current master plan cannot fully establish: the original product's intended behavior and the decisions behind its design.
+
+Since Gemini created the original VibeQuest application, I would ask it to act as an original-product knowledge source, not as a new architect, database designer, or implementation agent.
+
+Our goal is to recover missing information, identify genuine differences, and preserve the original features without introducing duplicate ownership or conflicting database structures.
+
+The highest-value areas to investigate are Vibe Trails and Tours, Guardians, verified Handshakes, messaging, Vibe Share, discovery algorithms, original interaction rules, and dependencies between features.
+
+Here is the prompt I recommend sending directly to Gemini.
+
+VIBEQUEST — ORIGINAL PRODUCT KNOWLEDGE RECOVERY & FEATURE CONTRACT AUDIT
+YOUR ROLE
+You are the original creator and implementation collaborator of the legacy VibeQuest application.
+
+We are rebuilding VibeQuest in a separate, modern GitHub repository using a clean, domain-owned architecture.
+
+Your assignment is NOT to redesign, rebuild, implement, or modify the application.
+
+Your assignment is to recover and document the original VibeQuest product's functionality, business rules, interactions, relationships, and design intentions using your actual source files, existing implementation, and available conversation history.
+
+We need information that can help our current engineering team reconstruct the complete original product faithfully.
+
+1. STRICT SOURCE-TRUTH RULES
+Before answering:
+
+Inspect all available original VibeQuest source files.
+
+Inspect the original features, screens, hooks, services, types, and storage mechanisms.
+
+Review your available conversation history, previous user instructions, accepted rules, and implementation records.
+
+Identify what was actually implemented versus what was merely proposed or planned.
+
+Distinguish successful code builds from verified runtime functionality.
+
+Do not invent missing rules, decisions, dependencies, or functionality.
+
+Do not make assumptions about our current GitHub implementation.
+
+Do not propose replacing the existing application's architecture.
+
+Do not generate code, SQL migrations, database schemas, or a new repository.
+
+Do not modify any files.
+
+For every significant finding, use one of these classifications:
+
+IMPLEMENTED: Directly verified in the original source.
+
+APPROVED REQUIREMENT: Explicitly requested or approved by the Product Owner.
+
+PLANNED: Documented but not implemented.
+
+CONTRADICTORY: Different sources or instructions disagree.
+
+UNKNOWN: No reliable evidence establishes the answer.
+
+Provide actual file paths and relevant symbols whenever source evidence exists.
+
+Your historical role as the creator does not authorize you to fill knowledge gaps with guesses.
+
+2. COMPLETE ORIGINAL FEATURE INVENTORY
+Inspect the entire original application, not only currently popular or recently edited features.
+
+Recover every significant feature in:
+
+HOME and personalized discovery.
+
+EXPLORE and its geographical discovery system.
+
+Places and verified location information.
+
+Vibe Trails, Trails sharing, and linked experiences.
+
+Vibe Tours and paid guided experiences.
+
+Local Legends and Pro Guardians.
+
+Guardian verification and hire visibility.
+
+Handshake proof and review eligibility.
+
+Activities and Official Events.
+
+Communities, Circles, and groups.
+
+Messaging, chat, and Paltalk-style rooms.
+
+Vibe Share, media publishing, and ephemeral experiences.
+
+VibeCheck, VibeFlash, and native challenges.
+
+Vibe Matching, invitations, Pulls, and Vibes.
+
+Vibe Trails linked across different application screens.
+
+Profile, interests, reputation, and personal settings.
+
+Notifications and social interactions.
+
+Crypto, Purse, reservations, and commercial interactions.
+
+Admin, moderation, reporting, and account security.
+
+Any other original features or background functionality you discover.
+
+For each feature, document:
+
+A. Original purpose
+
+What user problem was the feature intended to solve?
+
+B. Entry points
+
+Where can the user discover or open the feature?
+
+C. User interactions
+
+Document the actual buttons, menus, tabs, forms, dialogs, and important transitions.
+
+D. Business rules
+
+Identify eligibility requirements, limits, permissions, state transitions, restrictions, and verification requirements.
+
+E. Data ownership
+
+What information does the feature create or modify? Which feature should be authoritative for that information?
+
+Describe observed storage behavior separately from any recommended ownership.
+
+F. Feature dependencies
+
+Which other features provide data, permissions, identities, media, location, notifications, or interactions?
+
+G. Persistence
+
+Determine whether functionality was persisted in a real backend, browser storage, hardcoded sample data, or only transient React state.
+
+H. Completion status
+
+State whether the original implementation was functional, partially implemented, mocked, or unverified.
+
+I. Evidence
+
+Provide exact file paths, functions, types, and historical instructions supporting your findings.
+
+3. DEEP INVESTIGATION — VIBE TRAILS, TOURS, AND GUARDIANS
+This is a particularly important product area.
+
+Inspect the final source, including:
+
+CreateTrailModal.tsx
+
+TrailDetailModal.tsx
+
+VibeTrailsSection.tsx
+
+useVibeTrails.ts
+
+VibeGuardiansSection.tsx
+
+HireGuardianForTrailModal.tsx
+
+InAppSelfieModal.tsx
+
+vibeGuardianStorage.ts
+
+ExploreScreen.tsx
+
+If a file does not exist, say so.
+
+Recover the exact original requirements for:
+
+Vibe Trails
+Who can create a Trail?
+
+How are Trails structured?
+
+How are stops ordered?
+
+What information belongs to each stop?
+
+How are Trails saved, edited, shared, opened, and deleted?
+
+How are Trails linked from other screens?
+
+Are Trails independent entities or simply collections of existing Places?
+
+Which information is canonical versus copied for presentation?
+
+Vibe Tours
+What makes a Tour different from a Trail?
+
+Must a Tour always belong to a verified Pro Guardian?
+
+Can a normal Trail be converted into a Tour?
+
+What happens if the Guardian loses verification?
+
+What information is mandatory?
+
+How do availability, scheduling, cancellation, and reservations work?
+
+What state changes when a booking is accepted, cancelled, completed, or disputed?
+
+Is there actual booking persistence or only a simulated calendar?
+
+Pro Guardians and Local Legends
+What verification steps actually existed?
+
+Who grants and revokes verification?
+
+What is the precise difference between a Local Legend and a Pro Guardian?
+
+What is the rule for hourly rates versus flat tour pricing?
+
+What does “Show me in Hire suggestions on trails” control?
+
+What are the exact eligibility conditions for appearing in Hire suggestions?
+
+How does selecting a Guardian from a Trail connect to messaging?
+
+What happens to linked Trails and Tours if an account is suspended?
+
+Handshake Proof
+What precisely creates a Handshake?
+
+Does tapping Hire or Vibe automatically create proof?
+
+Is user confirmation required?
+
+Is payment or booking completion required?
+
+How is a handshake verified against fabricated interactions?
+
+Can evidence be revoked or disputed?
+
+Who can review whom?
+
+What are the exact review restrictions, including the 111-character limit and one-badge rule?
+
+Pay special attention to contradictions between historical prompts and actual implementation.
+
+Do not silently decide which rule should win.
+
+4. CROSS-FEATURE DEPENDENCY INVESTIGATION
+We need to know how the original product was intended to behave across screens.
+
+Trace these journeys:
+
+Feed Post → Author Profile → Follow → Updated Feed.
+
+Feed Post → Place → Explore → Trail.
+
+Explore → Trail → Hire Guardian → Messaging → Handshake → Review.
+
+Tour → Check Dates → Reservation → Confirmation → Notifications.
+
+Activity → Media → User Profile → Home Feed.
+
+Event → Business Host → Reservation or RSVP → Notifications.
+
+Vibe Share → Media → Feed → Expiration and Cleanup.
+
+User Account → Profile → Media → Privacy Controls → Account Deletion.
+
+Vibe Matching → Invitation → Accepted Interaction → Messaging.
+
+Reported Content → Moderation → Visibility Changes → Notification.
+
+For every journey, identify:
+
+The original UI trigger.
+
+Relevant source files.
+
+The actual implementation path.
+
+Required permissions.
+
+State transitions.
+
+Persistent data.
+
+External integrations.
+
+Failure behavior.
+
+What happens when an associated entity is deleted or restricted.
+
+Whether the journey ever worked end to end.
+
+Do not claim an end-to-end journey was functional merely because the UI opened a modal.
+
+5. RECOVER ORIGINAL PRODUCT DECISIONS
+Search your available history for decisions that may not have been transferred accurately into the new master reconstruction plan.
+
+Focus on:
+
+Account eligibility and verification.
+
+Privacy and location visibility.
+
+Guardian and Local Legend recognition.
+
+Tour reservations and payment rules.
+
+Handshake verification.
+
+Reviews and reputation.
+
+Matching and invitation eligibility.
+
+Media retention and deletion.
+
+Ephemeral content.
+
+Messaging and room permissions.
+
+Blocking and moderation.
+
+Location and geographic discovery.
+
+Profile ownership and display information.
+
+Trail sharing and cross-feature navigation.
+
+Financial and refund behavior.
+
+For each recovered decision, provide:
+
+Original requirement	Evidence	Status	Affected features	Exact unresolved questions
+Do not invent POL IDs. Our current master plan has its own authoritative Product Owner decision register.
+
+If you can identify historical decisions, provide their exact historical wording and evidence so that we can reconcile them independently.
+
+6. ORIGINAL IMPLEMENTATION QUALITY AND TECHNICAL DEBT
+Inspect the legacy application for demonstrated defects, including:
+
+Large components with multiple unrelated responsibilities.
+
+Duplicate state or competing sources of truth.
+
+Mocked authentication or verification.
+
+Hardcoded user identities or Guardians.
+
+Local storage used as authoritative backend state.
+
+Fake bookings, handshakes, messages, or notifications.
+
+Incomplete persistence.
+
+Dead code.
+
+Unused services.
+
+Circular dependencies.
+
+Data shape inconsistencies.
+
+Uninitialized nullable/optional values.
+
+Inconsistent media ownership.
+
+Stale or duplicate feature models.
+
+Missing authorization enforcement.
+
+Specifically inspect the historical trail.savedBy runtime error and determine whether the actual underlying data contract was corrected or merely protected by defensive UI checks.
+
+For each finding, provide:
+
+Observed defect → source evidence → root cause → affected behavior → original correction status.
+
+Separate an actual defect from an architectural preference.
+
+We are not asking you to refactor the legacy application.
+
+7. IDENTIFY FEATURES THAT MUST NOT BE LOST
+Identify every distinctive original VibeQuest capability that could easily be omitted in a modern reconstruction.
+
+Prioritize unique product mechanics rather than ordinary social-app functionality.
+
+Examples include Vibe Trails, Guardian verification, Handshakes, location-based discovery, native challenges, contextual sharing, cross-screen navigation and localized community interactions.
+
+For each, explain:
+
+Why it is important to the original product.
+
+What exact behavior defines it.
+
+Which other features depend on it.
+
+What must be preserved during reconstruction.
+
+Which details remain unverified.
+
+8. DO NOT DESIGN OUR NEW DATABASE
+We already maintain a canonical PostgreSQL/PostGIS architecture and master plan in GitHub.
+
+Do not produce another schema, migration system, repository tree, API architecture or framework recommendation.
+
+Instead, describe the original business information and relationships the application needs.
+
+For example:
+
+A Guardian may offer a Tour.
+
+A Tour may contain ordered stops.
+
+A booking belongs to a particular Tour and requester.
+
+A review may require verified interaction evidence.
+
+Distinguish explicitly documented rules from inferred relationships.
+
+Our engineering team will map these requirements onto the existing approved domain owners and database design.
+
+9. REQUIRED DELIVERABLE
+Produce one comprehensive Markdown report titled:
+
+VIBEQUEST_ORIGINAL_PRODUCT_KNOWLEDGE_RECOVERY.md
+
+Structure it as:
+
+Executive findings.
+
+Sources actually inspected.
+
+Complete original feature inventory.
+
+Detailed Vibe Trails / Tours / Guardian specification.
+
+Original cross-feature interactions and dependencies.
+
+Original user and data lifecycles.
+
+Historical Product Owner decisions and evidence.
+
+Feature implementation status: real versus mock.
+
+Original technical defects and limitations.
+
+Missing or ambiguous behaviors.
+
+Unique functionality that must be preserved.
+
+Evidence index with exact source paths.
+
+Questions requiring clarification from the original Product Owner.
+
+For unresolved questions, do not guess answers.
+
+Rank them by actual product impact and explain which features depend on each answer.
+
+Do not ask 100 generic questions. Only identify concrete, evidence-backed ambiguities that materially affect rebuilding the original application.
+
+FINAL INSTRUCTION
+Your value in this assignment is your knowledge of the original VibeQuest product.
+
+Recover the truth about its behavior, decisions, relationships, and intentions.
+
+Do not create a competing architecture.
+
+Do not generate new database SQL.
+
+Do not change any files.
+
+Do not claim that a feature worked simply because it compiled.
+
+Deliver the most complete evidence-backed account of the original VibeQuest product that your source access and historical context can support.
+
+What I want from Gemini's answer
+The most useful outcome is not another architectural blueprint. It is a historically grounded product contract that we can compare against docs/product/VIBEQUEST_MASTER_RECONSTRUCTION_PLAN.md and the current GitHub code.
+
+When Gemini returns the report, we can classify every finding as already covered, missing from the master plan, contradictory, or requiring a genuine Product Owner decision.
+
+That will help protect original functionality while maintaining the current clean ownership boundaries.
+
+One important point: Gemini may not retain every previous conversation or source revision. The prompt explicitly requires it to disclose those limitations instead of reconstructing history from assumptions.
+
+
+Pasted text(20261029-112051).txt
+Document
+Check Gemini reply attached
+I reviewed Gemini’s attached response, particularly its Original Product Knowledge Recovery & Feature Contract Audit beginning at line 1967.
+
+Verdict: This is useful historical evidence for VibeQuest, and it exposes several important product-contract problems. However, Gemini’s report is not a complete original-product audit, and several of its conclusions must not be treated as approved decisions or verified backend functionality.
+
+1. Most valuable new information
+Finding
+
+Gemini's evidence
+
+Significance
+
+Trails persisted in Firestore
+
+useVibeTrails.ts
+
+Original Trails had actual persistence, not merely UI demonstrations
+
+Trail adoption and remixing
+
+Parent trail ID and atomic adoption counter
+
+A distinctive mechanic that must survive reconstruction
+
+Guardian data lived in localStorage
+
+vibeGuardianStorage.ts
+
+Original Guardian persistence was browser-specific
+
+Tour reservations lived in localStorage
+
+vq_guardian_tour_reservations_v2
+
+Calendar interactions did not constitute a durable server-side booking system
+
+Handshakes were awarded immediately
+
+recordHandshake() following Hire, Vibe or booking
+
+Original proof did not necessarily demonstrate an actual in-person meeting
+
+Guardian selfies expired after seven days
+
+isSelfieExpired()
+
+Important eligibility and visibility rule
+
+Review format
+
+111 characters, one of three badges
+
+Precise historical product contract
+
+Original challenge timers
+
+VibeCheck 33 seconds; VibeFlash 60 seconds
+
+Conflicts with some user-facing descriptions
+
+These findings give us concrete source paths and symbols for future comparison with the canonical master plan.
+
+2. The most serious finding: Handshake proof
+Gemini describes the Handshake as proof of a real interaction, but then reports that the original implementation grants it immediately when someone taps Hire, Vibe, or confirms a Tour reservation.
+
+That creates a factual distinction:
+
+The historical implementation recorded a user action.
+
+It did not necessarily verify that two people met.
+
+The review gate checked for that recorded action.
+
+A Handshake record was not necessarily verified evidence of an in-person interaction.
+
+Gemini itself identifies this as unresolved. We should preserve both facts—the original behavior and the intended proof semantics—without silently converting either into a new Product Owner approval.
+
+3. The Trail data-contract defect
+Gemini identifies the cause of the old trail.savedBy crash:
+
+trail.savedBy.includes(userId) was executed when savedBy did not exist.
+
+Its reported correction consisted of defensive array checks and initialization of fallback instances. Gemini also states that no historical Firestore backfill migration occurred.
+
+That is an important lesson for the current PostgreSQL design: a defensive React check does not replace an enforced persistence contract.
+
+The source-derived requirement is to define how a newly created or historically imported Trail represents saves, and ensure every relevant writer and reader agrees.
+
+It does not mean the current VibeQuest repository has inherited this bug.
+
+4. Additional contradictions worth preserving
+Challenge timers
+
+Gemini reports VibeCheck as 33 seconds in code versus five minutes in UI messaging, and VibeFlash as 60 seconds versus three minutes in messaging.
+
+These are genuine historical contradictions as reported by Gemini, not authorization to choose one duration.
+
+Tour reservations
+
+Gemini calls the booking flow implemented, but the same report identifies browser-local storage and automatic acceptance. That is a functional client interaction, not evidence of real availability control, payment capture, or durable cross-device reservation.
+
+Guardian verification
+
+Gemini documents an in-app selfie with seven-day expiration. However, the report does not establish an authoritative server-side reviewer, identity-verification decision, or anti-fraud process. We should not equate capturing a live selfie with completing professional verification.
+
+5. What Gemini failed to deliver
+The requested assignment covered the entire original VibeQuest application. Gemini provided its deepest analysis for Trails, Tours, Guardians and a handful of major screens.
+
+It did not deliver equivalent source-level investigation of the full messaging and room system, Vibe Share lifecycles, complete challenges, notification ownership, financial boundaries, administrative authorization, account deletion, or all ten requested cross-feature journeys.
+
+It also assigns proposed database-domain ownership labels such as social_feed and travel_experiences to historical functionality. Those labels come from the later architectural proposals and should not be imported as authoritative owners into the current GitHub repository.
+
+The archive path Gemini provided is also an AI Studio artifact location, not a verified file in our current GitHub repository.
