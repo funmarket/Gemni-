@@ -44,6 +44,10 @@ async function readImage(item,allowedHosts){
   return bytes;
 }
 const opts=parseArgs(process.argv.slice(2));
+// Fail closed before any transfer if the immutable report path already exists.
+try{await readFile(opts.report);fail('Report already exists; choose a new report path');}
+catch(error){if(error.code!=='ENOENT')throw error;}
+
 const manifest=JSON.parse(await readFile(opts.manifest,'utf8'));
 if(!/^[a-z0-9][a-z0-9_-]{2,70}$/.test(manifest.importId||''))fail('Invalid importId');
 if(!Array.isArray(manifest.items)||!manifest.items.length||!Array.isArray(manifest.allowedImageHosts))fail('Invalid manifest');
