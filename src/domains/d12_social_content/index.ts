@@ -128,6 +128,16 @@ class SocialContentDomain {
   private posts: SocialPost[] = [];
   private comments: Record<string, PostComment[]> = {};
   private likes: Record<string, boolean> = {};
+  private readonly listeners = new Set<() => void>();
+
+  public subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notifyListeners(): void {
+    this.listeners.forEach((listener) => listener());
+  }
 
   constructor() {
     this.load();
@@ -184,6 +194,7 @@ class SocialContentDomain {
         if (newOnes.length > 0) {
           this.posts.unshift(...newOnes);
           this.savePosts();
+          this.notifyListeners();
         }
       }
     } catch (e) {
@@ -265,6 +276,7 @@ class SocialContentDomain {
 
     this.posts.unshift(newPost);
     this.savePosts();
+    this.notifyListeners();
 
     // Persist to Supabase social_posts table
     try {
@@ -321,6 +333,7 @@ class SocialContentDomain {
     const currentList = this.comments[postId] || [];
     this.comments[postId] = [...currentList, newComment];
     this.saveComments();
+    this.notifyListeners();
 
     try {
       window.dispatchEvent(new CustomEvent('vq-comment-updated', { detail: { postId, comment: newComment } }));
@@ -354,6 +367,7 @@ class SocialContentDomain {
 
     target.replies = [...(target.replies || []), newReply];
     this.saveComments();
+    this.notifyListeners();
 
     try {
       window.dispatchEvent(new CustomEvent('vq-comment-updated', { detail: { postId, commentId, reply: newReply } }));
@@ -379,6 +393,7 @@ class SocialContentDomain {
       return p;
     });
     this.savePosts();
+    this.notifyListeners();
 
     try {
       window.dispatchEvent(new CustomEvent('vq-like-updated', { detail: { postId, liked: newLiked, votes } }));
