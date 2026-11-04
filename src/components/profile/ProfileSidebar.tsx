@@ -22,7 +22,7 @@ interface ProfileSidebarProps {
 export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose, onNavigateToTab }) => {
   const { user, profile, isPlatformAdmin, logout, updateProfileWallet } = useAuth();
   const [authPanel, setAuthPanel] = React.useState<'login' | 'register' | 'edit' | null>(null);
-  const [verificationNotice, setVerificationNotice] = React.useState<string | null>(null);
+  const [verificationNotice, setVerificationNotice] = React.useState<{ email: string; avatarUploadNote?: string } | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { unreadCount: unreadNotificationsCount } = useAppNotifications();
   
@@ -123,7 +123,8 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
           {verificationNotice && (
             <div role="status" className="rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-3 text-xs text-emerald-200">
               <p className="font-bold">Check your email</p>
-              <p>Account created. Open the verification link sent to {verificationNotice}, then return here to sign in.</p>
+              <p>Account created. Open the verification link sent to {verificationNotice.email}, then return here to sign in.</p>
+              {verificationNotice.avatarUploadNote && <p className="mt-2 text-amber-200">{verificationNotice.avatarUploadNote}</p>}
               <button type="button" className="mt-2 underline" onClick={() => setVerificationNotice(null)}>Dismiss</button>
             </div>
           )}
@@ -559,7 +560,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
               <ProfileView
                 onCancel={() => setAuthPanel(null)}
                 onSuccess={() => { setAuthPanel(null); onClose(); }}
-                onVerificationRequired={email => { setVerificationNotice(email); setAuthPanel(null); }}
+                onVerificationRequired={(email, avatarUploadNote) => { setVerificationNotice({email, avatarUploadNote}); setAuthPanel(null); }}
               />
             </div>
           )}
