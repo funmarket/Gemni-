@@ -27,7 +27,7 @@ const ScreenFallback = () => (
 );
 
 export function ScreenRouter() {
-  const { loading } = useAuth();
+  const { loading, isPlatformAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [exploreSearch, setExploreSearch] = useState('');
   const [exploreCategory, setExploreCategory] = useState('');
@@ -35,7 +35,7 @@ export function ScreenRouter() {
   const handleNavigate = (tab: string, search?: string, category?: string) => {
     setExploreSearch(search || '');
     setExploreCategory(category || '');
-    setActiveTab(tab);
+    setActiveTab(tab === 'admin' && !isPlatformAdmin ? 'home' : tab);
   };
 
   if (loading) {
@@ -68,11 +68,11 @@ export function ScreenRouter() {
       case 'profile':
         return <ProfileScreen />;
       case 'admin':
-        return (
+        return isPlatformAdmin ? (
           <React.Suspense fallback={<ScreenFallback />}>
             <AdminScreen />
           </React.Suspense>
-        );
+        ) : <HomeScreen onNavigate={handleNavigate} />;
       default:
         return <HomeScreen onNavigate={handleNavigate} />;
     }
@@ -87,7 +87,7 @@ export function ScreenRouter() {
             setExploreSearch('');
             setExploreCategory('');
           }
-          setActiveTab(tab);
+          setActiveTab(tab === 'admin' && !isPlatformAdmin ? 'home' : tab);
         }}
       >
         <ErrorBoundary>

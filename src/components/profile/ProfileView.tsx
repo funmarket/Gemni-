@@ -8,6 +8,7 @@ import { AlertTriangle, Check, User, Globe, Hash, ShieldCheck } from 'lucide-rea
 interface ProfileViewProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  onVerificationRequired?: (email: string, avatarUploadNote?: string) => void;
 }
 
 const PRESET_TAGS = [
@@ -15,7 +16,7 @@ const PRESET_TAGS = [
   'coffee-seeker', 'retro-gaming', 'cultural-pass', 'minimalist'
 ];
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel, onVerificationRequired }) => {
   const { profile, registerProfile, updateProfile } = useAuth();
   
   // Is this creation mode or editing mode? 
@@ -23,6 +24,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
   const isEditing = Boolean(profile);
 
   const [photoUrl, setPhotoUrl] = useState(profile?.photoUrl || '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  useEffect(() => {
+    if (!avatarFile) { setAvatarPreview(null); return; }
+    const url = URL.createObjectURL(avatarFile);
+    setAvatarPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [avatarFile]);
   const [handle, setHandle] = useState(profile?.handle || '');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -136,6 +145,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
     setSubmitting(true);
     
     const payload = {
+      avatarFile: avatarFile || undefined,
       photoUrl,
       handle: handle.toLowerCase().trim(),
       password,
@@ -153,15 +163,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
     try {
       if (isEditing) {
         await updateProfile({
-          displayName, photoUrl, bio, location, tags, contactMethod,
+          displayName, photoUrl, avatarFile: avatarFile || undefined, bio, location, tags, contactMethod,
           xHandle, telegramHandle, oracleMode,
         });
         setSuccessMsg("Your profile changes were saved.");
         if (onSuccess) setTimeout(() => onSuccess(), 900);
       } else {
         const created = await registerProfile(payload);
-        setSuccessMsg(`Welcome, ${created.displayName}! Your account is ready.`);
-        if (onSuccess) setTimeout(() => onSuccess(), 900);
+        if ('pendingVerification' in created) {
+          const notice = `Account created. Check ${created.email} for a verification email, then sign in.`;
+          setSuccessMsg(notice);
+          onVerificationRequired?.(created.email, created.avatarUploadNote);
+        } else {
+          setSuccessMsg(`Welcome, ${created.displayName}! Your account is ready.${created.avatarUploadNote ? ` ${created.avatarUploadNote}` : ''}`);
+          onSuccess?.();
+        }
       }
     } catch (err: any) {
       const message = err?.message || "Failed to save profile details.";
@@ -220,9 +236,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
           <div className="relative shrink-0">
             <div className="absolute inset-0 bg-vibe-primary/5 blur-xl rounded-full" />
             <div className="relative w-20 h-20 rounded-full border border-white/20 p-1 bg-black flex items-center justify-center overflow-hidden">
-              {photoUrl ? (
+              {(avatarPreview || photoUrl) ? (
                 <img 
-                  src={photoUrl} 
+                  src={avatarPreview || photoUrl} 
                   alt="Live Preview" 
                   referrerPolicy="no-referrer"
                   className="w-full h-full rounded-full object-cover"
@@ -248,8 +264,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
               onChange={(e) => setPhotoUrl(e.target.value)}
               className="w-full h-10 px-3.5 bg-zinc-950 border border-white/10 rounded-xl text-xs text-zinc-200 focus:outline-none focus:border-vibe-primary transition-colors font-mono"
             />
+            <label className="block text-[10px] font-semibold text-vibe-primary cursor-pointer">
+              Upload a JPG, PNG or WebP photo (up to 5 MB)
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="mt-1 block w-full text-xs text-zinc-400 file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:text-white"
+                onChange={event => {
+                  const file = event.target.files?.[0] || null;
+                  if (file && (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024)) {
+                    setError('Choose a JPG, PNG or WebP image under 5 MB.');
+                    event.target.value = '';
+                    return;
+                  }
+                  setAvatarFile(file);
+                }}
+              />
+            </label>
             <span className="text-[8px] text-zinc-600 block">
-              Enter any image link. Live rendering updates immediately.
+              Or paste an image URL above. Uploaded signup photos are saved after email verification on this device.
             </span>
           </div>
         </div>

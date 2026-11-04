@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/infrastructure/supabase/supabaseClient';
+import { queuePendingProfileAvatar, uploadPendingProfileAvatar, uploadProfileAvatar } from '@/lib/profileAvatar';
 
 export interface UserProfile {
   id: string;
@@ -20,12 +21,16 @@ export interface UserProfile {
   culturalPassport: string[];
   photoUrl?: string;
   lastActive: string;
+  avatarFile?: File;
+  wallet?: string;
+  avatarUploadNote?: string;
   isProGuardian?: boolean;
   guardianshipType?: string;
 }
 
 type AuthUser = { uid: string; email: string; displayName: string; photoURL?: string };
-type Registration = Partial<UserProfile> & { email?: string; password?: string };
+type Registration = Partial<UserProfile> & { email?: string; password?: string; avatarFile?: File };
+type RegistrationResult = UserProfile | { pendingVerification: true; email: string; authUserId: string; avatarUploadNote?: string };
 interface AuthContextType {
   user: AuthUser | null;
   profile: UserProfile | null;
@@ -35,7 +40,8 @@ interface AuthContextType {
   login: () => Promise<void>;
   loginAsGuest: (customHandle?: string) => void;
   loginWithHandleAndPassword: (identifier: string, password?: string) => Promise<UserProfile>;
-  registerProfile: (profileData: Registration) => Promise<UserProfile>;
+  registerProfile: (profileData: Registration) => Promise<RegistrationResult>;
+  isPlatformAdmin: boolean;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   logout: () => Promise<void>;
   updateProfilePoints: (pointsEarned: number) => Promise<void>;
@@ -63,10 +69,11 @@ function fromRow(row: Record<string, unknown>): UserProfile {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const hydrate = async (authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
-    if (!authUser) { setUser(null); setProfile(null); return; }
+    if (!authUser) { setUser(null); setProfile(null); setIsPlatformAdmin(false); return; }
     const metadata = authUser.user_metadata || {};
     setUser({
       uid: authUser.id, email: authUser.email || '',
@@ -79,13 +86,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: row, error } = await supabase.from('profiles').select('*').eq('id', profileId).maybeSingle();
     if (error) console.warn('Profile lookup failed:', error.message);
     // Never fabricate a logged-in local account or silently impersonate a legacy identity.
+    const { data: adminAssignment, error: adminError } = await supabase.from('vq_admin_assignments')
+      .select('role').eq('auth_user_id', authUser.id).eq('active', true).maybeSingle();
+    if (adminError) console.warn('Admin assignment lookup failed:', adminError.message);
+    setIsPlatformAdmin(Boolean(adminAssignment && adminAssignment.role === 'platform_admin'));
     if (row) {
+      let avatarUrl = typeof row.photo_url === 'string' ? row.photo_url : '';
+      try {
+        const uploadedUrl = await uploadPendingProfileAvatar(authUser.id, profileId);
+        if (uploadedUrl) avatarUrl = uploadedUrl;
+      } catch (avatarError) {
+        console.warn('Pending avatar upload not completed:', avatarError);
+      }
       const { data: preferences, error: preferencesError } = await supabase.from('profile_preferences')
         .select('telegram_handle,x_handle,preferred_contact_method,cozy_diary_mode')
         .eq('profile_id', profileId).maybeSingle();
       if (preferencesError) console.warn('Profile preferences unavailable:', preferencesError.message);
       setProfile({
         ...fromRow(row),
+        photoUrl: avatarUrl,
         telegramHandle: preferences?.telegram_handle || '',
         xHandle: preferences?.x_handle || '',
         contactMethod: preferences?.preferred_contact_method || 'none',
@@ -138,7 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return fromRow(row);
   };
 
-  const registerProfile = async (data: Registration): Promise<UserProfile> => {
+  const registerProfile = async (data: Registration): Promise<RegistrationResult> => {
     const handle = (data.handle || '').replace(/^@/, '').trim().toLowerCase();
     const displayName = (data.displayName || '').trim();
     const email = (data.email || '').trim();
@@ -149,16 +168,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (lookupError) throw new Error('Cannot verify username availability.');
     if (existing) throw new Error('Username is already taken.');
     const { data: signup, error } = await supabase.auth.signUp({
-      email, password: data.password, options: { data: { handle, display_name: displayName } },
+      email, password: data.password, options: {
+        emailRedirectTo: 'https://vqgemni.vercel.app/',
+        data: {
+          handle, display_name: displayName,
+          photo_url: data.photoUrl || '',
+          bio: data.bio || '', city: data.location || data.city || '',
+          interests: data.tags || [],
+          telegram_handle: data.telegramHandle || '', x_handle: data.xHandle || '',
+          preferred_contact_method: data.contactMethod || 'none',
+          cozy_diary_mode: Boolean(data.oracleMode),
+        },
+      },
     });
     if (error) throw new Error(error.message);
     if (!signup.user) throw new Error('Account creation failed.');
-    // Database trigger creates the profile atomically for verified new Auth users.
-    if (!signup.session) throw new Error('Account created. Verify your email, then sign in.');
+    // Database trigger creates the profile atomically. A failed browser-only
+    // avatar queue must never turn a successfully-created account into an error.
+    if (!signup.session) {
+      let avatarUploadNote: string | undefined;
+      if (data.avatarFile) {
+        try {
+          await queuePendingProfileAvatar(signup.user.id, data.avatarFile);
+        } catch (avatarError) {
+          console.warn('Signup avatar could not be retained:', avatarError);
+          avatarUploadNote = 'The account was created, but this browser could not retain the selected photo. Upload it after signing in.';
+        }
+      }
+      return { pendingVerification: true, email, authUserId: signup.user.id, avatarUploadNote };
+    }
     await hydrate(signup.user);
     const { data: row } = await supabase.from('profiles').select('*').eq('id', 'usr_' + signup.user.id).maybeSingle();
     if (!row) throw new Error('Account created, but profile provisioning is pending.');
-    return fromRow(row);
+    let avatarUploadNote: string | undefined;
+    if (data.avatarFile) {
+      try {
+        await uploadProfileAvatar(data.avatarFile, row.id);
+      } catch (avatarError) {
+        console.warn('Signup avatar upload failed:', avatarError);
+        avatarUploadNote = 'Your profile was created but the avatar upload failed. Add it from Edit Profile.';
+      }
+    }
+    return { ...fromRow(row), avatarUploadNote };
   };
 
   const updateProfile = async (updates: Partial<UserProfile>): Promise<void> => {
@@ -201,6 +252,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!['none', 'telegram', 'x', 'email'].includes(nextContactMethod)) throw new Error('Invalid contact preference.');
     // Supabase RLS owns authorization. Never submit client-controlled IDs, roles or rewards.
     let saved = profile;
+    if (updates.avatarFile) {
+      fields.photo_url = await uploadProfileAvatar(updates.avatarFile, profile.id);
+    }
     if (Object.keys(fields).length) {
       const { data, error } = await supabase.from('profiles').update(fields)
         .eq('id', profile.id).select('*').single();
@@ -241,13 +295,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
-    setUser(null); setProfile(null);
+    setUser(null); setProfile(null); setIsPlatformAdmin(false);
   };
   const updateProfilePoints = async (_pointsEarned: number) => {
     // Do not mint rewards client-side. D20 must authorize actual ledger credits.
   };
   return <AuthContext.Provider value={{
-    user, profile, userProfile: profile, setProfile, loading, login, loginAsGuest,
+    user, profile, userProfile: profile, setProfile, loading, isPlatformAdmin, login, loginAsGuest,
     loginWithHandleAndPassword, registerProfile, updateProfile, logout, updateProfilePoints,
   }}>{children}</AuthContext.Provider>;
 };
