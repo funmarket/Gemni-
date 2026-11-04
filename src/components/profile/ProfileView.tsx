@@ -66,7 +66,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
           .ilike('handle', handle.trim());
         setHandleAvailable(!error && (!data || data.length === 0));
       } catch (e) {
-        setHandleAvailable(true); // fall back safe
+        setHandleAvailable(false); // Never claim username availability when verification fails.
       } finally {
         setIsCheckingHandle(false);
       }
@@ -124,15 +124,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
         return;
       }
       if (!location) {
-        setError("Cozy Diary Mode Requirement: Coordinates or current location is required.");
+        setError("Cozy Diary Mode requires a broad city or area.");
         return;
       }
-      if (!xHandle) {
-        setError("Cozy Diary Mode Requirement: X (ex-Twitter) Handle is required.");
-        return;
-      }
-      if (!telegramHandle) {
-        setError("Cozy Diary Mode Requirement: Telegram user handle is required.");
+      if (!xHandle.trim() && !telegramHandle.trim()) {
+        setError("Cozy Diary Mode requires at least one contact handle (X or Telegram).");
         return;
       }
     }
@@ -156,8 +152,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
 
     try {
       if (isEditing) {
-        await updateProfile({ displayName, photoUrl });
-        setSuccessMsg("Your display name and profile photo were updated.");
+        await updateProfile({
+          displayName, photoUrl, bio, location, tags, contactMethod,
+          xHandle, telegramHandle, oracleMode,
+        });
+        setSuccessMsg("Your profile changes were saved.");
         if (onSuccess) setTimeout(() => onSuccess(), 900);
       } else {
         const created = await registerProfile(payload);
@@ -384,7 +383,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
               <ShieldCheck className="w-3.5 h-3.5 text-[#ef4444]" /> Cozy Diary Mode
             </span>
             <p className="text-[9px] text-zinc-500 leading-normal">
-              Activate to prompt you to fill out all optional fields like location coordinates, social biography, and traveler badges.
+              Optional completion assistance for your bio, broad location and at least one contact handle.
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer select-none">
@@ -416,7 +415,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-500">
-              Coordinates/Location {oracleMode && <span className="text-red-500">(Mandated)</span>}
+              City or broad location {oracleMode && <span className="text-red-500">(Mandated)</span>}
             </label>
             <input 
               type="text" 
@@ -446,28 +445,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel })
 
             <div className="space-y-1.5">
               <label className="text-[9px] font-black uppercase tracking-wider text-zinc-500">
-                Telegram Handle {oracleMode && <span className="text-red-500">(Mandated)</span>}
+                Telegram Handle
               </label>
               <input 
                 type="text" 
                 placeholder="e.g. paul_active" 
                 value={telegramHandle}
                 onChange={(e) => setTelegramHandle(e.target.value.replace('@', ''))}
-                required={oracleMode}
                 className="w-full h-10 px-3 bg-zinc-950 border border-white/10 rounded-lg text-xs text-white focus:outline-none font-mono"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-[9px] font-black uppercase tracking-wider text-zinc-500">
-                X (Twitter) Handle {oracleMode && <span className="text-red-500">(Mandated)</span>}
+                X (Twitter) Handle
               </label>
               <input 
                 type="text" 
                 placeholder="e.g. paul_cultural" 
                 value={xHandle}
                 onChange={(e) => setXHandle(e.target.value.replace('@', ''))}
-                required={oracleMode}
                 className="w-full h-10 px-3 bg-zinc-950 border border-white/10 rounded-lg text-xs text-white focus:outline-none font-mono"
               />
             </div>
