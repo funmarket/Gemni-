@@ -39,6 +39,12 @@ export const HomeFeedTabs: React.FC<HomeFeedTabsProps> = ({
 }) => {
   const [isFeedExpanded, setIsFeedExpanded] = useState(false);
 
+  const getPostAvatarUrl = (post: { userId?: string | null; avatarUrl?: string | null }) => {
+    const isCurrentAuthor = Boolean(profile?.id && post.userId
+      && (post.userId === profile.id || `usr_${post.userId}` === profile.id));
+    return (isCurrentAuthor && profile?.photoUrl) ? profile.photoUrl : post.avatarUrl;
+  };
+
   return (
     <div className="space-y-5 text-left pt-2">
       {/* Sleek Underlined Tab Header Menu */}
@@ -110,9 +116,9 @@ export const HomeFeedTabs: React.FC<HomeFeedTabsProps> = ({
                   <div className="flex items-center gap-2.5">
                     {/* User profile picture circle on the left */}
                     <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 border border-white/10 flex items-center justify-center shrink-0">
-                      {post.avatarUrl ? (
+                      {getPostAvatarUrl(post) ? (
                         <img 
-                          src={post.avatarUrl} 
+                          src={getPostAvatarUrl(post)} 
                           alt={post.author} 
                           referrerPolicy="no-referrer" 
                           className="w-full h-full object-cover" 
