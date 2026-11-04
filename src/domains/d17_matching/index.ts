@@ -162,6 +162,54 @@ class MatchingDomain {
     }
   }
 
+  public sendPull(params: {
+    targetUserId: string;
+    targetHandle: string;
+    targetName: string;
+    senderId?: string;
+    senderHandle?: string;
+    senderName?: string;
+    senderAvatar?: string;
+    reasonText?: string;
+  }): VibePullRequest {
+    const newPull: VibePullRequest = {
+      id: `pull_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      senderId: params.senderId || 'current_user',
+      senderHandle: params.senderHandle || 'current_user',
+      senderName: params.senderName || 'Explorer',
+      senderAvatar: params.senderAvatar || '✨',
+      compatibilityScore: 90,
+      matchType: 'CULTURAL_EXPLORER',
+      reasonText: params.reasonText || `Connected via cultural profile @${params.targetHandle}`,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    };
+    (newPull as any).targetUserId = params.targetUserId;
+    (newPull as any).targetHandle = params.targetHandle;
+
+    this.pulls.unshift(newPull);
+    this.save();
+    return newPull;
+  }
+
+  public hasSentPull(targetId: string, currentUserId = 'current_user'): boolean {
+    const cleanTarget = targetId.toLowerCase().replace(/^@/, '');
+    return this.pulls.some((p) => 
+      p.status === 'PENDING' && 
+      (p.senderId === currentUserId || p.senderHandle === currentUserId) &&
+      (((p as any).targetUserId && (p as any).targetUserId.toLowerCase() === cleanTarget) ||
+       ((p as any).targetHandle && (p as any).targetHandle.toLowerCase().replace(/^@/, '') === cleanTarget))
+    );
+  }
+
+  public hasMutualVibe(targetId: string, currentUserId = 'current_user'): boolean {
+    const cleanTarget = targetId.toLowerCase().replace(/^@/, '');
+    return this.matches.some((m) =>
+      (m.initiatorId === currentUserId && (m.matchedUserId.toLowerCase() === cleanTarget || m.matchedHandle.toLowerCase().replace(/^@/, '') === cleanTarget)) ||
+      (m.matchedUserId === currentUserId && (m.initiatorId.toLowerCase() === cleanTarget))
+    );
+  }
+
   /**
    * Reciprocal VibeCheck Outcome (CH-001, VIBE-006):
    * A completed qualifying reciprocal VibeCheck establishes a confirmed D17 Vibe

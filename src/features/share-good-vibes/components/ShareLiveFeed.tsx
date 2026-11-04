@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, Edit3, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PublicProfileModal } from '@/features/profile/components/PublicProfileModal';
 
 interface ShareLiveFeedProps {
   activities: any[];
@@ -26,6 +27,7 @@ export const ShareLiveFeed: React.FC<ShareLiveFeedProps> = ({
   onJoinVibe,
   triggerHaptic
 }) => {
+  const [selectedUser, setSelectedUser] = useState<{ id?: string; handle?: string; displayName?: string } | null>(null);
   return (
     <div className="bg-[#0b0c10] border border-zinc-900 rounded-3xl p-5 space-y-4">
       <div className="flex items-center justify-between">
@@ -64,7 +66,19 @@ export const ShareLiveFeed: React.FC<ShareLiveFeedProps> = ({
 
                 {/* Header row */}
                 <div className="flex items-center justify-between mb-1.5 z-10">
-                  <span className="text-xs font-black text-white">{vibe.user}</span>
+                  <span 
+                    onClick={() => {
+                      triggerHaptic('light');
+                      setSelectedUser({
+                        handle: (vibe.user || '').replace(/^@/, ''),
+                        displayName: vibe.user,
+                      });
+                    }}
+                    className="text-xs font-black text-white hover:text-amber-300 transition-colors cursor-pointer"
+                    title={`View ${vibe.user}'s public profile`}
+                  >
+                    {vibe.user}
+                  </span>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono font-bold text-rose-400 uppercase tracking-widest">{vibe.expiresIn}</span>
                     {vibe.isMyVibe && (
@@ -198,6 +212,15 @@ export const ShareLiveFeed: React.FC<ShareLiveFeedProps> = ({
           })}
         </AnimatePresence>
       </div>
+
+      {selectedUser && (
+        <PublicProfileModal
+          isOpen={Boolean(selectedUser)}
+          onClose={() => setSelectedUser(null)}
+          handle={selectedUser.handle}
+          initialProfile={selectedUser}
+        />
+      )}
     </div>
   );
 };

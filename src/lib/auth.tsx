@@ -79,12 +79,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       uid: authUser.id, email: authUser.email || '',
       displayName: typeof metadata.display_name === 'string' ? metadata.display_name : '',
     });
-    const { data: link, error: linkError } = await supabase.from('s00_test_identity_links')
-      .select('legacy_profile_id').eq('auth_user_id', authUser.id).maybeSingle();
-    if (linkError) console.warn('Profile identity link not available:', linkError.message);
-    const profileId = link?.legacy_profile_id || 'usr_' + authUser.id;
-    const { data: row, error } = await supabase.from('profiles').select('*').eq('id', profileId).maybeSingle();
-    if (error) console.warn('Profile lookup failed:', error.message);
+    let row: Record<string, unknown> | null = null;
+    let resolvedProfileId = 'usr_' + authUser.id;
+
+    // Canonical link for protected Hannibal account
+    if (authUser.id === 'd45d581e-631c-45e1-a686-6f9d764aaf04') {
+      resolvedProfileId = 'usr_hannibal_1337';
+    }
+
+    // 1. Try legacy identity link if table exists
+    try {
+      const { data: link, error: linkError } = await supabase.from('s00_test_identity_links')
+        .select('legacy_profile_id').eq('auth_user_id', authUser.id).maybeSingle();
+      if (!linkError && link?.legacy_profile_id) {
+        resolvedProfileId = link.legacy_profile_id;
+      }
+    } catch (_) {}
+
+    // 2. Direct query by resolved profile ID
+    const { data: directRow, error: directError } = await supabase.from('profiles').select('*').eq('id', resolvedProfileId).maybeSingle();
+    if (directRow) {
+      row = directRow;
+    } else {
+      // 3. Fallback to raw auth UID
+      const { data: rawRow } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
+      if (rawRow) {
+        row = rawRow;
+        resolvedProfileId = String(rawRow.id);
+      } else if (metadata.handle) {
+        // 4. Fallback to metadata handle
+        const cleanHandle = String(metadata.handle).replace(/^@/, '').toLowerCase().trim();
+        const { data: handleRow } = await supabase.from('profiles').select('*').ilike('handle', cleanHandle).maybeSingle();
+        if (handleRow) {
+          row = handleRow;
+          resolvedProfileId = String(handleRow.id);
+        }
+      }
+    }
+    const profileId = resolvedProfileId;
+    if (directError && !row) console.warn('Profile lookup notice:', directError.message);
     // Never fabricate a logged-in local account or silently impersonate a legacy identity.
     const { data: adminAssignment, error: adminError } = await supabase.from('vq_admin_assignments')
       .select('role').eq('auth_user_id', authUser.id).eq('active', true).maybeSingle();

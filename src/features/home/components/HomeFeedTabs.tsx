@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Heart, MessageSquare, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { feedPosts } from '../data/homeHelpers';
+import { PublicProfileModal } from '@/features/profile/components/PublicProfileModal';
 
 interface HomeFeedTabsProps {
   activeWallTab: 'network' | 'local' | 'foryou';
@@ -38,6 +39,7 @@ export const HomeFeedTabs: React.FC<HomeFeedTabsProps> = ({
   showToast
 }) => {
   const [isFeedExpanded, setIsFeedExpanded] = useState(false);
+  const [selectedProfileUser, setSelectedProfileUser] = useState<{ id?: string; handle?: string; displayName?: string; photoUrl?: string } | null>(null);
 
   const getPostAvatarUrl = (post: { userId?: string | null; avatarUrl?: string | null }) => {
     const isCurrentAuthor = Boolean(profile && post.userId
@@ -113,9 +115,21 @@ export const HomeFeedTabs: React.FC<HomeFeedTabsProps> = ({
 
               <div className="space-y-2.5">
                 <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2.5">
+                  <div 
+                    onClick={() => {
+                      triggerHaptic('light');
+                      setSelectedProfileUser({
+                        id: post.userId,
+                        handle: (post.author || post.username || '').replace(/^@/, ''),
+                        displayName: post.displayName || (post.author ? post.author.replace(/^@/, '') : post.username),
+                        photoUrl: getPostAvatarUrl(post)
+                      });
+                    }}
+                    className="flex items-center gap-2.5 cursor-pointer hover:opacity-85 transition-opacity group"
+                    title={`View @${(post.author || post.username || '').replace(/^@/, '')}'s public profile`}
+                  >
                     {/* User profile picture circle on the left */}
-                    <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 border border-white/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 border border-white/10 group-hover:border-purple-500/40 flex items-center justify-center shrink-0 transition-colors">
                       {getPostAvatarUrl(post) ? (
                         <img 
                           src={getPostAvatarUrl(post)} 
@@ -128,7 +142,7 @@ export const HomeFeedTabs: React.FC<HomeFeedTabsProps> = ({
                       )}
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-[#FBEBA7] text-[13.5px] tracking-tight leading-none">{post.author}</h4>
+                      <h4 className="font-extrabold text-[#FBEBA7] group-hover:text-amber-300 transition-colors text-[13.5px] tracking-tight leading-none">{post.author}</h4>
                       <p className="text-[10px] text-zinc-400 mt-1 font-mono">{post.time}</p>
                     </div>
                   </div>
@@ -323,6 +337,16 @@ export const HomeFeedTabs: React.FC<HomeFeedTabsProps> = ({
       );
     })()}
 
+      {/* Canonical Public Profile Modal */}
+      {selectedProfileUser && (
+        <PublicProfileModal
+          isOpen={Boolean(selectedProfileUser)}
+          onClose={() => setSelectedProfileUser(null)}
+          userId={selectedProfileUser.id}
+          handle={selectedProfileUser.handle}
+          initialProfile={selectedProfileUser}
+        />
+      )}
     </div>
   );
 };

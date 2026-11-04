@@ -149,16 +149,25 @@ class SocialGraphDomain {
   }
 
   public isFollowing(userId: string): boolean {
-    return this.following.has(userId);
+    const clean = (userId || '').toLowerCase().replace(/^@/, '');
+    if (this.following.has(userId) || this.following.has(clean) || this.following.has(`@${clean}`)) return true;
+    for (const f of this.following) {
+      if (f.toLowerCase().replace(/^@/, '') === clean) return true;
+    }
+    return false;
   }
 
   public follow(userId: string) {
-    this.following.add(userId);
+    const clean = (userId || '').toLowerCase().replace(/^@/, '');
+    this.following.add(clean);
     this.save();
   }
 
   public unfollow(userId: string) {
+    const clean = (userId || '').toLowerCase().replace(/^@/, '');
+    this.following.delete(clean);
     this.following.delete(userId);
+    this.following.delete(`@${clean}`);
     this.save();
   }
 

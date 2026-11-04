@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { socialContentDomain, GossipPost } from '@/domains/d12_social_content';
 import { GossipInlineComposer } from '@/features/chat/components/GossipInlineComposer';
 import { FacebookVibePostCard } from '@/features/chat/components/FacebookVibePostCard';
+import { PublicProfileModal } from '@/features/profile/components/PublicProfileModal';
 import { Radio } from 'lucide-react';
 
 interface GossipFeedTabProps {
@@ -18,6 +19,7 @@ export const GossipFeedTab: React.FC<GossipFeedTabProps> = ({
   onOpenChat,
 }) => {
   const [posts, setPosts] = useState<GossipPost[]>(() => socialContentDomain.getPosts());
+  const [selectedUser, setSelectedUser] = useState<{ id?: string; handle?: string; displayName?: string } | null>(null);
 
   useEffect(() => {
     return socialContentDomain.subscribe(() => {
@@ -91,10 +93,28 @@ export const GossipFeedTab: React.FC<GossipFeedTabProps> = ({
               }}
               currentUsername={currentUsername}
               currentUserAvatar={currentUserAvatar}
-              onPressProfile={() => onOpenChat(post.authorId, post.authorName, post.authorAvatar)}
+              onPressProfile={() => setSelectedUser({
+                id: post.authorId,
+                handle: (post.authorHandle || post.authorName || '').replace(/^@/, ''),
+                displayName: post.authorName
+              })}
             />
           ))}
         </div>
+      )}
+
+      {selectedUser && (
+        <PublicProfileModal
+          isOpen={Boolean(selectedUser)}
+          onClose={() => setSelectedUser(null)}
+          userId={selectedUser.id}
+          handle={selectedUser.handle}
+          initialProfile={selectedUser}
+          onOpenChat={(uid, uname, uavatar) => {
+            setSelectedUser(null);
+            onOpenChat(uid, uname, uavatar || '✨');
+          }}
+        />
       )}
     </div>
   );
