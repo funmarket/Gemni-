@@ -8,7 +8,7 @@ import { AlertTriangle, Check, User, Globe, Hash, ShieldCheck } from 'lucide-rea
 interface ProfileViewProps {
   onSuccess?: () => void;
   onCancel?: () => void;
-  onVerificationRequired?: (email: string) => void;
+  onVerificationRequired?: (email: string, avatarUploadNote?: string) => void;
 }
 
 const PRESET_TAGS = [
@@ -173,9 +173,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onSuccess, onCancel, o
         if ('pendingVerification' in created) {
           const notice = `Account created. Check ${created.email} for a verification email, then sign in.`;
           setSuccessMsg(notice);
-          onVerificationRequired?.(created.email);
+          onVerificationRequired?.(created.email, created.avatarUploadNote);
         } else {
-          setSuccessMsg(`Welcome, ${created.displayName}! Your account is ready.`);
+          setSuccessMsg(`Welcome, ${created.displayName}! Your account is ready.${created.avatarUploadNote ? ` ${created.avatarUploadNote}` : ''}`);
           onSuccess?.();
         }
       }
