@@ -132,7 +132,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
 
           {/* Social Proof Badges under name (Good Vibe, Chill Vibe, Cool Vibe) */}
           <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-            {guardian.earnedBadges.slice(0, 3).map((item) => {
+            {(guardian.earnedBadges || []).slice(0, 3).map((item) => {
               const cfg = BADGE_CONFIG[item.badge] || { icon: '✨', bg: 'bg-white/5 border-white/10', text: 'text-zinc-300' };
               return (
                 <span

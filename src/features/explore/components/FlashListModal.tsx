@@ -89,7 +89,8 @@ export const FlashListModal: React.FC<FlashListModalProps> = ({
           ) : (
             <>
               {(() => {
-                const displayedEvents = isListExpanded ? flashEvents : flashEvents.slice(0, 5);
+                const safeEvents = Array.isArray(flashEvents) ? flashEvents : [];
+                const displayedEvents = isListExpanded ? safeEvents : safeEvents.slice(0, 5);
                 return displayedEvents.map((event) => {
                   const goingCount = Array.isArray(event.goingUsers) ? event.goingUsers.length : 0;
                   const interestedCount = Array.isArray(event.interestedUsers) ? event.interestedUsers.length : 0;

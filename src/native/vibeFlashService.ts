@@ -43,14 +43,9 @@ export async function respondToVibeFlash(
   const now = Date.now();
   let targetPhotoUri = result.uri;
 
-  // Fallback premium mock photo for web environment preview rendering
-  if (!targetPhotoUri || targetPhotoUri.startsWith('file://')) {
-    const imagesList = [
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=600&auto=format&fit=crop'
-    ];
-    targetPhotoUri = imagesList[Math.floor(Math.random() * imagesList.length)];
+  // Retain the genuine captured photo URI without injecting stock imagery
+  if (!targetPhotoUri) {
+    targetPhotoUri = '';
   }
 
   const updatePayload = {

@@ -181,11 +181,9 @@ export const CreateTrailModal: React.FC<CreateTrailModalProps> = ({
     fireHaptic('heavy');
 
     try {
-      // 1. Authoritative D06 Trails persistence
-      const createdTrail = trailsDomain.createTrail({
+      // Authoritative creation via parent hook (persists directly to Supabase vibe_trails)
+      await onSubmitTrail({
         name: trailTitle.trim(),
-        authorId: userId || 'current_user',
-        authorName: authorName || 'hannibal',
         city: city.trim(),
         story: narrativeStory.trim(),
         category,
@@ -198,34 +196,15 @@ export const CreateTrailModal: React.FC<CreateTrailModalProps> = ({
           name: s.placeName,
           address: s.address,
           vibeNote: s.proTip,
-          timeOfDay: s.timeOfDay === 'morning' ? 'Morning' : s.timeOfDay === 'afternoon' ? 'Afternoon' : s.timeOfDay === 'sunset' ? 'Sunset' : s.timeOfDay === 'night' ? 'Night' : 'Flexible',
-          durationMinutes: s.suggestedDurationMin
-        })),
-        isTour: isLabeledAsTour && isUserPro,
-        forkedFromTrailId: initialTrailData?.forkedFromTrailId,
-        forkedFromAuthorName: initialTrailData?.forkedFromAuthorName
-      });
-
-      // 2. Parent callback sync
-      await onSubmitTrail({
-        name: createdTrail.name,
-        city: createdTrail.city,
-        story: createdTrail.story,
-        category: createdTrail.category,
-        vibeTags: createdTrail.vibeTags,
-        imageUrl: createdTrail.imageUrl,
-        stops: stops.map(s => ({
-          id: s.id,
-          name: s.placeName,
-          address: s.address,
-          vibeNote: s.proTip,
           lat: s.lat,
           lng: s.lng,
           category: s.category,
           timeOfDay: s.timeOfDay,
           suggestedDurationMin: s.suggestedDurationMin
         })),
-        isTour: isLabeledAsTour && isUserPro
+        isTour: isLabeledAsTour && isUserPro,
+        forkedFromTrailId: initialTrailData?.forkedFromTrailId,
+        forkedFromAuthorName: initialTrailData?.forkedFromAuthorName
       });
 
       setSuccessMsg(true);

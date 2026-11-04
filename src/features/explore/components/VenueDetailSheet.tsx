@@ -451,14 +451,14 @@ export const VenueDetailSheet: React.FC<VenueDetailSheetProps> = ({
                           <div className="flex items-center gap-2">
                             {/* Facepile of RSVPs */}
                             <div className="flex -space-x-1.5 overflow-hidden">
-                              {g.rsvps.slice(0, 3).map((r, i) => (
+                              {(g.rsvps || []).slice(0, 3).map((r, i) => (
                                 <div key={i} className="w-5 h-5 rounded-full bg-zinc-800 border border-zinc-950 flex items-center justify-center text-[10px] select-none" title={r.userName}>
                                   {r.userAvatar}
                                 </div>
                               ))}
-                              {g.rsvps.length > 3 && (
+                              {(g.rsvps?.length || 0) > 3 && (
                                 <div className="w-5 h-5 rounded-full bg-zinc-900 border border-zinc-950 flex items-center justify-center text-[8px] text-zinc-400 font-black">
-                                  +{g.rsvps.length - 3}
+                                  +{(g.rsvps?.length || 0) - 3}
                                 </div>
                               )}
                             </div>

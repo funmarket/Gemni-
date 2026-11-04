@@ -130,12 +130,26 @@ export const VibeShotResponse: React.FC<VibeShotResponseProps> = ({
   }, [cameraMode]);
 
   const captureMockPhotos = (stamp: number) => {
-    const mockPhotos = [
-      "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop", // coffee
-      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=600&auto=format&fit=crop", // sunset
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop"  // cafe
-    ];
-    const pickedPhoto = mockPhotos[Math.abs(check.id.length) % mockPhotos.length];
+    // Generate real on-device canvas frames when physical lens is simulated/unavailable
+    const canvasBack = document.createElement('canvas');
+    canvasBack.width = 640;
+    canvasBack.height = 480;
+    const ctxBack = canvasBack.getContext('2d');
+    if (ctxBack) {
+      const grad = ctxBack.createLinearGradient(0, 0, 640, 480);
+      grad.addColorStop(0, '#1e1b4b');
+      grad.addColorStop(1, '#09080c');
+      ctxBack.fillStyle = grad;
+      ctxBack.fillRect(0, 0, 640, 480);
+      ctxBack.fillStyle = '#f43f5e';
+      ctxBack.font = 'bold 24px sans-serif';
+      ctxBack.textAlign = 'center';
+      ctxBack.fillText('📍 Reciprocal Vibe Check Spot', 320, 230);
+      ctxBack.fillStyle = '#94a3b8';
+      ctxBack.font = '14px monospace';
+      ctxBack.fillText(new Date(stamp).toLocaleTimeString(), 320, 260);
+    }
+    const pickedPhoto = canvasBack.toDataURL('image/jpeg', 0.85);
     setCapturedBackPhoto(pickedPhoto);
 
     // Generate a high fidelity selfie graphic index

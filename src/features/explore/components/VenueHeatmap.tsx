@@ -3,32 +3,34 @@ import { ExploreHeatmap } from '@/components/explore/ExploreHeatmap';
 import { Venue } from '../types';
 
 interface VenueHeatmapProps {
-  venues: Venue[];
-  userCoords: { lat: number; lng: number } | null;
-  selectedVenue: Venue | null;
-  onSelectVenue: (v: Venue | null) => void;
-  isLoading: boolean;
-  onRefresh: () => void;
-  flashEvents: any[];
-  onSelectFlashEvent: (fe: any) => void;
-  selectedFlashEvent: any | null;
+  venues?: Venue[];
+  userCoords?: { lat: number; lng: number } | null;
+  coords?: { lat: number; lng: number } | null;
+  selectedVenue?: Venue | null;
+  onSelectVenue?: (v: Venue | null) => void;
+  isLoading?: boolean;
+  onRefresh?: () => void;
+  flashEvents?: any[];
+  onSelectFlashEvent?: (fe: any) => void;
+  selectedFlashEvent?: any | null;
 }
 
 export const VenueHeatmap: React.FC<VenueHeatmapProps> = ({
-  venues,
+  venues = [],
   userCoords,
-  selectedVenue,
-  onSelectVenue,
-  isLoading,
-  onRefresh,
-  flashEvents,
-  onSelectFlashEvent,
-  selectedFlashEvent,
+  coords,
+  selectedVenue = null,
+  onSelectVenue = () => {},
+  isLoading = false,
+  onRefresh = () => {},
+  flashEvents = [],
+  onSelectFlashEvent = () => {},
+  selectedFlashEvent = null,
 }) => {
   return (
     <ExploreHeatmap
       venues={venues as any}
-      userCoords={userCoords}
+      userCoords={userCoords ?? coords ?? null}
       selectedVenue={selectedVenue as any}
       onSelectVenue={onSelectVenue as any}
       isLoading={isLoading}

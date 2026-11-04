@@ -78,8 +78,15 @@ export const ExploreScreenModals: React.FC<ExploreScreenModalsProps> = (props) =
           <ProximityValidator
             validatingVenue={props.validatingVenue}
             setValidatingVenue={props.setValidatingVenue}
+            onClose={() => props.setValidatingVenue(null)}
+            canValidateVenue={props.canValidateVenue}
+            profile={props.profile}
+            updateProfilePoints={props.updateProfilePoints}
+            setScannedVenues={props.setScannedVenues}
             onCompleteValidation={(id, success) => {
-              if (success) props.setScannedVenues((prev: any) => ({ ...prev, [id]: true }));
+              if (success && props.setScannedVenues) {
+                props.setScannedVenues((prev: any) => ({ ...prev, [id]: true }));
+              }
             }}
             fireHaptic={props.fireHaptic}
           />

@@ -17,43 +17,60 @@ import { notificationsDomain } from '@/domains/d23_notifications';
 
 interface ProximityValidatorProps {
   validatingVenue: Venue | null;
-  onClose: () => void;
-  validationStatus: 'IDLE' | 'SUCCESS_YES' | 'SUCCESS_NO' | 'SUCCESS_NOT_HERE';
-  setValidationStatus: React.Dispatch<React.SetStateAction<'IDLE' | 'SUCCESS_YES' | 'SUCCESS_NO' | 'SUCCESS_NOT_HERE'>>;
-  canValidateVenue: (v: Venue) => boolean;
-  profile: any;
+  onClose?: () => void;
+  setValidatingVenue?: (v: Venue | null) => void;
+  onCompleteValidation?: (id: string, success: boolean) => void;
+  validationStatus?: 'IDLE' | 'SUCCESS_YES' | 'SUCCESS_NO' | 'SUCCESS_NOT_HERE';
+  setValidationStatus?: React.Dispatch<React.SetStateAction<'IDLE' | 'SUCCESS_YES' | 'SUCCESS_NO' | 'SUCCESS_NOT_HERE'>>;
+  canValidateVenue?: (v: Venue) => boolean;
+  profile?: any;
   updateProfilePoints?: (pts: number) => Promise<any>;
-  setScannedVenues: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-  fireHaptic: (style: 'light' | 'medium' | 'heavy') => void;
-  setGuardianPointsEarned: React.Dispatch<React.SetStateAction<number>>;
-  guardianPointsEarned: number;
+  setScannedVenues?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  fireHaptic?: (style: 'light' | 'medium' | 'heavy') => void;
+  setGuardianPointsEarned?: React.Dispatch<React.SetStateAction<number>>;
+  guardianPointsEarned?: number;
 }
 
 export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
   validatingVenue,
   onClose,
+  setValidatingVenue,
+  onCompleteValidation,
   validationStatus,
   setValidationStatus,
   canValidateVenue,
   profile,
   updateProfilePoints,
   setScannedVenues,
-  fireHaptic,
+  fireHaptic = () => {},
   setGuardianPointsEarned,
   guardianPointsEarned,
 }) => {
+  const [internalValidationStatus, setInternalValidationStatus] = React.useState<'IDLE' | 'SUCCESS_YES' | 'SUCCESS_NO' | 'SUCCESS_NOT_HERE'>('IDLE');
+  const [internalGuardianPoints, setInternalGuardianPoints] = React.useState(0);
+
+  const activeStatus = validationStatus !== undefined ? validationStatus : internalValidationStatus;
+  const updateStatus = setValidationStatus || setInternalValidationStatus;
+  const activePoints = guardianPointsEarned !== undefined ? guardianPointsEarned : internalGuardianPoints;
+  const updatePoints = setGuardianPointsEarned || setInternalGuardianPoints;
+
+  const handleClose = () => {
+    if (onClose) onClose();
+    if (setValidatingVenue) setValidatingVenue(null);
+  };
+
   if (!validatingVenue) return null;
 
   const confidence = getVenueConfidence(validatingVenue);
   const confirmations = getRawConfirmations(validatingVenue);
-  const isEligible = canValidateVenue(validatingVenue);
+  const isEligible = canValidateVenue ? canValidateVenue(validatingVenue) : true;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/75 backdrop-blur-[6px] p-4">
       {/* Click outside to close */}
       <div 
         className="absolute inset-0 -z-10 cursor-pointer" 
-        onClick={onClose} 
+        onClick={handleClose} 
       />
 
       <motion.div
@@ -72,14 +89,14 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
           type="button"
           onClick={() => {
             fireHaptic('light');
-            onClose();
+            handleClose();
           }}
           className="absolute top-4 right-5 p-1.5 rounded-full hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer border-none outline-none bg-transparent"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {validationStatus === 'IDLE' ? (
+        {activeStatus === 'IDLE' ? (
           <>
             {/* Top info section: Map pin inside purple square box */}
             <div className="flex items-center gap-4 text-left">
@@ -169,8 +186,8 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
                       if (updateProfilePoints) {
                         updateProfilePoints(multipliedPoints);
                       }
-                      setGuardianPointsEarned(multipliedPoints);
-                      setValidationStatus('SUCCESS_YES');
+                      updatePoints(multipliedPoints);
+                      updateStatus('SUCCESS_YES');
 
                       // Sync to checkInRepository
                       checkInRepository.logCheckIn(
@@ -181,7 +198,9 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
                         validatingVenue.rating || 4.8
                       );
 
-                      setScannedVenues(prev => ({ ...prev, [validatingVenue.id]: true }));
+                      if (setScannedVenues) {
+                        setScannedVenues(prev => ({ ...prev, [validatingVenue.id]: true }));
+                      }
                     }}
                     className="bg-[#d5ead6]/20 hover:bg-[#d5ead6]/35 text-[#d5ead6] border border-[#d5ead6]/30 active:scale-95 font-black py-4 px-2 rounded-2xl text-[12px] transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer outline-none shadow-md"
                   >
@@ -207,8 +226,8 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
                       if (updateProfilePoints) {
                         updateProfilePoints(10);
                       }
-                      setGuardianPointsEarned(10);
-                      setValidationStatus('SUCCESS_NO');
+                      updatePoints(10);
+                      updateStatus('SUCCESS_NO');
                     }}
                     className="bg-[#f59e0b] hover:bg-[#d97706] active:scale-95 text-white font-extrabold py-4 px-2 rounded-2xl text-[12px] transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer border-none outline-none shadow-md"
                   >
@@ -220,9 +239,9 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
                     type="button"
                     onClick={() => {
                       fireHaptic('light');
-                      setValidationStatus('SUCCESS_NOT_HERE');
+                      updateStatus('SUCCESS_NOT_HERE');
                       setTimeout(() => {
-                        onClose();
+                        handleClose();
                       }, 1200);
                     }}
                     className="bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-white font-bold py-4 px-2 rounded-2xl text-[12px] transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer border border-white/5 outline-none shadow-md"
@@ -276,18 +295,18 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
               🛡️
             </div>
             
-            {validationStatus === 'SUCCESS_YES' && (
+            {activeStatus === 'SUCCESS_YES' && (
               <div className="space-y-2 text-center animate-in fade-in zoom-in-50 duration-300">
                 <h3 className="font-extrabold text-xl text-white tracking-tight">
                   VALIDATION FILED!
                 </h3>
                 <p className="text-xs text-zinc-300 max-w-xs mx-auto leading-relaxed">
-                  Excellent work, Citizen. You have confirmed this spot's active cultural state. <strong>+{guardianPointsEarned} PTS</strong> added to your profile.
+                  Excellent work, Citizen. You have confirmed this spot's active cultural state. <strong>+{activePoints} PTS</strong> added to your profile.
                 </p>
               </div>
             )}
 
-            {validationStatus === 'SUCCESS_NO' && (
+            {activeStatus === 'SUCCESS_NO' && (
               <div className="space-y-2 text-center animate-in fade-in zoom-in-50 duration-300">
                 <h3 className="font-extrabold text-xl text-white tracking-tight">
                   REPORT REGISTERED!
@@ -298,7 +317,7 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
               </div>
             )}
 
-            {validationStatus === 'SUCCESS_NOT_HERE' && (
+            {activeStatus === 'SUCCESS_NOT_HERE' && (
               <div className="space-y-2 text-center animate-in fade-in zoom-in-50 duration-300">
                 <h3 className="font-extrabold text-xl text-white tracking-tight text-zinc-400">
                   CLOSING CONSOLE
@@ -314,7 +333,7 @@ export const ProximityValidator: React.FC<ProximityValidatorProps> = ({
                 type="button"
                 onClick={() => {
                   fireHaptic('light');
-                  onClose();
+                  handleClose();
                 }}
                 className="bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs py-3.5 px-8 rounded-xl transition-all active:scale-95 cursor-pointer border-none outline-none shadow-md"
               >

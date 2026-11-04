@@ -54,7 +54,10 @@ export function loadGuardians(): VibeGuardian[] {
     return parsed.map((g: any) => ({
       ...g,
       trails: g.trails || (g.favoriteTrails ? g.favoriteTrails.map((title: string, i: number) => ({ id: `t-${i}`, title })) : []),
-      handshakes: g.handshakes || []
+      favoriteTrails: g.favoriteTrails || [],
+      handshakes: g.handshakes || [],
+      earnedBadges: g.earnedBadges || [{ badge: 'Good Vibe', count: 1 }],
+      reviews: g.reviews || []
     }));
   } catch (err) {
     console.error('Error loading Vibe Guardians:', err);
@@ -235,6 +238,11 @@ async function triggerSupabaseSync() {
           }
         ],
         bio: hannibalProfile.bio || 'Strategic explorer and heritage guide. Leading authentic expeditions across historic Carthage and the Mediterranean coast.',
+        earnedBadges: [
+          { badge: 'Good Vibe', count: 42 },
+          { badge: 'Cool Vibe', count: 38 },
+          { badge: 'Chill Vibe', count: 29 }
+        ],
         reviews: [],
         handshakes: []
       };
@@ -393,7 +401,7 @@ export function addReviewToGuardian(
   // 2. Update local guardian state
   const updated = list.map((g) => {
     if (g.id !== guardianId) return g;
-    const badges = [...g.earnedBadges];
+    const badges = [...(g.earnedBadges || [])];
     const existingBadgeIndex = badges.findIndex(b => b.badge === review.badge);
     if (existingBadgeIndex >= 0) {
       badges[existingBadgeIndex].count += 1;

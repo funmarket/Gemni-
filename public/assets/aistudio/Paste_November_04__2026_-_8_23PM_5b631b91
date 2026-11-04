@@ -1,0 +1,373 @@
+VQgemini — Explore and cross-app architecture audit
+Read-only audit · Repair not authorized
+The Explore screen has not been removed. The current production revision still contains the screen, its radar, map, Trails, Guardians, Secrets, validation and modal components.
+
+However, the source audit confirms that Explore contains broken component connections and several backend-ownership violations. These are not just cosmetic issues.
+
+The audit also uncovered serious Supabase authorization exposures affecting Explore-related business records.
+1. Sources of truth and verified baseline
+Source	Audit result
+Master_Plan.md	Inspected: governing sequence, ownership and acceptance gates
+structure.md	Inspected: Explore dependencies and domain boundaries
+Database.md	Inspected: identity, Trails, Guardians and persistence decisions
+requirements.md	Inspected: EXP, VAL, TRAIL, TOUR, GUA and GEO contracts
+Profile/ECHO/PULL plan v1.7	Compared: P02–P08, public-profile navigation, ECHO/PULL contracts
+GitHub main	502d51b339b47bbb258b12460dccd92369b014f8
+Vercel production	READY at the same commit
+Supabase	Live read-only table, policy, grant and migration checks
+
+The relevant Explore requirement is Requirements §6–10, supported by Master Plan S07–S10, not just the current ExploreScreen.tsx implementation.
+2. Findings explaining the missing Explore screen
+E-01 — Search component is missing mandatory props
+
+ExploreScreen.tsx renders ExploreHeader without passing searchQuery, setSearchQuery, navigation/search handlers and other required callbacks.
+
+In ExploreHeader.tsx, focusing the search field enables a branch that evaluates searchQuery.trim(). Because the supplied value is undefined, that interaction can throw a JavaScript exception and activate the ErrorBoundary.
+
+Evidence: ExploreScreen.tsx lines 183–194; ExploreHeader.tsx lines 6–19 and 94–105
+
+
+
+E-02 — Place validation modal has incompatible props
+
+ExploreScreenModals passes validatingVenue, setValidatingVenue and fireHaptic to ProximityValidator.
+
+The actual validator requires canValidateVenue, validationStatus, setValidationStatus, onClose and additional state. Those requirements are not satisfied.
+
+Its render calls canValidateVenue(validatingVenue). Opening this modal through the affected path can throw immediately.
+
+Evidence: ExploreScreenModals.tsx lines 76–85; ProximityValidator.tsx lines 11–48
+
+
+
+E-03 — The heatmap receives the wrong prop contract
+
+ExploreScreen supplies coords to VenueHeatmap, but the wrapper expects userCoords, as well as other required props.
+
+The map component includes null-safe fallbacks, so this mismatch is not by itself proof of the screenshot crash. It does establish that map position, refresh and selection wiring are incomplete.
+
+Evidence: ExploreScreen.tsx lines 206–214; VenueHeatmap.tsx lines 5–42
+
+
+
+E-04 — The proximity banner is disconnected
+
+ExploreScreen supplies venues, coords, scannedVenues and proximityDismissed, while ExploreProximityBanner expects a computed closestVenue and isDismissed.
+
+With no closestVenue, its guard returns null. The approved Waze-style proximity banner can therefore disappear rather than show the relevant Place.
+
+Evidence: ExploreScreen.tsx lines 169–181; ExploreProximityBanner.tsx lines 6–30
+
+
+
+Crash conclusion: E-01 and E-02 provide concrete, source-proven exception paths. But I cannot identify which one produced your exact screenshot without the browser's exception/component stack. I will not label either as the confirmed incident root cause.
+3. Explore versus the approved Master Plan
+Feature	Approved behavior	Current inspected implementation
+Search and categories	Seven categories, real search, synchronized map and results	UI exists; search handlers are disconnected
+Map/radar	Genuine external/canonical Places, truthful coordinates	Overpass is called, but failures can trigger invented POIs with random coordinates
+Place validation	D04 evidence, D05 decision, 5 m check-in boundary	50 m client-side distance check in Explore; modal props incompatible
+Secrets Board	Real eligible events, authorized claims and expiry	Local browser seed, random Flash generation and reward values exist
+Vibe Trails	D06-authoritative publishing, ordered stops, real authors, preserved remix	Live Supabase reading exists, but source also contains duplicate writers and fabricated location defaults
+Vibe Tours	D08 owns offers/reservations, real Pro eligibility and acceptance	Tour flags and offer details are mixed into Trail UI; fallback dates, prices and guide selection exist
+Guardians/Legends	D07 authoritative real profiles and qualifications	Supabase profile reads coexist with seeded localStorage Guardian records
+Handshake and VQ	D08 acceptance → D22 Handshake → eligible D20 award	Guardian interactions can create Handshakes and +75 VQ without a verified provider acceptance
+Creator/public profiles	Trail and Guardian author → canonical D02 public profile	Creator labels are present, but required public-profile navigation is not fully wired
+Web/Telegram	One business backend with host-specific device adapters	Source contains browser geolocation and local simulation; Telegram integration was not runtime verified
+
+A particularly important source-truth problem
+In useExploreRadar.ts, lines 236–266, when Overpass returns no usable results, the application creates fictional venue names such as Artisanal Burger Loft or Sonic Wave Underground, assigning random coordinates.
+
+That conflicts directly with GEO-004 and Master Plan S07, which require truthful error, cached, empty or partial-result states.
+
+Similarly, CreateTrailModal.tsx calls trailsDomain.createTrail() and subsequently calls onSubmitTrail(), which is connected to useVibeTrails.createTrail(). Both paths can write the Trail record through their respective implementations. This violates the required single canonical writer and needs test-first reconciliation.
+4. Supabase findings — separate from the crash
+7
+Stored Trails
+
+6
+Handshakes
+
+3
+Place reviews
+
+7
+Vibe Flashes
+
+1
+Community memberships
+
+2
+VQ ledger records
+
+
+The database has actual records, but record existence alone does not prove the records were created through the correct domain lifecycle.
+
+Four of the seven stored Trails do not directly match a profiles.id author. That is an attribution-integrity gap. They must not be automatically reassigned by matching a name or handle.
+Critical security finding
+Live Supabase policies and grants show:
+Table	Installed RLS policy	Anonymous write privileges
+vibe_trails	Public ALL, unrestricted	Yes
+vibe_flashes	Public ALL, unrestricted	Yes
+handshakes	Public ALL, unrestricted	Yes
+place_reviews	Public ALL, unrestricted	Yes
+community_members	Public ALL, unrestricted	Yes
+vq_ledger	Public ALL, unrestricted	Yes
+activity	Public ALL, unrestricted	Yes
+
+These are verified database authorization exposures—not merely insecure-looking frontend code. They allow broad write access at the database role/policy layer, contrary to the approved D05–D08, D16, D20 and D22 ownership requirements.
+
+I did not attempt an unauthorized write to demonstrate exploitation. The grants and policy predicates themselves are sufficient to establish the exposure.
+
+Supabase's security advisor also reported that leaked-password protection is disabled. That is a separate Auth-hardening concern, not the cause of Explore's error screen. Supabase guidance
+5. Comparison with the Profile/ECHO/PULL living plan v1.7
+The existing plan remains applicable. Explore depends on several pieces that the plan already identifies as incomplete.
+Plan packet	Explore dependency	Reconciliation
+P02 — D01/D02 identity	Guardian identity, Trail creators, authenticated writes	Requires real canonical identity, not handle-based ownership guesses
+P03 — D13 media	Trail covers, stop photos, Guardian selfies	Must use authorized durable assets; no invented fallback images
+P04 — Public profiles	Trail creators and Guardian identities	Creator photo/name/handle must open the same approved public-profile journey
+P05 — ECHO	Public-card follow interactions	Follow remains D03-owned; no fake follow state
+P06 — PULL	Public-card invitations and Vibe relationship	Pending invitation does not grant ordinary personal DM
+P07 — Attribution	Existing Trail, Guardian and post lineage	Historical authorship must be preserved and reconciled with evidence
+
+I confirmed that TrailDetailModal.tsx renders the creator's name but does not provide the required canonical profile-opening interaction. Guardian cards navigate into Guardian-specific details rather than proving the complete P04 public-profile journey.
+
+This is precisely why the Explore repair must reuse the P04 profile destination, not create a separate Guardian/Trail-specific identity system.
+
+The ECHO/PULL contract remains unchanged: ECHO is a D03 directed follow; PULL is a D17 invitation. Neither an Explore profile tap nor an ECHO grants private messaging permission.
+6. Cross-app dependency audit
+APP NAVIGATION AND OWNERSHIP
+#chatgpt-mermaid-_r_lb_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(237, 237, 237);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-_r_lb_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-_r_lb_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-_r_lb_ .error-icon{fill:rgb(48, 48, 48);}#chatgpt-mermaid-_r_lb_ .error-text{fill:rgb(237, 237, 237);stroke:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-_r_lb_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-_r_lb_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-_r_lb_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-_r_lb_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-_r_lb_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-_r_lb_ .marker{fill:rgb(175, 175, 175);stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_lb_ .marker.cross{stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_lb_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-_r_lb_ p{margin:0;}#chatgpt-mermaid-_r_lb_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ .cluster-label text{fill:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ .cluster-label span{color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-_r_lb_ .label text,#chatgpt-mermaid-_r_lb_ span{fill:rgb(237, 237, 237);color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ .node rect,#chatgpt-mermaid-_r_lb_ .node circle,#chatgpt-mermaid-_r_lb_ .node ellipse,#chatgpt-mermaid-_r_lb_ .node polygon,#chatgpt-mermaid-_r_lb_ .node path{fill:rgb(19, 33, 54);stroke:rgb(31, 78, 148);stroke-width:1px;}#chatgpt-mermaid-_r_lb_ .rough-node .label text,#chatgpt-mermaid-_r_lb_ .node .label text,#chatgpt-mermaid-_r_lb_ .image-shape .label,#chatgpt-mermaid-_r_lb_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-_r_lb_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-_r_lb_ .rough-node .label,#chatgpt-mermaid-_r_lb_ .node .label,#chatgpt-mermaid-_r_lb_ .image-shape .label,#chatgpt-mermaid-_r_lb_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-_r_lb_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-_r_lb_ .root .anchor path{fill:rgb(175, 175, 175)!important;stroke-width:0;stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_lb_ .arrowheadPath{fill:rgb(175, 175, 175);}#chatgpt-mermaid-_r_lb_ .edgePath .path{stroke:rgb(175, 175, 175);stroke-width:1px;}#chatgpt-mermaid-_r_lb_ .flowchart-link{stroke:rgb(175, 175, 175);fill:none;}#chatgpt-mermaid-_r_lb_ .edgeLabel{background-color:rgb(14, 14, 14);text-align:center;}#chatgpt-mermaid-_r_lb_ .edgeLabel p{background-color:rgb(14, 14, 14);}#chatgpt-mermaid-_r_lb_ .edgeLabel rect{opacity:0.5;background-color:rgb(14, 14, 14);fill:rgb(14, 14, 14);}#chatgpt-mermaid-_r_lb_ .labelBkg{background-color:rgba(14, 14, 14, 0.5);}#chatgpt-mermaid-_r_lb_ .cluster rect{fill:rgb(48, 48, 48);stroke:rgba(255, 255, 255, 0.15);stroke-width:1px;}#chatgpt-mermaid-_r_lb_ .cluster text{fill:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ .cluster span{color:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(48, 48, 48);border:1px solid rgba(255, 255, 255, 0.15);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-_r_lb_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(237, 237, 237);}#chatgpt-mermaid-_r_lb_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-_r_lb_ .icon-shape,#chatgpt-mermaid-_r_lb_ .image-shape{background-color:rgb(14, 14, 14);text-align:center;}#chatgpt-mermaid-_r_lb_ .icon-shape p,#chatgpt-mermaid-_r_lb_ .image-shape p{background-color:rgb(14, 14, 14);padding:2px;}#chatgpt-mermaid-_r_lb_ .icon-shape .label rect,#chatgpt-mermaid-_r_lb_ .image-shape .label rect{opacity:0.5;background-color:rgb(14, 14, 14);fill:rgb(14, 14, 14);}#chatgpt-mermaid-_r_lb_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-_r_lb_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-_r_lb_ .node .neo-node{stroke:rgb(31, 78, 148);}#chatgpt-mermaid-_r_lb_ [data-look="neo"].node rect,#chatgpt-mermaid-_r_lb_ [data-look="neo"].cluster rect,#chatgpt-mermaid-_r_lb_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-_r_lb_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_lb_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-_r_lb_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-_r_lb_-gradient);stroke-width:1px;}#chatgpt-mermaid-_r_lb_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_lb_ [data-look="neo"].node .neo-line path{stroke:rgb(31, 78, 148);filter:none;}#chatgpt-mermaid-_r_lb_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-_r_lb_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_lb_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-_r_lb_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-_r_lb_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_lb_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-_r_lb_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-_r_lb_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(153, 206, 255);}#chatgpt-mermaid-_r_lb_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(153, 206, 255);}#chatgpt-mermaid-_r_lb_ .node tspan[font-weight="normal"],#chatgpt-mermaid-_r_lb_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-_r_lb_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(0, 14, 26);stroke:rgb(26, 62, 95);stroke-width:1px;}#chatgpt-mermaid-_r_lb_ .node rect,#chatgpt-mermaid-_r_lb_ .node circle,#chatgpt-mermaid-_r_lb_ .node ellipse,#chatgpt-mermaid-_r_lb_ .node polygon,#chatgpt-mermaid-_r_lb_ .node path{fill:rgb(0, 40, 77);stroke:rgba(255, 255, 255, 0.1);stroke-width:1px;}#chatgpt-mermaid-_r_lb_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-_r_lb_ .mermaid-decision .label-container{fill:rgb(0, 14, 26);stroke:rgb(26, 62, 95);stroke-dasharray:2,2;}#chatgpt-mermaid-_r_lb_ .edgePaths .flowchart-link{stroke:rgb(175, 175, 175);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-_r_lb_ .marker{fill:rgb(175, 175, 175);stroke:rgb(175, 175, 175);}#chatgpt-mermaid-_r_lb_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}Five-tab shellHomeExploreShareVibePurseD04 location and evidenceD05 Places and validationD06 TrailsD07 Guardian eligibilityD08 reservationsD01 / D02 profilesD13 mediaD22 accepted HandshakeD20 eligible VQD03 ECHOD17 PULL
+
+
+
+
+
+This is the approved dependency relationship, not a claim that every connection currently works.
+The five root screens still exist and the ScreenRouter connects them. However, source inspection shows that the intended shared domain ownership is incomplete across the application.
+
+Home shares geographic and content contexts with Explore, but a successful visual component does not prove that both read the same canonical Place or Trail. Vibe and Profile require the P04/D02 destination to open the selected user correctly. Purse and Explore's Handshake/reward journeys must use real D20/D22 server-authorized transitions, not local credit shortcuts.
+
+This is a cross-app integration assessment, not a completed line-by-line certification of all 28 domains. The full Explore composition and principal related domain paths were traced; independent runtime acceptance across every tab remains unverified.
+7. Audit capability and independent review
+I applied separate review perspectives using the available Bashir, Understand, Supabase, Build Web Apps and Superpowers instructions: source architecture, frontend contracts, database authorization, product requirements and failure tracing.
+
+I did not create autonomous specialist agents. This session did not expose an appropriate independent agent-spawning capability for this audit, and I will not present one inspection process as several independent human or agent reviews.
+
+The Browser plugin was unavailable, and I did not execute a Playwright reproduction in an authenticated, isolated runtime. The production screenshot proves the ErrorBoundary appeared, but a live JavaScript exception trace remains missing.
+8. Recommended sequencing — no implementation authorized
+Priority	Bounded next investigation or repair packet	Gate
+P0	Reproduce the Explore crash and identify the exact thrown exception; verify all parent/child contracts	Actual browser exception + focused regression
+P0 security	Independently review unrestricted Explore-related table grants/RLS and define domain-owned replacements	Security review + authenticated/anonymous negative tests
+P1	Restore Explore search, map, proximity banner and validation wiring	Real rendered interaction checks
+P1	Reconcile D04/D05 provider, location and Place validation authority; remove fabricated business results only through a preservation-aware cutover	Real location/denial/failure cases
+P1	Reconcile D06 Trail creation, authorship, D08 Tour ownership and D07 Guardian lifecycle	Source-of-truth mapping + two-user tests
+Existing plan	Continue P02–P08 public-profile, media, ECHO/PULL and attribution work in their approved sequence	Preserve living plan v1.7
+
+The first priority is not to redesign Explore or rewrite its components wholesale. It is to isolate the actual crash, fix the minimum verified integration defect and independently address the database authorization exposure.
+Final status
+Audit disposition: SOURCE AND DATABASE FINDINGS VERIFIED; EXACT CRASH TRIGGER AND END-TO-END ACCEPTANCE OPEN.
+
+No GitHub files, branches or PRs were changed. No Supabase SQL mutations, user/content changes or Storage-policy changes were made. No Vercel deployment was created or promoted.
+
+The findings above are a report for your review, not permission to start fixing Explore or to resume D12 implementation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Some of what you mentioned are not security nor errors as we still starting the upgrade plan and the domain ownership, what is urgent now is that the edits caused the explore page to disappear , what is your suggestion for next task or should we finish fixing the profile then address the explorer page issue a d start following the master plan
+
+
+
+
+
+
+
+
+
+
+
+
+
+My recommendation is to restore the Explore page first, then finish the profile fixes, and continue the Master Plan in its approved sequence.
+
+You're right about an important distinction: VQgemini is still undergoing its domain-ownership rehabilitation. We should not classify every unfinished integration, legacy implementation or planned migration as a new emergency. Those belong in the implementation plan unless they are actively breaking the application or exposing an independently verified immediate risk.
+
+The Explore page disappearing is different. A previously accessible core screen now displays an error. That is a regression and should be addressed before continuing feature development.
+Recommended order
+1. P0 — Restore Explore to its last working behavior
+   
+   Investigate when it stopped working, compare the last working deployment with the current production revision, reproduce the exact exception and identify the responsible change.
+   
+   Repair only the verified cause. Preserve all existing Explore features, visuals, content and backend dependencies.
+   
+   Completion: Explore opens normally, its primary sections render, and the regression is verified on mobile.
+2. P1 — Resume and finish the Profile/P03 repairs
+   
+   Return to the existing living plan, including canonical identity, profile photos, correct post authorship and cross-account post visibility.
+   
+   Continue from the last verified task, not from the abandoned branch.
+3. P2 — Resume the Master Plan's approved implementation sequence
+   
+   Continue S00 preservation and the authorized domain rehabilitation steps. Address the remaining Explore backend gaps when their D04–D08 dependencies are scheduled, rather than rebuilding everything during an emergency repair.
+
+Why not finish Profile first?
+Because the Explore regression is blocking one of VQgemini's five primary destinations.
+
+Also, the last inspection established that the production main revision was unchanged by the abandoned replacement-PR work. Therefore, we cannot conclude that those abandoned edits caused Explore to disappear. We need to determine precisely which deployed or preexisting change introduced the crash.
+
+That is a small, separate investigation—not authorization to rewrite Explore.
+Exact next task I recommend
+EXP-P0 — Explore regression recovery
+
+Scope: ExploreScreen, its immediate child components, routing, ErrorBoundary, and the actual regression history.
+
+Execution gates:
+1. Read the current Master Plan and applicable source.
+2. Identify the last demonstrably working Explore revision.
+3. Compare it with current production source.
+4. Capture or reproduce the exact JavaScript exception.
+5. Report the specific cause and smallest necessary correction.
+6. Prepare a locally verified correction only after your approval.
+Forbidden: Redesign, domain migration, fixture cleanup, unrelated security refactoring, new Supabase schema, automatic GitHub push, merge or deployment.
+
+One additional distinction: The unrestricted Supabase policies found in the audit are real authorization concerns, but they are a separate tracked security workstream. They do not justify expanding this Explore recovery task. We should preserve that finding for a specifically authorized review rather than mix it into the crash repair.
+
+My recommended decision: Explore regression recovery → Profile/P03 completion → Master Plan continuation.
+
+No changes have been made.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Start with P0 use [$build-web-apps](app://plugins~Plugin_d0e159446ee48191b94ce1960780cc3c) [$bashir](app://Plugin_51edeca84d6c8191a3e6b515d2eae3c6) [$superpowers](app://plugins~Plugin_60aea7460bd4819199fd97a9553a5e12)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Worked for 1m 34s
+
+
+
+
+
+
+
+EXP-P0 — Explore regression investigation
+Diagnosis complete · Runtime cause not yet confirmed
+I started the P0 investigation using the requested Bashir, Build Web Apps and Superpowers debugging workflows. No code has been edited or pushed.
+1. What the Git history proves
+Check	Result
+Production main	502d51b
+Production deployment	READY
+Explore screen removed?	No
+ExploreScreen changed by recent profile commits?	No
+ExploreHeader changed by recent profile commits?	No
+ExploreScreenModals changed by recent profile commits?	No
+Shared Auth provider changed?	Yes
+Guardian and Trail integration changed?	Yes
+
+The Explore screen and its main extracted components have remained unchanged since their repository import on November 3, 2026.
+
+However, subsequent commits changed the shared authentication provider, Guardian synchronization and Trail loading.
+
+This narrows the regression investigation but does not prove which change caused the disappearance.
+2. Confirmed broken Explore connections
+ExploreHeader — definite interaction crash path
+
+The parent does not supply several required props. When search is focused, ExploreHeader can call .trim() on an undefined searchQuery, causing a rendering exception.
+
+
+
+ProximityValidator — definite interaction crash path
+
+ExploreScreenModals does not supply the validator's required canValidateVenue function and state callbacks. Opening the validation sheet can therefore throw.
+
+
+
+VenueHeatmap and ProximityBanner — broken connections
+
+The screen supplies incompatible or missing properties. These explain missing or malfunctioning map/proximity behavior, but not conclusively the initial page crash.
+
+
+
+These failures exist in the current source. None establishes why your screenshot appears immediately upon entering Explore.
+3. Additional regression checks
+I checked the recent changes against the initial source revision.
+
+The shared Auth provider now uses real Supabase sessions instead of the earlier local identity fallback. This can change what Explore receives as user and profile, particularly for guests.
+
+The Guardian service now joins profile information to existing Guardian records. The Trail hook also resolves creators through the profiles table.
+
+Both are relevant dependencies, but neither was proven to throw on screen entry.
+
+I also checked the seven stored Trail records: their vibe_tags and stops values have the expected array shape. That does not support a malformed-array explanation for the crash.
+Runtime evidence
+Vercel's recent server-runtime error query returned no matching records. However, a React ErrorBoundary exception occurs in the browser, so this is not evidence that the client has no errors.
+
+A direct browser reproduction was unavailable: the Browser plugin was not exposed, and the isolated execution environment could not resolve the production hostname. Consequently, the exact browser exception and last demonstrably working Explore deployment remain unverified.
+4. Proposed smallest recovery scope
+Only after the actual exception is established, the correction should be limited to the component that fails and any directly required parent/child wiring.
+
+The likely relevant files are:
+- src/screens/ExploreScreen.tsx
+- src/features/explore/components/ExploreHeader.tsx
+- src/features/explore/components/ExploreScreenModals.tsx
+- src/features/explore/components/VenueHeatmap.tsx
+- src/features/explore/components/ExploreProximityBanner.tsx
+Shared Auth, Guardian and Trail files should remain read-only unless runtime evidence identifies one as the actual cause.
+
+Acceptance requirements: Explore opens from the bottom tab, displays its existing content, search responds correctly, map and results render, primary modals do not crash, and Home/Profile behavior remains unchanged.
+
+No redesign, new domain migration, dataset cleanup or Supabase changes belong in this emergency repair.
+5. P0 status
+Gate	Status
+Source and Git history inspection	Complete
+Relevant dependency comparison	Complete
+Confirmed source wiring defects	Complete
+Exact incident exception	Not verified
+Last working runtime identified	Not verified
+Fix implemented	Not started
+Browser regression tests	Not run
+GitHub/Supabase/Vercel mutations	None
+
+My conclusion: We have enough evidence to define a tightly bounded Explore recovery, but not enough to select the exact fix without guessing.
+
+The next action is to capture the client exception in an authorized browser test environment, then prepare the smallest locally tested correction for your review. No push, PR, merge or deployment is authorized.
+
+I have stopped at that boundary rather than repeat the earlier mistake of committing an unverified fix.

@@ -183,6 +183,11 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
       <ExploreHeader
         coords={coords}
         cityName={cityName}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeTab={activeTab}
+        selectedCategory={selectedCategory}
+        handleTabSelect={handleTabSelect}
         flashEvents={flashEvents}
         radarCharge={radarCharge}
         onOpenFlashList={() => {
@@ -194,6 +199,12 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
           setActiveFlashModal(flash);
         }}
         onTriggerRandomFlash={triggerRandomFlashEvent}
+        onSpawnFlash={triggerRandomFlashEvent}
+        onSelectAutocomplete={(item) => {
+          setCoords({ lat: item.lat, lng: item.lng });
+          setCityName(item.name);
+          queryOverpassAPI(item.lat, item.lng, selectedCategory || 'Cafés');
+        }}
         fireHaptic={fireHaptic}
       />
 
@@ -216,8 +227,17 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
       <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-zinc-950">
         <VenueHeatmap
           venues={filteredVenues}
+          userCoords={coords}
           coords={coords}
+          selectedVenue={selectedVenue}
           onSelectVenue={setSelectedVenue}
+          isLoading={isLoading}
+          onRefresh={() => {
+            if (coords) queryOverpassAPI(coords.lat, coords.lng, selectedCategory || 'Cafés');
+          }}
+          flashEvents={flashEvents}
+          onSelectFlashEvent={setActiveFlashModal}
+          selectedFlashEvent={activeFlashModal}
         />
       </div>
 

@@ -4,18 +4,24 @@ import { cn } from '@/lib/utils';
 import { AUTOCOMPLETE_SUGGESTIONS as autocompleteSuggestions, getTabActiveClass } from '../data/explorePresets';
 
 interface ExploreHeaderProps {
-  cityName: string;
-  coords: { lat: number; lng: number } | null;
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  activeTab: string;
-  selectedCategory: string;
-  handleTabSelect: (tabId: string) => void;
-  onLocationClick: () => void;
-  onSpawnFlash: () => void;
-  onOpenFilterDialog: () => void;
-  onSelectAutocomplete: (s: { name: string; lat: number; lng: number }) => void;
-  fireHaptic: (style: 'light' | 'medium' | 'heavy') => void;
+  cityName?: string;
+  coords?: { lat: number; lng: number } | null;
+  searchQuery?: string;
+  setSearchQuery?: (q: string) => void;
+  activeTab?: string;
+  selectedCategory?: string | null;
+  handleTabSelect?: (tabId: string) => void;
+  onLocationClick?: () => void;
+  onSpawnFlash?: () => void;
+  onOpenFilterDialog?: () => void;
+  onSelectAutocomplete?: (s: { name: string; lat: number; lng: number }) => void;
+  fireHaptic?: (style: 'light' | 'medium' | 'heavy') => void;
+  // Legacy props tolerance so all callers remain compatible
+  flashEvents?: any[];
+  radarCharge?: number;
+  onOpenFlashList?: () => void;
+  onSelectFlash?: (flash: any) => void;
+  onTriggerRandomFlash?: () => void;
 }
 
 const TABS = [
@@ -29,18 +35,23 @@ const TABS = [
 ];
 
 export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
-  cityName,
-  coords,
-  searchQuery,
-  setSearchQuery,
-  activeTab,
-  selectedCategory,
-  handleTabSelect,
-  onLocationClick,
-  onSpawnFlash,
-  onOpenFilterDialog,
-  onSelectAutocomplete,
-  fireHaptic
+  cityName = 'Tunis, Tunisia',
+  coords = null,
+  searchQuery = '',
+  setSearchQuery = () => {},
+  activeTab = 'All',
+  selectedCategory = null,
+  handleTabSelect = () => {},
+  onLocationClick = () => {},
+  onSpawnFlash = () => {},
+  onOpenFilterDialog = () => {},
+  onSelectAutocomplete = () => {},
+  fireHaptic = () => {},
+  flashEvents = [],
+  radarCharge = 100,
+  onOpenFlashList = () => {},
+  onSelectFlash = () => {},
+  onTriggerRandomFlash = () => {},
 }) => {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
 
@@ -94,7 +105,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
           <input 
             type="text" 
             placeholder="Search regional vibes (Google & Mapbox powered)"
-            value={searchQuery}
+            value={searchQuery || ''}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setShowSearchSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 250)}
@@ -102,13 +113,13 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
           />
           <Search className="w-5 h-5 text-zinc-500 absolute left-4 top-1/2 -translate-y-1/2" />
 
-          {showSearchSuggestions && searchQuery.trim().length >= 2 && (
+          {showSearchSuggestions && (searchQuery || '').trim().length >= 2 && (
             <div className="absolute top-full left-0 right-0 z-40 mt-1.5 bg-[#121115] border border-white/10 rounded-2xl overflow-hidden shadow-2xl divide-y divide-white/5 max-h-[220px] overflow-y-auto">
               {autocompleteSuggestions
-                .filter(s => 
-                  s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  s.address.toLowerCase().includes(searchQuery.toLowerCase())
-                )
+                .filter(s => {
+                  const q = (searchQuery || '').toLowerCase();
+                  return s.name.toLowerCase().includes(q) || s.address.toLowerCase().includes(q);
+                })
                 .map((s) => (
                   <button
                     key={s.id}
@@ -145,10 +156,10 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
                   </button>
                 ))
               }
-              {autocompleteSuggestions.filter(s => 
-                s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                s.address.toLowerCase().includes(searchQuery.toLowerCase())
-              ).length === 0 && (
+              {autocompleteSuggestions.filter(s => {
+                const q = (searchQuery || '').toLowerCase();
+                return s.name.toLowerCase().includes(q) || s.address.toLowerCase().includes(q);
+              }).length === 0 && (
                 <div className="p-4 text-center text-xs font-semibold text-zinc-500 font-mono bg-[#121115]">
                   No matches found on Google / Mapbox Places.
                 </div>

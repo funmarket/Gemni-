@@ -147,7 +147,7 @@ export const RegularTrailCard: React.FC<RegularTrailCardProps> = ({
 
         <div className="space-y-2 pt-2 border-t border-white/5 select-none">
           <div className="flex flex-wrap gap-1">
-            {trail.vibeTags.slice(0, 3).map((t, idx) => (
+            {(trail.vibeTags || []).slice(0, 3).map((t, idx) => (
               <span
                 key={idx}
                 className="inline-flex items-center gap-0.5 text-[9px] font-extrabold tracking-wide px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/15 text-emerald-400"

@@ -105,7 +105,7 @@ export const HireGuardianForTrailModal: React.FC<HireGuardianForTrailModalProps>
                         {pro.city} • {pro.hiresCount} hires
                       </p>
                       <div className="flex items-center gap-1 text-[9.5px] text-zinc-400 font-mono mt-0.5">
-                        {pro.earnedBadges.slice(0, 2).map(b => (
+                        {(pro.earnedBadges || []).slice(0, 2).map(b => (
                           <span key={b.badge} className="text-zinc-300">
                             ✨ {b.badge}
                           </span>

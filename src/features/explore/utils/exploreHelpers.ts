@@ -120,8 +120,19 @@ export const getVenueMatchInfo = (
   profile: any,
   joinedCommunityIds: string[]
 ): { score: number; breakdown: { label: string; value: number }[] } => {
-  const userInterests = (profile?.interests || ['coffee', 'music', 'art', 'culture', 'cozy nooks']).map((i: string) => i.toLowerCase());
-  const userActivities = (profile?.activities || ['exploring', 'drinking coffee', 'listening to loops', 'urban walking']).map((a: string) => a.toLowerCase());
+  const rawInterests = Array.isArray(profile?.interests)
+    ? profile.interests
+    : typeof profile?.interests === 'string'
+      ? profile.interests.split(',').map((s: string) => s.trim())
+      : ['coffee', 'music', 'art', 'culture', 'cozy nooks'];
+  const userInterests = rawInterests.filter(Boolean).map((i: any) => String(i).toLowerCase());
+
+  const rawActivities = Array.isArray(profile?.activities)
+    ? profile.activities
+    : typeof profile?.activities === 'string'
+      ? profile.activities.split(',').map((s: string) => s.trim())
+      : ['exploring', 'drinking coffee', 'listening to loops', 'urban walking'];
+  const userActivities = rawActivities.filter(Boolean).map((a: any) => String(a).toLowerCase());
   const userHandle = profile?.handle || 'me';
 
   const category = (v.category || '').toLowerCase();
