@@ -41,7 +41,7 @@ export const HomeFeedTabs: React.FC<HomeFeedTabsProps> = ({
 
   const getPostAvatarUrl = (post: { userId?: string | null; avatarUrl?: string | null }) => {
     const isCurrentAuthor = Boolean(profile && post.userId
-      && (post.userId === profile.id || `usr_${post.userId}` === profile.id || post.userId === profile.handle || (profile.id === 'usr_hannibal_1337' && post.userId === 'd45d581e-631c-45e1-a686-6f9d764aaf04')));
+      && (post.userId === profile.id || `usr_${post.userId}` === profile.id));
     return (isCurrentAuthor && profile?.photoUrl) ? profile.photoUrl : post.avatarUrl;
   };
 
