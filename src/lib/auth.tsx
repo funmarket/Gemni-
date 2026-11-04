@@ -23,13 +23,14 @@ export interface UserProfile {
   lastActive: string;
   avatarFile?: File;
   wallet?: string;
+  avatarUploadNote?: string;
   isProGuardian?: boolean;
   guardianshipType?: string;
 }
 
 type AuthUser = { uid: string; email: string; displayName: string; photoURL?: string };
 type Registration = Partial<UserProfile> & { email?: string; password?: string; avatarFile?: File };
-type RegistrationResult = UserProfile | { pendingVerification: true; email: string; authUserId: string };
+type RegistrationResult = UserProfile | { pendingVerification: true; email: string; authUserId: string; avatarUploadNote?: string };
 interface AuthContextType {
   user: AuthUser | null;
   profile: UserProfile | null;
@@ -182,16 +183,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     if (error) throw new Error(error.message);
     if (!signup.user) throw new Error('Account creation failed.');
-    if (data.avatarFile) {
-      await queuePendingProfileAvatar(signup.user.id, data.avatarFile);
+    // Database trigger creates the profile atomically. A failed browser-only
+    // avatar queue must never turn a successfully-created account into an error.
+    if (!signup.session) {
+      let avatarUploadNote: string | undefined;
+      if (data.avatarFile) {
+        try {
+          await queuePendingProfileAvatar(signup.user.id, data.avatarFile);
+        } catch (avatarError) {
+          console.warn('Signup avatar could not be retained:', avatarError);
+          avatarUploadNote = 'The account was created, but this browser could not retain the selected photo. Upload it after signing in.';
+        }
+      }
+      return { pendingVerification: true, email, authUserId: signup.user.id, avatarUploadNote };
     }
-    // Database trigger creates the profile atomically for verified new Auth users.
-    if (!signup.session) return { pendingVerification: true, email, authUserId: signup.user.id };
     await hydrate(signup.user);
     const { data: row } = await supabase.from('profiles').select('*').eq('id', 'usr_' + signup.user.id).maybeSingle();
     if (!row) throw new Error('Account created, but profile provisioning is pending.');
-    if (data.avatarFile) await uploadPendingProfileAvatar(signup.user.id, row.id);
-    return fromRow(row);
+    let avatarUploadNote: string | undefined;
+    if (data.avatarFile) {
+      try {
+        await uploadProfileAvatar(data.avatarFile, row.id);
+      } catch (avatarError) {
+        console.warn('Signup avatar upload failed:', avatarError);
+        avatarUploadNote = 'Your profile was created but the avatar upload failed. Add it from Edit Profile.';
+      }
+    }
+    return { ...fromRow(row), avatarUploadNote };
   };
 
   const updateProfile = async (updates: Partial<UserProfile>): Promise<void> => {
