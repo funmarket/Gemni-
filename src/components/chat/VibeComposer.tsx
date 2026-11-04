@@ -22,7 +22,7 @@ const PRESET_LOCATIONS = [
 const PRESET_EMOJIS = ['✨', '☕', '🍷', '🍕', '🔥', '⚡', '🎧', '🎮', '💡', '🪴', '🐾', '🌌'];
 
 export const VibeComposer: React.FC<VibeComposerProps> = ({ onClose, onSuccess }) => {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   
   const [text, setText] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
@@ -68,7 +68,6 @@ export const VibeComposer: React.FC<VibeComposerProps> = ({ onClose, onSuccess }
         emoji: selectedEmoji,
         username: profile?.handle || 'traveler',
         avatar: profile?.photoUrl || profile?.handle || '🦊',
-        userId: profile?.id || user?.uid || profile?.handle || 'current_user',
         isOnline: true,
       });
       
