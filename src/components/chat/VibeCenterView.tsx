@@ -13,6 +13,7 @@ import { OrbitFollowingTab } from '@/features/chat/components/vibe-hub/OrbitFoll
 import { EchoFollowersTab } from '@/features/chat/components/vibe-hub/EchoFollowersTab';
 import { PullsInboxTab } from '@/features/chat/components/vibe-hub/PullsInboxTab';
 import { MutualVibesTab } from '@/features/chat/components/vibe-hub/MutualVibesTab';
+import { PublicProfileModal } from '@/features/profile/components/PublicProfileModal';
 
 export const VibeCenterView: React.FC = () => {
   const { user } = useAuth();
@@ -23,6 +24,13 @@ export const VibeCenterView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<VibeTabType>('Gossip');
   const [showComposer, setShowComposer] = useState<boolean>(false);
   const [tabFade, setTabFade] = useState<boolean>(false);
+  const [selectedProfile, setSelectedProfile] = useState<{
+    id?: string;
+    handle?: string;
+    displayName?: string;
+    photoUrl?: string;
+    bio?: string;
+  } | null>(null);
 
   // Active 1:1 Chat state
   const [activeChat, setActiveChat] = useState<{
@@ -216,16 +224,27 @@ export const VibeCenterView: React.FC = () => {
                         vibe.compatibilityScore
                       )
                     }
+                    onOpenProfile={(p) => setSelectedProfile(p)}
                   />
                 </div>
               )}
 
               {activeTab === 'Orbit' && (
-                <OrbitFollowingTab onGoDrift={() => handleTabChange('Drift')} />
+                <div className="px-3 sm:px-5">
+                  <OrbitFollowingTab 
+                    onGoDrift={() => handleTabChange('Drift')}
+                    onOpenProfile={(p) => setSelectedProfile(p)}
+                  />
+                </div>
               )}
 
               {activeTab === 'Echo' && (
-                <EchoFollowersTab onGoDrift={() => handleTabChange('Drift')} />
+                <div className="px-3 sm:px-5">
+                  <EchoFollowersTab 
+                    onGoDrift={() => handleTabChange('Drift')}
+                    onOpenProfile={(p) => setSelectedProfile(p)}
+                  />
+                </div>
               )}
 
               {activeTab === 'Pulls' && (
@@ -234,12 +253,34 @@ export const VibeCenterView: React.FC = () => {
                     pulls={pulls}
                     onAcceptPull={handleAcceptPull}
                     onPassPull={handlePassPull}
+                    onOpenProfile={(p) => setSelectedProfile(p)}
                   />
                 </div>
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Canonical Public Profile Modal */}
+      {selectedProfile && (
+        <PublicProfileModal
+          isOpen={!!selectedProfile}
+          onClose={() => setSelectedProfile(null)}
+          userId={selectedProfile.id}
+          handle={selectedProfile.handle}
+          initialProfile={{
+            id: selectedProfile.id,
+            handle: selectedProfile.handle || 'explorer',
+            displayName: selectedProfile.displayName || selectedProfile.handle || 'Explorer',
+            photoUrl: selectedProfile.photoUrl,
+            bio: selectedProfile.bio,
+          }}
+          onOpenChat={(id, name, av) => {
+            setSelectedProfile(null);
+            handleOpenDirectChat(id, name, av || '🦁');
+          }}
+        />
       )}
 
       {/* Ephemeral Composer Modal */}
