@@ -20,8 +20,9 @@ interface ProfileSidebarProps {
 }
 
 export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose, onNavigateToTab }) => {
-  const { user, profile, logout, updateProfileWallet } = useAuth();
-  const [authPanel, setAuthPanel] = React.useState<'login' | 'register' | null>(null);
+  const { user, profile, isPlatformAdmin, logout, updateProfileWallet } = useAuth();
+  const [authPanel, setAuthPanel] = React.useState<'login' | 'register' | 'edit' | null>(null);
+  const [verificationNotice, setVerificationNotice] = React.useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { unreadCount: unreadNotificationsCount } = useAppNotifications();
   
@@ -119,6 +120,13 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
             </button>
           </div>
 
+          {verificationNotice && (
+            <div role="status" className="rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-3 text-xs text-emerald-200">
+              <p className="font-bold">Check your email</p>
+              <p>Account created. Open the verification link sent to {verificationNotice}, then return here to sign in.</p>
+              <button type="button" className="mt-2 underline" onClick={() => setVerificationNotice(null)}>Dismiss</button>
+            </div>
+          )}
           {!user ? (
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-4 space-y-3">
               <p className="text-base font-semibold text-white">Explore as a visitor</p>
@@ -183,6 +191,11 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
           )}
 
           {user && <>
+          {/* Edit Profile is accessible directly from the profile sidebar. */}
+          <button type="button" onClick={() => setAuthPanel('edit')}
+            className="w-full rounded-xl border border-vibe-primary/30 bg-vibe-primary/10 p-3 text-left text-sm font-semibold text-white">
+            Edit Profile
+          </button>
           {/* Wallet Quick Connector (VQ Adaptation) */}
           <div className="space-y-1.5 px-0.5">
             {/* Small text / labels EXACTLY 13px */}
@@ -467,7 +480,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
               )}
             </div>
 
-            {user && <>
+            {user && isPlatformAdmin && <>
           {/* Platform Admin Console Dashboard (Highlighted) */}
             <button 
               onClick={() => {
@@ -543,7 +556,11 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
             <LoginModal onCancel={() => setAuthPanel(null)} onSuccess={() => { setAuthPanel(null); onClose(); }} onSwitchToRegister={() => setAuthPanel('register')} />
           ) : (
             <div className="w-full max-w-lg max-h-full overflow-y-auto">
-              <ProfileView onCancel={() => setAuthPanel(null)} onSuccess={() => { setAuthPanel(null); onClose(); }} />
+              <ProfileView
+                onCancel={() => setAuthPanel(null)}
+                onSuccess={() => { setAuthPanel(null); onClose(); }}
+                onVerificationRequired={email => { setVerificationNotice(email); setAuthPanel(null); }}
+              />
             </div>
           )}
         </div>
