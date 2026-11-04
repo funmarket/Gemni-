@@ -123,7 +123,8 @@ class SocialContentDomain {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (error) throw error;
+      if (data) {
         // Query profiles to resolve handles, display names and avatar photos
         const { data: profileRows } = await supabase
           .from('profiles')
@@ -145,22 +146,12 @@ class SocialContentDomain {
             profileMap.set(p.handle, entry);
             profileMap.set(p.handle.toLowerCase(), entry);
           }
-          // Direct mapping for Hannibal Barca's Auth user ID
-          const hannibal = profileRows.find(p => p.handle === 'hannibal' || p.id === 'usr_hannibal_1337');
-          if (hannibal) {
-            const hannibalEntry = {
-              handle: hannibal.handle,
-              displayName: hannibal.display_name,
-              photoUrl: hannibal.photo_url || ''
-            };
-            profileMap.set('d45d581e-631c-45e1-a686-6f9d764aaf04', hannibalEntry);
-            profileMap.set('usr_d45d581e-631c-45e1-a686-6f9d764aaf04', hannibalEntry);
-          }
+
         }
 
         const remotePosts: SocialPost[] = data.map((d: any) => {
           const profile = profileMap.get(d.user_id) || profileMap.get(String(d.user_id).toLowerCase());
-          const handle = profile?.handle || (d.user_id || 'explorer').replace(/^@/, '');
+          const handle = profile?.handle || 'explorer'; // Never expose internal IDs as handles.
           return {
             id: d.id,
             userId: d.user_id,
@@ -228,10 +219,22 @@ class SocialContentDomain {
     avatar?: string;
     userId?: string;
   }): Promise<SocialPost> {
+    // Derive the author from the authenticated account and the existing verified
+    // Auth-to-profile link, not from client-supplied userId or username.
+    const { data: authResult, error: authError } = await supabase.auth.getUser();
+    if (authError || !authResult.user) throw new Error('Sign in before publishing a post.');
+    const { data: link, error: linkError } = await supabase.from('s00_test_identity_links')
+      .select('legacy_profile_id').eq('auth_user_id', authResult.user.id).maybeSingle();
+    if (linkError) throw new Error('Cannot verify post author ownership.');
+    const profileId = link?.legacy_profile_id || 'usr_' + authResult.user.id;
+    const { data: ownerProfile, error: profileError } = await supabase.from('profiles')
+      .select('id, handle, photo_url').eq('id', profileId).maybeSingle();
+    if (profileError || !ownerProfile) throw new Error('Your account has no linked profile.');
+
     const now = Date.now();
     const cleanText = (params.text || params.feeling || '').trim();
-    const cleanUser = (params.username || 'traveler').replace(/^@/, '');
-    const cleanAvatar = params.avatar || '✨';
+    const cleanUser = ownerProfile.handle;
+    const cleanAvatar = ownerProfile.photo_url || params.avatar || '✨';
     const cleanLocation = params.venueName?.trim() || 'Tunis Node';
     const cleanEmoji = params.emoji || '✨';
     const postId = `post_${now}_${Math.random().toString(36).substr(2, 6)}`;
@@ -245,7 +248,7 @@ class SocialContentDomain {
 
     const newPost: SocialPost = {
       id: postId,
-      userId: params.userId || cleanUser,
+      userId: ownerProfile.id,
       username: cleanUser,
       author: `@${cleanUser}`,
       avatar: cleanAvatar,
@@ -265,22 +268,21 @@ class SocialContentDomain {
       time: 'Just now'
     };
 
+    // Only confirm and broadcast a post after Supabase has acknowledged the write.
+    const { error: writeError } = await supabase.from('social_posts').insert({
+      id: postId,
+      user_id: ownerProfile.id,
+      image_uri: newPost.imageUri || null,
+      caption: cleanText.substring(0, 300),
+      venue_name: cleanLocation.substring(0, 100),
+      timestamp: now,
+      live_capture: true,
+    });
+    if (writeError) throw new Error(writeError.message);
+
     this.posts.unshift(newPost);
     this.savePosts();
     this.notifyListeners();
-
-    // Persist to Supabase social_posts table without forced stock photo fallback
-    try {
-      supabase.from('social_posts').upsert({
-        id: postId,
-        user_id: newPost.userId || 'current_user',
-        image_uri: newPost.imageUri || newPost.image || null,
-        caption: (newPost.text || newPost.feeling || 'Vibe Moment').substring(0, 300),
-        venue_name: (newPost.venueName || newPost.location || 'Local Gem').substring(0, 100),
-        timestamp: now,
-        live_capture: true,
-      }).then(() => {}).catch(console.warn);
-    } catch {}
 
     try {
       window.dispatchEvent(new CustomEvent('vq-post-created', { detail: newPost }));
