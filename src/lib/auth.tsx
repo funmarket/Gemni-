@@ -22,6 +22,7 @@ export interface UserProfile {
   photoUrl?: string;
   lastActive: string;
   avatarFile?: File;
+  wallet?: string;
   isProGuardian?: boolean;
   guardianshipType?: string;
 }
@@ -167,7 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (existing) throw new Error('Username is already taken.');
     const { data: signup, error } = await supabase.auth.signUp({
       email, password: data.password, options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: 'https://vqgemni.vercel.app/',
         data: {
           handle, display_name: displayName,
           photo_url: data.photoUrl || '',
