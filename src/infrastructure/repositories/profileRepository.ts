@@ -133,55 +133,34 @@ export const profileRepository = {
     return profile === null;
   },
 
-  async create(profile: Profile): Promise<Profile> {
-    const id = profile.id || `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const newProfile: Profile = {
-      ...profile,
-      id,
-      handle: profile.handle.replace(/^@/, '').toLowerCase().trim(),
-      createdAt: new Date().toISOString(),
-      lastActive: new Date().toISOString(),
-    };
-
-    try {
-      await supabase.from('profiles').upsert({
-        id,
-        handle: newProfile.handle,
-        display_name: newProfile.displayName,
-        photo_url: newProfile.photoUrl,
-        points: newProfile.points || 0,
-        streaks: newProfile.streaks || 0,
-        account_type: newProfile.accountType || 'vibe',
-        cultural_passport: newProfile.culturalPassport || [],
-        latitude: newProfile.latitude,
-        longitude: newProfile.longitude,
-        last_active: newProfile.lastActive,
-        created_at: newProfile.createdAt,
-      });
-    } catch (err) {
-      console.warn('Supabase profile create notice:', err);
-    }
-    return newProfile;
+  async create(_profile: Profile): Promise<Profile> {
+    // D01 Auth owns identity and signup provisioning. Never upsert an arbitrary
+    // profile ID or grant a client-specified account type or reward balance.
+    throw new Error('Create an account through authenticated registration.');
   },
 
   async update(id: string, updates: Partial<Profile>): Promise<void> {
-    try {
-      const payload: Record<string, any> = {
-        last_active: new Date().toISOString(),
-      };
-      if (updates.displayName !== undefined) payload.display_name = updates.displayName;
-      if (updates.photoUrl !== undefined) payload.photo_url = updates.photoUrl;
-      if (updates.points !== undefined) payload.points = updates.points;
-      if (updates.streaks !== undefined) payload.streaks = updates.streaks;
-      if (updates.accountType !== undefined) payload.account_type = updates.accountType;
-      if (updates.culturalPassport !== undefined) payload.cultural_passport = updates.culturalPassport;
-      if (updates.latitude !== undefined) payload.latitude = updates.latitude;
-      if (updates.longitude !== undefined) payload.longitude = updates.longitude;
-
-      await supabase.from('profiles').update(payload).eq('id', id);
-    } catch (err) {
-      console.warn('Supabase profile update notice:', err);
+    const { data: auth, error: authError } = await supabase.auth.getUser();
+    if (authError || !auth.user) throw new Error('Sign in to edit your profile.');
+    const { data: link, error: linkError } = await supabase.from('s00_test_identity_links')
+      .select('legacy_profile_id').eq('auth_user_id', auth.user.id).maybeSingle();
+    if (linkError) throw new Error(linkError.message);
+    const ownedProfileId = link?.legacy_profile_id || 'usr_' + auth.user.id;
+    if (id !== ownedProfileId) throw new Error('You may only edit your own profile.');
+    const payload: Record<string, string> = {};
+    if (updates.displayName !== undefined) {
+      const name = updates.displayName.trim();
+      if (!name || name.length > 80) throw new Error('Display name must be 1–80 characters.');
+      payload.display_name = name;
     }
+    if (updates.photoUrl !== undefined) payload.photo_url = updates.photoUrl;
+    if (Object.keys(payload).length === 0) return;
+    // Rewards, account tiers, location fixes and identity links are never
+    // changed by this public profile editor.
+    const { data, error } = await supabase.from('profiles').update(payload)
+      .eq('id', ownedProfileId).select('id').maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error('Profile update was not authorized.');
   },
 
   async getNearbyProfilesCascading(lat: number, lon: number): Promise<Profile[]> {
