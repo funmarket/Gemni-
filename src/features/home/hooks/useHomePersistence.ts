@@ -99,8 +99,9 @@ export const useHomePersistence = ({ triggerHaptic, triggerAlert, updateProfileP
           return {
             id: post.id || `social-${post.timestamp || Date.now()}`,
             author: post.username ? (post.username.startsWith('@') ? post.username : `@${post.username}`) : '@anonymous',
+            userId: post.userId || null,
             avatar: post.avatar || post.emoji || '✨',
-            avatarUrl: null,
+            avatarUrl: post.avatarUrl || null,
             text: post.feeling || '',
             votes: post.votes || 1,
             time: timeStr,
