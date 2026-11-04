@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/infrastructure/supabase/supabaseClient';
+import { uploadPendingProfileAvatar } from '@/lib/profileAvatar';
 
 export interface UserProfile {
   id: string;
@@ -26,6 +27,7 @@ export interface UserProfile {
 
 type AuthUser = { uid: string; email: string; displayName: string; photoURL?: string };
 type Registration = Partial<UserProfile> & { email?: string; password?: string };
+type RegistrationResult = UserProfile | { pendingVerification: true; email: string; authUserId: string };
 interface AuthContextType {
   user: AuthUser | null;
   profile: UserProfile | null;
@@ -35,7 +37,8 @@ interface AuthContextType {
   login: () => Promise<void>;
   loginAsGuest: (customHandle?: string) => void;
   loginWithHandleAndPassword: (identifier: string, password?: string) => Promise<UserProfile>;
-  registerProfile: (profileData: Registration) => Promise<UserProfile>;
+  registerProfile: (profileData: Registration) => Promise<RegistrationResult>;
+  isPlatformAdmin: boolean;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   logout: () => Promise<void>;
   updateProfilePoints: (pointsEarned: number) => Promise<void>;
@@ -63,10 +66,11 @@ function fromRow(row: Record<string, unknown>): UserProfile {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const hydrate = async (authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
-    if (!authUser) { setUser(null); setProfile(null); return; }
+    if (!authUser) { setUser(null); setProfile(null); setIsPlatformAdmin(false); return; }
     const metadata = authUser.user_metadata || {};
     setUser({
       uid: authUser.id, email: authUser.email || '',
@@ -79,13 +83,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: row, error } = await supabase.from('profiles').select('*').eq('id', profileId).maybeSingle();
     if (error) console.warn('Profile lookup failed:', error.message);
     // Never fabricate a logged-in local account or silently impersonate a legacy identity.
+    const { data: adminAssignment, error: adminError } = await supabase.from('vq_admin_assignments')
+      .select('role').eq('auth_user_id', authUser.id).eq('active', true).maybeSingle();
+    if (adminError) console.warn('Admin assignment lookup failed:', adminError.message);
+    setIsPlatformAdmin(Boolean(adminAssignment && adminAssignment.role === 'platform_admin'));
     if (row) {
+      let avatarUrl = typeof row.photo_url === 'string' ? row.photo_url : '';
+      try {
+        const uploadedUrl = await uploadPendingProfileAvatar(authUser.id, profileId);
+        if (uploadedUrl) avatarUrl = uploadedUrl;
+      } catch (avatarError) {
+        console.warn('Pending avatar upload not completed:', avatarError);
+      }
       const { data: preferences, error: preferencesError } = await supabase.from('profile_preferences')
         .select('telegram_handle,x_handle,preferred_contact_method,cozy_diary_mode')
         .eq('profile_id', profileId).maybeSingle();
       if (preferencesError) console.warn('Profile preferences unavailable:', preferencesError.message);
       setProfile({
         ...fromRow(row),
+        photoUrl: avatarUrl,
         telegramHandle: preferences?.telegram_handle || '',
         xHandle: preferences?.x_handle || '',
         contactMethod: preferences?.preferred_contact_method || 'none',
@@ -138,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return fromRow(row);
   };
 
-  const registerProfile = async (data: Registration): Promise<UserProfile> => {
+  const registerProfile = async (data: Registration): Promise<RegistrationResult> => {
     const handle = (data.handle || '').replace(/^@/, '').trim().toLowerCase();
     const displayName = (data.displayName || '').trim();
     const email = (data.email || '').trim();
@@ -149,12 +165,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (lookupError) throw new Error('Cannot verify username availability.');
     if (existing) throw new Error('Username is already taken.');
     const { data: signup, error } = await supabase.auth.signUp({
-      email, password: data.password, options: { data: { handle, display_name: displayName } },
+      email, password: data.password, options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          handle, display_name: displayName,
+          photo_url: data.photoUrl || '',
+          bio: data.bio || '', city: data.location || data.city || '',
+          interests: data.tags || [],
+        },
+      },
     });
     if (error) throw new Error(error.message);
     if (!signup.user) throw new Error('Account creation failed.');
     // Database trigger creates the profile atomically for verified new Auth users.
-    if (!signup.session) throw new Error('Account created. Verify your email, then sign in.');
+    if (!signup.session) return { pendingVerification: true, email, authUserId: signup.user.id };
     await hydrate(signup.user);
     const { data: row } = await supabase.from('profiles').select('*').eq('id', 'usr_' + signup.user.id).maybeSingle();
     if (!row) throw new Error('Account created, but profile provisioning is pending.');
@@ -241,13 +265,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
-    setUser(null); setProfile(null);
+    setUser(null); setProfile(null); setIsPlatformAdmin(false);
   };
   const updateProfilePoints = async (_pointsEarned: number) => {
     // Do not mint rewards client-side. D20 must authorize actual ledger credits.
   };
   return <AuthContext.Provider value={{
-    user, profile, userProfile: profile, setProfile, loading, login, loginAsGuest,
+    user, profile, userProfile: profile, setProfile, loading, isPlatformAdmin, login, loginAsGuest,
     loginWithHandleAndPassword, registerProfile, updateProfile, logout, updateProfilePoints,
   }}>{children}</AuthContext.Provider>;
 };
