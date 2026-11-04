@@ -62,7 +62,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
       'VIBE-GOLD-7F8KnvS8y9s9D8'
     ];
     const newAddress = addresses[Math.floor(Math.random() * addresses.length)];
-    updateProfileWallet(newAddress);
+    updateProfileWallet?.(newAddress);
     alert(`Connected simulated Explorer Key:\n${newAddress}`);
   };
 
@@ -429,7 +429,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
                      locale === 'ar' ? 'العربية' : 
                      locale === 'es' ? 'ESPAÑOL' : 
                      locale === 'pt' ? 'PORTUGUÊS' : 
-                     locale === 'zh' ? '中文' : locale.toUpperCase()}
+                     locale === 'zh' ? '中文' : 'ENGLISH'}
                   </span>
                   <span className="text-zinc-600 text-xs transition-transform duration-200" style={{ transform: isLocaleDropdownOpen ? 'rotate(180deg)' : 'none' }}>
                     ▼
