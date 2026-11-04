@@ -9,6 +9,14 @@ export interface UserProfile {
   points: number;
   streaks: number;
   city: string;
+  bio?: string;
+  location?: string;
+  tags?: string[];
+  languages?: string[];
+  contactMethod?: string;
+  xHandle?: string;
+  telegramHandle?: string;
+  oracleMode?: boolean;
   culturalPassport: string[];
   photoUrl?: string;
   lastActive: string;
@@ -41,7 +49,12 @@ function fromRow(row: Record<string, unknown>): UserProfile {
     displayName: String(row.display_name || row.handle),
     accountType: (row.account_type as UserProfile['accountType']) || 'vibe',
     points: Number(row.points || 0), streaks: Number(row.streaks || 0),
-    city: '', culturalPassport: Array.isArray(row.cultural_passport) ? row.cultural_passport as string[] : [],
+    city: typeof row.city === 'string' ? row.city : '',
+    location: typeof row.city === 'string' ? row.city : '',
+    bio: typeof row.bio === 'string' ? row.bio : '',
+    tags: Array.isArray(row.interests) ? row.interests as string[] : [],
+    languages: Array.isArray(row.languages) ? row.languages as string[] : [],
+    culturalPassport: Array.isArray(row.cultural_passport) ? row.cultural_passport as string[] : [],
     photoUrl: typeof row.photo_url === 'string' ? row.photo_url : undefined,
     lastActive: String(row.last_active || new Date().toISOString()),
   };
@@ -66,7 +79,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: row, error } = await supabase.from('profiles').select('*').eq('id', profileId).maybeSingle();
     if (error) console.warn('Profile lookup failed:', error.message);
     // Never fabricate a logged-in local account or silently impersonate a legacy identity.
-    setProfile(row ? fromRow(row) : null);
+    if (row) {
+      const { data: preferences, error: preferencesError } = await supabase.from('profile_preferences')
+        .select('telegram_handle,x_handle,preferred_contact_method,cozy_diary_mode')
+        .eq('profile_id', profileId).maybeSingle();
+      if (preferencesError) console.warn('Profile preferences unavailable:', preferencesError.message);
+      setProfile({
+        ...fromRow(row),
+        telegramHandle: preferences?.telegram_handle || '',
+        xHandle: preferences?.x_handle || '',
+        contactMethod: preferences?.preferred_contact_method || 'none',
+        oracleMode: Boolean(preferences?.cozy_diary_mode),
+      });
+    } else setProfile(null);
     if (row) setUser(prev => prev?.uid === authUser.id ? { ...prev, displayName: String(row.display_name || row.handle) } : prev);
   };
 
@@ -140,12 +165,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user || !profile) throw new Error('Sign in to edit your profile.');
     const fields: Record<string, unknown> = {};
-    if (typeof updates.displayName === 'string') fields.display_name = updates.displayName.trim();
-    if (typeof updates.photoUrl === 'string') fields.photo_url = updates.photoUrl;
-    if (Object.keys(fields).length === 0) return;
-    const { data, error } = await supabase.from('profiles').update(fields).eq('id', profile.id).select('*').single();
-    if (error) throw new Error(error.message);
-    setProfile(fromRow(data));
+    if (typeof updates.displayName === 'string') {
+      const name = updates.displayName.trim();
+      if (!name || name.length > 80) throw new Error('Display name must be 1–80 characters.');
+      fields.display_name = name;
+    }
+    if (typeof updates.photoUrl === 'string') fields.photo_url = updates.photoUrl.trim();
+    if (typeof updates.bio === 'string') {
+      if (updates.bio.length > 280) throw new Error('Bio must be 280 characters or less.');
+      fields.bio = updates.bio.trim();
+    }
+    const city = updates.location ?? updates.city;
+    if (typeof city === 'string') {
+      if (city.length > 100) throw new Error('Broad location must be 100 characters or less.');
+      fields.city = city.trim();
+    }
+    if (updates.tags !== undefined) {
+      if (updates.tags.length > 30 || updates.tags.some(tag => !tag.trim() || tag.length > 60)) {
+        throw new Error('Choose up to 30 interests of 1–60 characters each.');
+      }
+      fields.interests = [...new Set(updates.tags.map(tag => tag.trim().toLowerCase()))];
+    }
+    if (updates.languages !== undefined) fields.languages = updates.languages;
+    const hasPrivateUpdates = ['telegramHandle', 'xHandle', 'contactMethod', 'oracleMode']
+      .some(key => Object.prototype.hasOwnProperty.call(updates, key));
+    const nextTelegram = updates.telegramHandle ?? profile.telegramHandle ?? '';
+    const nextX = updates.xHandle ?? profile.xHandle ?? '';
+    const nextContactMethod = updates.contactMethod ?? profile.contactMethod ?? 'none';
+    const nextCozyDiaryMode = updates.oracleMode ?? profile.oracleMode ?? false;
+    if (nextCozyDiaryMode && (!String(fields.bio ?? profile.bio ?? '').trim()
+      || !String(fields.city ?? profile.city ?? '').trim() || (!nextTelegram.trim() && !nextX.trim()))) {
+      throw new Error('Cozy Diary Mode requires a biography, broad location and at least one contact handle.');
+    }
+    if (nextTelegram.length > 64 || nextX.length > 64) throw new Error('Contact handle is too long.');
+    if (!['none', 'telegram', 'x', 'email'].includes(nextContactMethod)) throw new Error('Invalid contact preference.');
+    // Supabase RLS owns authorization. Never submit client-controlled IDs, roles or rewards.
+    let saved = profile;
+    if (Object.keys(fields).length) {
+      const { data, error } = await supabase.from('profiles').update(fields)
+        .eq('id', profile.id).select('*').single();
+      if (error) throw new Error(error.message);
+      saved = fromRow(data);
+    }
+    if (hasPrivateUpdates) {
+      const { data: existing, error: lookupError } = await supabase.from('profile_preferences')
+        .select('profile_id').eq('profile_id', profile.id).maybeSingle();
+      if (lookupError) throw new Error(lookupError.message);
+      const privateFields = {
+        telegram_handle: nextTelegram.trim(), x_handle: nextX.trim(),
+        preferred_contact_method: nextContactMethod, cozy_diary_mode: nextCozyDiaryMode,
+      };
+      const result = existing
+        ? await supabase.from('profile_preferences').update(privateFields).eq('profile_id', profile.id)
+        : await supabase.from('profile_preferences').insert({ profile_id: profile.id, ...privateFields });
+      if (result.error) throw new Error(result.error.message);
+    }
+    setProfile({
+      ...saved,
+      telegramHandle: nextTelegram, xHandle: nextX,
+      contactMethod: nextContactMethod, oracleMode: nextCozyDiaryMode,
+    });
   };
 
   const login = async (): Promise<void> => {
