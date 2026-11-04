@@ -143,8 +143,19 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose,
           <div className="bg-zinc-900/40 border border-zinc-900 rounded-2xl p-4 space-y-3.5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full border-2 border-emerald-500 p-0.5 bg-black flex items-center justify-center overflow-hidden">
-                <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-zinc-500 relative">
-                  <svg className="w-7 h-7 text-zinc-400 mt-1" fill="currentColor" viewBox="0 0 24 24">
+                <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-zinc-500 relative overflow-hidden">
+                  {profile?.photoUrl ? (
+                    <img
+                      src={profile.photoUrl}
+                      alt={profile.displayName || profile.handle || 'Profile photo'}
+                      className="absolute inset-0 z-10 w-full h-full rounded-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(event) => {
+                        event.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : null}
+                  <svg className="w-7 h-7 text-zinc-400 mt-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 </div>
