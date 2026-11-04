@@ -365,7 +365,7 @@ export const AdminConsole: React.FC = () => {
                     {activeMetricDetail === 'users' ? "Registered Citizens Breakdown" : "Engagement Ratio Scan"}
                   </strong>
                   {activeMetricDetail === 'users' ? (
-                    <span>These figures display the exact document index count from your Firebase Firestore profiles database. Standard user IDs coupled with custom handles create persistent entries in real-time.</span>
+                    <span>These figures display the exact record count from your Supabase profiles database. Citizen handles and IDs create persistent relational entries in real-time.</span>
                   ) : (
                     <span>Daily Active Users (DAU) monitors citizens accessing rooms, registering new entries, updating coordinate spots or posting signals on the blockchain index.</span>
                   )}

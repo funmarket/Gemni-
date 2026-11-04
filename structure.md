@@ -98,6 +98,13 @@ No fabricated source-domain record may be created merely to claim D14 acceptance
 
 Cross-cutting privileged-action auditing may exist as application/platform infrastructure without becoming a business domain. Audit entries may record actor, validated capability/role, target, linked case/report, action, reason, owning-domain command, result/failure, timestamp and correlation/causation ID. Audit infrastructure records privileged execution history; it does not become the canonical writer of the business facts being changed.
 
+## Structure Delta L — Canonical D06 Trails & D07 Guardians Backend Architecture & Anti-Mock Discipline (DIRECTED 2026-11-04)
+
+1. **Strict Anti-Mock and Anti-Monolithic Architecture:** In-memory mock APIs (`vqApi.ts`), fake client databases, and monolithic multi-domain scripts are strictly prohibited. Every business capability must be handled by its specific canonical domain module (`src/domains/d01..d28`), communicating with real Supabase persistence via typed domain services.
+2. **D06 Vibe Trails Domain Ownership:** `src/domains/d06_trails` is the canonical domain authority for Trails and Tours. It synchronizes directly with Supabase `vibe_trails`, attributes authors to real profiles (`author_id = profiles.id`, `author_name = profiles.display_name`), preserves versioned stops and remix trees, and prohibits hardcoded sample arrays inside React components.
+3. **D07 Guardians & Local Legends Domain Ownership:** `src/domains/d07_guardians` hydrates Guardian and Local Legend profiles directly from Supabase `profiles` (with Pro qualification `account_type = 'pro'` or Local Legend `vibe`), maintaining real avatars, bios, and handles. Handshakes persist to `handshakes` table and reviews persist to `place_reviews` table.
+4. **No Stock Photo Fallbacks:** Text-only posts and trails do not inject random Unsplash images or placeholders.
+
 ## 1. Purpose, scope and architectural decision hierarchy
 
 This document defines **how to organize the new application**, not what the product experience should be or the SQL schema. `Requirements.md` specifies the intended UI/UX and behavior recovered from `vibequest-fixed-v2 (2).zip`, the attached source-behavior narratives, and Product Owner decisions. The ZIP is **behavior and visual reference, not reusable engineering authority**. Historical Gemini's suggested structure/schema are **ideas**, not accepted configuration, schema or deployment evidence.

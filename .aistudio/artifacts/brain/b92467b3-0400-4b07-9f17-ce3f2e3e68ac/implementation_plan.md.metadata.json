@@ -1,6 +1,0 @@
-{
-  "summary":  "Comprehensive architectural implementation plan to migrate VibeQuest Guardians exclusively to Supabase and real domain-driven mechanics. Integrates confirmed user choices (Core user loop prioritization, authentic baseline seeding) across the 28-domain architecture, detailing the end-to-end data pipelines, responsive mobile-touch ergonomics, and authoritative database synchronization without mock backends.",
-  "updatedAt":  "2026-11-02T11:45:29.917656096Z",
-  "requestFeedback":  true,
-  "userFacing":  true
-}

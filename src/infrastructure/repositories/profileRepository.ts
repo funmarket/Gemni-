@@ -142,11 +142,15 @@ export const profileRepository = {
   async update(id: string, updates: Partial<Profile>): Promise<void> {
     const { data: auth, error: authError } = await supabase.auth.getUser();
     if (authError || !auth.user) throw new Error('Sign in to edit your profile.');
-    const { data: link, error: linkError } = await supabase.from('s00_test_identity_links')
-      .select('legacy_profile_id').eq('auth_user_id', auth.user.id).maybeSingle();
-    if (linkError) throw new Error(linkError.message);
-    const ownedProfileId = link?.legacy_profile_id || 'usr_' + auth.user.id;
-    if (id !== ownedProfileId) throw new Error('You may only edit your own profile.');
+    let ownedProfileId = 'usr_' + auth.user.id;
+    try {
+      const { data: link } = await supabase.from('s00_test_identity_links')
+        .select('legacy_profile_id').eq('auth_user_id', auth.user.id).maybeSingle();
+      if (link?.legacy_profile_id) ownedProfileId = link.legacy_profile_id;
+    } catch {}
+    if (id !== ownedProfileId && id !== 'usr_' + auth.user.id && id !== auth.user.id) {
+      throw new Error('You may only edit your own profile.');
+    }
     const payload: Record<string, string> = {};
     if (updates.displayName !== undefined) {
       const name = updates.displayName.trim();

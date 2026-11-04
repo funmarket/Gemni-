@@ -66,9 +66,9 @@ export const VibeComposer: React.FC<VibeComposerProps> = ({ onClose, onSuccess }
         imageUri: photo || null,
         venueName: locationName,
         emoji: selectedEmoji,
-        username: profile?.handle || user?.displayName || 'traveler',
+        username: profile?.handle || 'traveler',
         avatar: profile?.photoUrl || profile?.handle || '🦊',
-        userId: user?.uid || profile?.handle || 'current_user',
+        userId: profile?.id || user?.uid || profile?.handle || 'current_user',
         isOnline: true,
       });
       

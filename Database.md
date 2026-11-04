@@ -69,6 +69,14 @@ If implementation uses support-case records separate from D21 misconduct cases, 
 
 Temporary restrictions/suspensions require a durable server-authoritative due time and reconciliation path that survives process/Redis restart. Browser timers, process memory or Redis TTL alone are insufficient authoritative state. Standard temporary choices are 3 days, 1 week, 1 month and 3 months; Permanent has no automatic expiry.
 
+## Database Delta L — Real Identity Harmonization, Canonical Handle Resolution, and Retirement of Temporary Link Tables (DIRECTED 2026-11-04)
+
+1. **Canonical Handle & Public Identity:** The public username displayed in posts, feeds, comments, and profile screens is strictly the user's canonical `@handle` from `profiles.handle`. Internal Supabase Auth UUIDs (`auth.uid()`) and database IDs (`usr_<handle>` or `usr_<UUID>`) are internal storage keys and MUST NEVER be exposed to other users as public author strings. All post author loaders resolve the author through the canonical profile table.
+2. **Retirement of `s00_test_identity_links`:** The temporary legacy mapping table `s00_test_identity_links` is formally retired. All 24 authentic test accounts have corresponding canonical profiles in `profiles` (with authentic display names, handles, avatars, and roles). RLS policies on `profiles` and `profile_preferences` evaluate ownership directly via `auth.uid() = id OR id = 'usr_' || auth.uid() OR handle = (auth.jwt() -> 'user_metadata' ->> 'handle')`, eliminating intermediate lookup hops.
+3. **Strict Prohibition of Stock Media Fallbacks:** Authorship and media integrity require that no automatic or hardcoded stock images (such as Unsplash vintage microphones or placeholder landscape photos) be silently attached to user posts, trails, or reviews. Text-only posts must persist `image_uri: null`.
+4. **D06 Vibe Trails Backend Persistence:** Trails are authoritatively persisted in PostgreSQL `vibe_trails`. Authorship maps to the user's canonical profile (`author_id = profiles.id`, `author_name = profiles.display_name`). Versioning, stops, and remix attribution are fully maintained in the database.
+5. **D07 Guardians & Local Legends Real Profiles:** Guardians and Local Legends are hydrated directly from Supabase `profiles` with Pro qualification (`account_type = 'pro'`) or Local Legend status (`vibe`). Handshakes and reviews are recorded in `handshakes` and `place_reviews` with real profile IDs.
+
 ## Approved identity and account rules
 
 Three account categories only: `vibe`, `pro`, `business`. A member has one canonical D01 UUID; public `@handle` is for display/lookup. Pro Guardian is a D07 service qualification, Local Legend a Guardian feature, not additional account types. Event publishers may be eligible individual Pro providers or Business operators; eligible publication is immediately public, with moderation/restriction from Admin Control Room. No invented manual preapproval for Events.

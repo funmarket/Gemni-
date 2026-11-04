@@ -67,73 +67,184 @@ async function triggerSupabaseSync() {
   if (isSyncing) return;
   isSyncing = true;
   try {
-    // 1. Fetch live handshakes from Supabase
-    const { data: dbHandshakes } = await supabase
-      .from('handshakes')
-      .select('guardian_id, user_id, status')
-      .eq('status', 'active');
+    // 1. Fetch live profiles, handshakes, and reviews in parallel from Supabase
+    const [
+      { data: dbProfiles },
+      { data: dbHandshakes },
+      { data: dbReviews }
+    ] = await Promise.all([
+      supabase.from('profiles').select('id, handle, display_name, photo_url, account_type, city, bio'),
+      supabase.from('handshakes').select('guardian_id, user_id, status').eq('status', 'active'),
+      supabase.from('place_reviews').select('*').order('created_at', { ascending: false })
+    ]);
 
-    // 2. Fetch live reviews from Supabase place_reviews
-    const { data: dbReviews } = await supabase
-      .from('place_reviews')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const raw = localStorage.getItem(GUARDIANS_STORAGE_KEY);
+    const list: VibeGuardian[] = raw ? JSON.parse(raw) : [...DEFAULT_VIBE_GUARDIANS];
 
-    if ((dbHandshakes && dbHandshakes.length > 0) || (dbReviews && dbReviews.length > 0)) {
-      const raw = localStorage.getItem(GUARDIANS_STORAGE_KEY);
-      const list: VibeGuardian[] = raw ? JSON.parse(raw) : [...DEFAULT_VIBE_GUARDIANS];
+    let changed = false;
 
-      let changed = false;
-      const updated = list.map((g) => {
-        let gChanged = false;
-        // Merge handshakes
-        const currentHs = new Set(g.handshakes || []);
-        if (dbHandshakes) {
-          dbHandshakes
-            .filter((h: any) => h.guardian_id === g.id)
-            .forEach((h: any) => {
-              if (!currentHs.has(h.user_id)) {
-                currentHs.add(h.user_id);
-                gChanged = true;
-              }
-            });
-        }
-
-        // Merge reviews
-        const currentReviews = [...(g.reviews || [])];
-        if (dbReviews) {
-          dbReviews
-            .filter((r: any) => r.place_id === g.id)
-            .forEach((r: any) => {
-              if (!currentReviews.some(ex => ex.id === r.id)) {
-                currentReviews.unshift({
-                  id: r.id,
-                  author: r.author_name || 'Verified Explorer',
-                  authorHandle: `@${r.author_id.replace(/^usr_/, '')}`,
-                  badge: (r.comment?.includes('Chill') ? 'Chill Vibe' : r.comment?.includes('Cool') ? 'Cool Vibe' : 'Good Vibe') as any,
-                  note: r.comment || 'Authentic Vibe Encounter',
-                  createdAt: new Date(r.created_at).toLocaleDateString()
-                });
-                gChanged = true;
-              }
-            });
-        }
-
-        if (gChanged) {
-          changed = true;
-          return {
-            ...g,
-            handshakes: Array.from(currentHs),
-            reviews: currentReviews
-          };
-        }
-        return g;
+    // Create profile lookup map
+    const profileMap = new Map<string, any>();
+    if (dbProfiles) {
+      dbProfiles.forEach((p: any) => {
+        if (p.id) profileMap.set(p.id.toLowerCase(), p);
+        if (p.handle) profileMap.set(p.handle.toLowerCase().replace(/^@/, ''), p);
+        const bareId = p.id?.replace(/^usr_/, '').toLowerCase();
+        if (bareId) profileMap.set(bareId, p);
       });
+    }
 
-      if (changed) {
-        localStorage.setItem(GUARDIANS_STORAGE_KEY, JSON.stringify(updated));
-        window.dispatchEvent(new Event('storage'));
+    const updated = list.map((g) => {
+      let gChanged = false;
+      const cleanHandle = g.handle.replace(/^@/, '').toLowerCase();
+      const cleanId = g.id.toLowerCase();
+      const matchingProfile = profileMap.get(cleanHandle) || 
+                              profileMap.get(cleanId) || 
+                              profileMap.get(cleanId.replace(/^guardian-/, 'usr_')) ||
+                              profileMap.get(cleanId.replace(/^guardian-/, ''));
+
+      let name = g.name;
+      let handle = g.handle;
+      let selfieUrl = g.selfieUrl;
+      let bio = g.bio;
+      let city = g.city;
+      let type = g.type;
+
+      if (matchingProfile) {
+        if (matchingProfile.display_name && matchingProfile.display_name !== g.name) {
+          name = matchingProfile.display_name;
+          gChanged = true;
+        }
+        if (matchingProfile.handle && `@${matchingProfile.handle}` !== g.handle) {
+          handle = `@${matchingProfile.handle}`;
+          gChanged = true;
+        }
+        if (matchingProfile.photo_url && matchingProfile.photo_url !== g.selfieUrl) {
+          selfieUrl = matchingProfile.photo_url;
+          gChanged = true;
+        }
+        if (matchingProfile.bio && matchingProfile.bio !== g.bio) {
+          bio = matchingProfile.bio;
+          gChanged = true;
+        }
+        if (matchingProfile.city && matchingProfile.city !== g.city) {
+          city = matchingProfile.city;
+          gChanged = true;
+        }
+        if (matchingProfile.account_type === 'pro' && g.type !== 'pro') {
+          type = 'pro';
+          gChanged = true;
+        }
       }
+
+      // Merge handshakes
+      const currentHs = new Set(g.handshakes || []);
+      if (dbHandshakes) {
+        dbHandshakes
+          .filter((h: any) => 
+            h.guardian_id === g.id || 
+            (matchingProfile && h.guardian_id === matchingProfile.id) ||
+            h.guardian_id === cleanHandle
+          )
+          .forEach((h: any) => {
+            if (!currentHs.has(h.user_id)) {
+              currentHs.add(h.user_id);
+              gChanged = true;
+            }
+          });
+      }
+
+      // Merge reviews
+      const currentReviews = [...(g.reviews || [])];
+      if (dbReviews) {
+        dbReviews
+          .filter((r: any) => 
+            r.place_id === g.id || 
+            (matchingProfile && r.place_id === matchingProfile.id)
+          )
+          .forEach((r: any) => {
+            if (!currentReviews.some(ex => ex.id === r.id)) {
+              currentReviews.unshift({
+                id: r.id,
+                author: r.author_name || 'Verified Explorer',
+                authorHandle: `@${(r.author_id || '').replace(/^usr_/, '')}`,
+                badge: (r.comment?.includes('Chill') ? 'Chill Vibe' : r.comment?.includes('Cool') ? 'Cool Vibe' : 'Good Vibe') as any,
+                note: r.comment || 'Authentic Vibe Encounter',
+                createdAt: new Date(r.created_at).toLocaleDateString()
+              });
+              gChanged = true;
+            }
+          });
+      }
+
+      if (gChanged) {
+        changed = true;
+        return {
+          ...g,
+          name,
+          handle,
+          selfieUrl,
+          bio,
+          city,
+          type,
+          handshakes: Array.from(currentHs),
+          reviews: currentReviews
+        };
+      }
+      return g;
+    });
+
+    // If Hannibal Barca exists as a pro profile and is not yet in the guardian directory, add him!
+    const hannibalProfile = profileMap.get('hannibal') || profileMap.get('usr_hannibal_1337');
+    if (hannibalProfile && !updated.some(g => g.id === 'usr_hannibal_1337' || g.handle === '@hannibal')) {
+      const hannibalGuardian: VibeGuardian = {
+        id: 'usr_hannibal_1337',
+        name: hannibalProfile.display_name || 'Hannibal Barca 🛡️',
+        handle: `@${hannibalProfile.handle || 'hannibal'}`,
+        type: 'pro',
+        city: hannibalProfile.city || 'Tunis / Carthage',
+        stateCountry: 'Tunisia',
+        age: 32,
+        hideAge: false,
+        selfieUrl: hannibalProfile.photo_url || '',
+        selfieCapturedAt: new Date().toISOString(),
+        hasActiveProSubscription: true,
+        showInHireSuggestions: true,
+        hiresCount: 137,
+        pricingType: 'hourly',
+        hourlyRate: 50,
+        priceDisplay: '$50 / hr',
+        experience: 'Commander & Master Explorer of Ancient Carthage, Historical Strategist and Heritage Preservationist',
+        hobbies: ['Ancient History', 'Equestrian Trails', 'Coastal Exploration', 'Archaeology'],
+        trails: [
+          { id: 'trail_tunis_prestige', title: 'Fun Prestige Tour: Tunis, Bardo, Medina, Carthage & Sidi Bou Said' }
+        ],
+        favoriteTrails: ['Fun Prestige Tour: Tunis, Bardo, Medina, Carthage & Sidi Bou Said'],
+        preMadeTours: [
+          {
+            id: 'tour-hannibal-1',
+            title: 'Epic Carthage Fortress & Byrsa Hill Heritage Expedition',
+            description: 'Private in-depth historical expedition exploring the ancient Punic ruins, Roman baths, and legendary fortress ramparts.',
+            duration: '3.0 hours',
+            whatsIncluded: ['Full historic monument access pass', 'Authentic mint tea & pine nuts tasting', 'Curated archaeology field notes'],
+            meetingPoint: 'Byrsa Hill Acropolium Gates, Carthage',
+            pricingType: 'hourly',
+            price: '$50 / hour',
+            photos: [],
+            availableSlots: ['Today 10:00 AM', 'Tomorrow 2:00 PM', 'Saturday 9:30 AM']
+          }
+        ],
+        bio: hannibalProfile.bio || 'Strategic explorer and heritage guide. Leading authentic expeditions across historic Carthage and the Mediterranean coast.',
+        reviews: [],
+        handshakes: []
+      };
+      updated.unshift(hannibalGuardian);
+      changed = true;
+    }
+
+    if (changed) {
+      localStorage.setItem(GUARDIANS_STORAGE_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new Event('storage'));
     }
   } catch (err) {
     console.warn('Supabase guardian sync notice:', err);

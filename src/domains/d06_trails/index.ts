@@ -112,30 +112,51 @@ class TrailsDomain {
 
   private async syncFromSupabase() {
     try {
-      const { data, error } = await supabase
-        .from('vibe_trails')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [{ data, error }, { data: profilesData }] = await Promise.all([
+        supabase.from('vibe_trails').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, handle, display_name, photo_url')
+      ]);
+
+      const profileMap = new Map<string, any>();
+      if (profilesData) {
+        profilesData.forEach((p: any) => {
+          if (p.id) profileMap.set(p.id, p);
+          if (p.handle) profileMap.set(p.handle, p);
+          const rawId = p.id?.replace(/^usr_/, '');
+          if (rawId) profileMap.set(rawId, p);
+        });
+      }
 
       if (!error && data && data.length > 0) {
-        const supabaseTrails: VibeTrailRecord[] = data.map((d: any) => ({
-          id: d.id,
-          name: d.name,
-          story: d.story,
-          authorId: d.author_id || d.authorId || 'current_user',
-          authorName: d.author_name || d.authorName || 'Explorer',
-          city: d.city || 'Tunis',
-          category: d.category || 'General',
-          vibeTags: d.vibe_tags || d.vibeTags || [],
-          imageUrl: d.image_url || d.imageUrl || '',
-          latitude: d.latitude || 36.7992,
-          longitude: d.longitude || 10.1706,
-          stops: d.stops || [],
-          totalEstimatedMinutes: d.total_estimated_minutes || d.totalEstimatedMinutes || 60,
-          savesCount: d.saves_count || d.savesCount || 0,
-          createdAt: d.created_at || d.createdAt || new Date().toISOString(),
-          updatedAt: d.updated_at || d.updatedAt || new Date().toISOString(),
-        }));
+        const supabaseTrails: VibeTrailRecord[] = data.map((d: any) => {
+          const authorId = d.author_id || d.authorId || '';
+          const profile = profileMap.get(authorId) || profileMap.get(authorId.replace(/^usr_/, ''));
+          const authorName = profile?.display_name || d.author_name || d.authorName || 'Explorer';
+          const authorAvatarUrl = profile?.photo_url || d.author_avatar_url || d.authorAvatarUrl;
+
+          return {
+            id: d.id,
+            name: d.name,
+            story: d.story,
+            authorId: profile?.id || authorId,
+            authorName,
+            authorAvatarUrl,
+            city: d.city || 'Tunis',
+            category: d.category || 'General',
+            vibeTags: d.vibe_tags || d.vibeTags || [],
+            imageUrl: d.image_url || d.imageUrl || '',
+            latitude: d.latitude || 36.7992,
+            longitude: d.longitude || 10.1706,
+            stops: d.stops || [],
+            totalEstimatedMinutes: d.total_estimated_minutes || d.totalEstimatedMinutes || 60,
+            savesCount: d.saves_count || d.savesCount || 0,
+            forkedFromTrailId: d.forked_from_trail_id || d.forkedFromTrailId,
+            forkedFromAuthorName: d.forked_from_author_name || d.forkedFromAuthorName,
+            isTour: Boolean(d.is_tour || d.isTour),
+            createdAt: d.created_at || d.createdAt || new Date().toISOString(),
+            updatedAt: d.updated_at || d.updatedAt || new Date().toISOString(),
+          };
+        });
 
         this.trails = supabaseTrails;
         this.save();

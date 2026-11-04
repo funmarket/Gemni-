@@ -11,42 +11,58 @@ export function useVibeTrails(userId?: string, authorName?: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const { data, error: sbError } = await supabase
-        .from('vibe_trails')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [{ data, error: sbError }, { data: profilesData }] = await Promise.all([
+        supabase.from('vibe_trails').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, handle, display_name, photo_url')
+      ]);
 
       if (sbError) {
         throw sbError;
       }
 
+      const profileMap = new Map<string, any>();
+      if (profilesData) {
+        profilesData.forEach((p: any) => {
+          if (p.id) profileMap.set(p.id, p);
+          if (p.handle) profileMap.set(p.handle, p);
+          const rawId = p.id?.replace(/^usr_/, '');
+          if (rawId) profileMap.set(rawId, p);
+        });
+      }
+
       if (data && data.length > 0) {
-        const fetched: VibeTrail[] = data.map((d: any) => ({
-          id: d.id,
-          name: d.name || '',
-          story: d.story || '',
-          address: d.address || '',
-          category: d.category || 'General',
-          vibeTags: d.vibe_tags || d.vibeTags || [],
-          imageUrl: d.image_url || d.imageUrl || '',
-          latitude: d.latitude || 36.8093,
-          longitude: d.longitude || 10.1343,
-          authorId: d.author_id || d.authorId || '',
-          authorName: d.author_name || d.authorName || 'Local Explorer',
-          createdAt: d.created_at || d.createdAt || new Date().toISOString(),
-          savesCount: d.saves_count || d.savesCount || 0,
-          savedBy: d.saved_by || d.savedBy || [],
-          photos: d.photos || [],
-          city: d.city || '',
-          stops: d.stops || [],
-          totalStops: d.total_stops || d.totalStops || (d.stops ? d.stops.length : 1),
-          totalEstimatedMinutes: d.total_estimated_minutes || d.totalEstimatedMinutes || 120,
-          forkedFromTrailId: d.forked_from_trail_id || d.forkedFromTrailId || undefined,
-          forkedFromAuthorName: d.forked_from_author_name || d.forkedFromAuthorName || undefined,
-          adoptionsCount: d.adoptions_count || d.adoptionsCount || 0,
-          isTour: Boolean(d.is_tour || d.isTour),
-          tourDetails: d.tour_details || d.tourDetails || undefined,
-        }));
+        const fetched: VibeTrail[] = data.map((d: any) => {
+          const aId = d.author_id || d.authorId || '';
+          const profile = profileMap.get(aId) || profileMap.get(aId.replace(/^usr_/, ''));
+          const resolvedName = profile?.display_name || d.author_name || d.authorName || 'Local Explorer';
+
+          return {
+            id: d.id,
+            name: d.name || '',
+            story: d.story || '',
+            address: d.address || '',
+            category: d.category || 'General',
+            vibeTags: d.vibe_tags || d.vibeTags || [],
+            imageUrl: d.image_url || d.imageUrl || '',
+            latitude: d.latitude || 36.8093,
+            longitude: d.longitude || 10.1343,
+            authorId: profile?.id || aId,
+            authorName: resolvedName,
+            createdAt: d.created_at || d.createdAt || new Date().toISOString(),
+            savesCount: d.saves_count || d.savesCount || 0,
+            savedBy: d.saved_by || d.savedBy || [],
+            photos: d.photos || [],
+            city: d.city || '',
+            stops: d.stops || [],
+            totalStops: d.total_stops || d.totalStops || (d.stops ? d.stops.length : 1),
+            totalEstimatedMinutes: d.total_estimated_minutes || d.totalEstimatedMinutes || 120,
+            forkedFromTrailId: d.forked_from_trail_id || d.forkedFromTrailId || undefined,
+            forkedFromAuthorName: d.forked_from_author_name || d.forkedFromAuthorName || undefined,
+            adoptionsCount: d.adoptions_count || d.adoptionsCount || 0,
+            isTour: Boolean(d.is_tour || d.isTour),
+            tourDetails: d.tour_details || d.tourDetails || undefined,
+          };
+        });
         setTrails(fetched);
       } else {
         setTrails([]);
@@ -85,7 +101,7 @@ export function useVibeTrails(userId?: string, authorName?: string) {
         address: trailData.address || firstStop?.address || 'Local Curated Route',
         category: trailData.category,
         vibeTags: trailData.vibeTags,
-        imageUrl: trailData.imageUrl || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=400&auto=format&fit=crop',
+        imageUrl: trailData.imageUrl || '',
         latitude: initialLat,
         longitude: initialLng,
         authorId: userId,

@@ -51,7 +51,9 @@ export const VibeTrailsSection: React.FC<VibeTrailsSectionProps> = ({
   const isUserPro = Boolean(
     isUserProGuardian(userId, authorName) ||
       currentUserProfile?.isProGuardian ||
-      currentUserProfile?.guardianshipType === 'pro'
+      currentUserProfile?.guardianshipType === 'pro' ||
+      currentUserProfile?.account_type === 'pro' ||
+      currentUserProfile?.accountType === 'pro'
   );
 
   const regularTrails = trails.filter((t) => !t.isTour);

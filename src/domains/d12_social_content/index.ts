@@ -71,50 +71,7 @@ const STORAGE_KEY_CUSTOM_POSTS = 'vq_custom_posts';
 const STORAGE_KEY_COMMENTS = 'vq_post_comments';
 const STORAGE_KEY_LIKES = 'vq_liked_posts';
 
-const SEED_POSTS: SocialPost[] = [
-  {
-    id: 'post_seed_1',
-    userId: 'usr_hannibal_1337',
-    username: 'hannibal',
-    author: '@hannibal',
-    avatar: '🛡️',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
-    text: 'Acoustic malouf session underway behind Souk des Chéchias right after sunset prayer. Look for the copper archway lamp.',
-    feeling: 'Acoustic malouf session underway behind Souk des Chéchias right after sunset prayer. Look for the copper archway lamp.',
-    imageUri: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
-    image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
-    venueName: 'Souk des Chéchias, Tunis',
-    location: 'Souk des Chéchias, Tunis',
-    emoji: '🎵',
-    zone: 'CREATIVE',
-    isOnline: true,
-    votes: 24,
-    timestamp: Date.now() - 35 * 60 * 1000,
-    createdAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
-    time: '35m ago'
-  },
-  {
-    id: 'post_seed_2',
-    userId: 'usr_sarah_carthage',
-    username: 'sarah_carthage',
-    author: '@sarah_carthage',
-    avatar: '🌸',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80',
-    text: 'Crisp morning sea breeze over the Antonine Roman thermal ruins. Fresh wild figs are at the station gate.',
-    feeling: 'Crisp morning sea breeze over the Antonine Roman thermal ruins. Fresh wild figs are at the station gate.',
-    imageUri: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80',
-    image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80',
-    venueName: 'Carthage Byrsa Node',
-    location: 'Carthage Byrsa Node',
-    emoji: '🏛️',
-    zone: 'CHILLED',
-    isOnline: true,
-    votes: 19,
-    timestamp: Date.now() - 2 * 3600 * 1000,
-    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    time: '2h ago'
-  }
-];
+const SEED_POSTS: SocialPost[] = [];
 
 function formatTimeAgo(timestamp: number): string {
   const elapsed = Date.now() - timestamp;
@@ -147,8 +104,7 @@ class SocialContentDomain {
   private load(): void {
     try {
       const rawPosts = localStorage.getItem(STORAGE_KEY_POSTS);
-      this.posts = rawPosts ? JSON.parse(rawPosts) : [...SEED_POSTS];
-      if (!rawPosts) this.savePosts();
+      this.posts = rawPosts ? JSON.parse(rawPosts) : [];
 
       const rawComments = localStorage.getItem(STORAGE_KEY_COMMENTS);
       this.comments = rawComments ? JSON.parse(rawComments) : {};
@@ -156,7 +112,7 @@ class SocialContentDomain {
       const rawLikes = localStorage.getItem(STORAGE_KEY_LIKES);
       this.likes = rawLikes ? JSON.parse(rawLikes) : {};
     } catch {
-      this.posts = [...SEED_POSTS];
+      this.posts = [];
     }
   }
 
@@ -168,34 +124,69 @@ class SocialContentDomain {
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        const remotePosts: SocialPost[] = data.map((d: any) => ({
-          id: d.id,
-          userId: d.user_id,
-          username: (d.user_id || 'explorer').replace(/^@/, ''),
-          author: `@${(d.user_id || 'explorer').replace(/^@/, '')}`,
-          avatar: '🎒',
-          text: d.caption || '',
-          feeling: d.caption || '',
-          imageUri: d.image_uri,
-          image: d.image_uri,
-          venueName: d.venue_name || 'Cultural Node',
-          location: d.venue_name || 'Cultural Node',
-          emoji: '✨',
-          zone: 'COZY',
-          isOnline: true,
-          votes: 1,
-          timestamp: d.timestamp || Date.now(),
-          createdAt: d.created_at || new Date().toISOString(),
-          time: formatTimeAgo(d.timestamp || Date.now())
-        }));
+        // Query profiles to resolve handles, display names and avatar photos
+        const { data: profileRows } = await supabase
+          .from('profiles')
+          .select('id, handle, display_name, photo_url');
 
-        const existingIds = new Set(this.posts.map(p => p.id));
-        const newOnes = remotePosts.filter(p => !existingIds.has(p.id));
-        if (newOnes.length > 0) {
-          this.posts.unshift(...newOnes);
-          this.savePosts();
-          this.notifyListeners();
+        const profileMap = new Map<string, { handle: string; displayName: string; photoUrl: string }>();
+        if (profileRows) {
+          for (const p of profileRows) {
+            const entry = {
+              handle: p.handle,
+              displayName: p.display_name,
+              photoUrl: p.photo_url || ''
+            };
+            profileMap.set(p.id, entry);
+            profileMap.set(p.id.toLowerCase(), entry);
+            const stripped = p.id.replace(/^usr_/, '');
+            profileMap.set(stripped, entry);
+            profileMap.set(stripped.toLowerCase(), entry);
+            profileMap.set(p.handle, entry);
+            profileMap.set(p.handle.toLowerCase(), entry);
+          }
+          // Direct mapping for Hannibal Barca's Auth user ID
+          const hannibal = profileRows.find(p => p.handle === 'hannibal' || p.id === 'usr_hannibal_1337');
+          if (hannibal) {
+            const hannibalEntry = {
+              handle: hannibal.handle,
+              displayName: hannibal.display_name,
+              photoUrl: hannibal.photo_url || ''
+            };
+            profileMap.set('d45d581e-631c-45e1-a686-6f9d764aaf04', hannibalEntry);
+            profileMap.set('usr_d45d581e-631c-45e1-a686-6f9d764aaf04', hannibalEntry);
+          }
         }
+
+        const remotePosts: SocialPost[] = data.map((d: any) => {
+          const profile = profileMap.get(d.user_id) || profileMap.get(String(d.user_id).toLowerCase());
+          const handle = profile?.handle || (d.user_id || 'explorer').replace(/^@/, '');
+          return {
+            id: d.id,
+            userId: d.user_id,
+            username: handle,
+            author: `@${handle}`,
+            avatar: '🎒',
+            avatarUrl: profile?.photoUrl || null,
+            text: d.caption || '',
+            feeling: d.caption || '',
+            imageUri: d.image_uri || null,
+            image: d.image_uri || null,
+            venueName: d.venue_name || 'Cultural Node',
+            location: d.venue_name || 'Cultural Node',
+            emoji: '✨',
+            zone: 'COZY',
+            isOnline: true,
+            votes: 1,
+            timestamp: d.timestamp || Date.now(),
+            createdAt: d.created_at || new Date().toISOString(),
+            time: formatTimeAgo(d.timestamp || Date.now())
+          };
+        });
+
+        this.posts = remotePosts;
+        this.savePosts();
+        this.notifyListeners();
       }
     } catch (e) {
       console.warn('Supabase social posts sync notice:', e);
@@ -278,12 +269,12 @@ class SocialContentDomain {
     this.savePosts();
     this.notifyListeners();
 
-    // Persist to Supabase social_posts table
+    // Persist to Supabase social_posts table without forced stock photo fallback
     try {
       supabase.from('social_posts').upsert({
         id: postId,
         user_id: newPost.userId || 'current_user',
-        image_uri: newPost.imageUri || newPost.image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
+        image_uri: newPost.imageUri || newPost.image || null,
         caption: (newPost.text || newPost.feeling || 'Vibe Moment').substring(0, 300),
         venue_name: (newPost.venueName || newPost.location || 'Local Gem').substring(0, 100),
         timestamp: now,
