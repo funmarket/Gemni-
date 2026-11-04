@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/infrastructure/supabase/supabaseClient';
-import { uploadPendingProfileAvatar } from '@/lib/profileAvatar';
+import { queuePendingProfileAvatar, uploadPendingProfileAvatar, uploadProfileAvatar } from '@/lib/profileAvatar';
 
 export interface UserProfile {
   id: string;
@@ -21,12 +21,13 @@ export interface UserProfile {
   culturalPassport: string[];
   photoUrl?: string;
   lastActive: string;
+  avatarFile?: File;
   isProGuardian?: boolean;
   guardianshipType?: string;
 }
 
 type AuthUser = { uid: string; email: string; displayName: string; photoURL?: string };
-type Registration = Partial<UserProfile> & { email?: string; password?: string };
+type Registration = Partial<UserProfile> & { email?: string; password?: string; avatarFile?: File };
 type RegistrationResult = UserProfile | { pendingVerification: true; email: string; authUserId: string };
 interface AuthContextType {
   user: AuthUser | null;
@@ -172,16 +173,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           photo_url: data.photoUrl || '',
           bio: data.bio || '', city: data.location || data.city || '',
           interests: data.tags || [],
+          telegram_handle: data.telegramHandle || '', x_handle: data.xHandle || '',
+          preferred_contact_method: data.contactMethod || 'none',
+          cozy_diary_mode: Boolean(data.oracleMode),
         },
       },
     });
     if (error) throw new Error(error.message);
     if (!signup.user) throw new Error('Account creation failed.');
+    if (data.avatarFile) {
+      await queuePendingProfileAvatar(signup.user.id, data.avatarFile);
+    }
     // Database trigger creates the profile atomically for verified new Auth users.
     if (!signup.session) return { pendingVerification: true, email, authUserId: signup.user.id };
     await hydrate(signup.user);
     const { data: row } = await supabase.from('profiles').select('*').eq('id', 'usr_' + signup.user.id).maybeSingle();
     if (!row) throw new Error('Account created, but profile provisioning is pending.');
+    if (data.avatarFile) await uploadPendingProfileAvatar(signup.user.id, row.id);
     return fromRow(row);
   };
 
@@ -225,6 +233,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!['none', 'telegram', 'x', 'email'].includes(nextContactMethod)) throw new Error('Invalid contact preference.');
     // Supabase RLS owns authorization. Never submit client-controlled IDs, roles or rewards.
     let saved = profile;
+    if (updates.avatarFile) {
+      fields.photo_url = await uploadProfileAvatar(updates.avatarFile, profile.id);
+    }
     if (Object.keys(fields).length) {
       const { data, error } = await supabase.from('profiles').update(fields)
         .eq('id', profile.id).select('*').single();
