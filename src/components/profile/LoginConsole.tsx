@@ -9,7 +9,7 @@ export const LoginConsole = () => {
   const { login, loginAsGuest } = useAuth();
   const [guestHandle, setGuestHandle] = useState('');
   const [pane, setPane] = useState<'splash' | 'login' | 'register'>('splash');
-  const [verificationNotice, setVerificationNotice] = useState<string | null>(null);
+  const [verificationNotice, setVerificationNotice] = useState<{ email: string; avatarUploadNote?: string } | null>(null);
 
   const handleSimulate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export const LoginConsole = () => {
           <ProfileView 
             onCancel={() => setPane('splash')}
             onSuccess={() => setPane('splash')}
-            onVerificationRequired={email => { setVerificationNotice(email); setPane('splash'); }}
+            onVerificationRequired={(email, avatarUploadNote) => { setVerificationNotice({email, avatarUploadNote}); setPane('splash'); }}
           />
         </div>
       </div>
@@ -85,7 +85,8 @@ export const LoginConsole = () => {
         <div className="my-auto max-w-sm w-full mx-auto space-y-8">
           {verificationNotice && (
             <div role="status" className="rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-4 text-sm text-emerald-200">
-              Account created. Check {verificationNotice} for the verification link, then return to sign in.
+              Account created. Check {verificationNotice.email} for the verification link, then return to sign in.
+              {verificationNotice.avatarUploadNote && <p className="mt-2 text-amber-200">{verificationNotice.avatarUploadNote}</p>}
             </div>
           )}
           <div className="space-y-3">
