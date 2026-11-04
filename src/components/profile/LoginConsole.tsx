@@ -9,6 +9,7 @@ export const LoginConsole = () => {
   const { login, loginAsGuest } = useAuth();
   const [guestHandle, setGuestHandle] = useState('');
   const [pane, setPane] = useState<'splash' | 'login' | 'register'>('splash');
+  const [verificationNotice, setVerificationNotice] = useState<string | null>(null);
 
   const handleSimulate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +35,8 @@ export const LoginConsole = () => {
         <div className="w-full max-w-lg z-10">
           <ProfileView 
             onCancel={() => setPane('splash')}
-            onSuccess={() => {}}
+            onSuccess={() => setPane('splash')}
+            onVerificationRequired={email => { setVerificationNotice(email); setPane('splash'); }}
           />
         </div>
       </div>
@@ -81,6 +83,11 @@ export const LoginConsole = () => {
 
         {/* Connection Form */}
         <div className="my-auto max-w-sm w-full mx-auto space-y-8">
+          {verificationNotice && (
+            <div role="status" className="rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-4 text-sm text-emerald-200">
+              Account created. Check {verificationNotice} for the verification link, then return to sign in.
+            </div>
+          )}
           <div className="space-y-3">
             <div className="lg:hidden flex items-center gap-2 mb-3">
               <span className="text-3xl font-black italic uppercase tracking-tighter text-white">Vibe<span className="text-vibe-primary">Quest</span></span>
