@@ -43,7 +43,7 @@ export const OrbitFollowingTab: React.FC<OrbitFollowingTabProps> = ({
           </div>
         </div>
         <div className="shrink-0 flex items-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-sky-300 bg-sky-500/15 px-3 py-1.5 rounded-full border border-sky-500/30 whitespace-nowrap shadow-sm">
+          <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-sky-300 bg-sky-500/15 px-3.5 py-1.5 rounded-full border border-sky-500/30 whitespace-nowrap shadow-sm shrink-0">
             <span className="font-extrabold text-sky-200">{following.length}</span>
             <span>Orbiting</span>
           </span>

@@ -31,7 +31,7 @@ export const MutualVibesTab: React.FC<MutualVibesTabProps> = ({
           </div>
         </div>
         <div className="shrink-0 flex items-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300 bg-cyan-500/15 px-3 py-1.5 rounded-full border border-cyan-500/30 whitespace-nowrap shadow-sm">
+          <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300 bg-cyan-500/15 px-3.5 py-1.5 rounded-full border border-cyan-500/30 whitespace-nowrap shadow-sm shrink-0">
             <span className="font-extrabold text-cyan-200">{vibes.length}</span>
             <span>Confirmed</span>
           </span>
