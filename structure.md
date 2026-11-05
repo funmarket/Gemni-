@@ -1,24 +1,54 @@
-# VibeQuestGuardians — Structure.md
+# VQgemni — Structure.md
 
 **Document ID:** VQ-STRUC-001  
 **Status:** **PRODUCT OWNER APPROVED ARCHITECTURE / OWNERSHIP BASELINE.**  
 Implementation must follow the approved Master Plan, current repository state, the canonical 28-domain ownership model and applicable execution authorization.  
 **Date:** 2026-10-30  
-**Destination:** `funmarket/VibeQuestGuardians` / `vibefoundation`  
+**Destination:** `funmarket/VQgemini` / `main`  
 **Companion:** `Requirements.md` (approved product contract) and the approved `Master Plan.md` (controlling implementation authority). Files under `docs/product-design/*` are think-tank/reference material only and are not governing or canonical implementation authority.
-
-
-> **Modular Monolith Runtime & Rules (Additive Clarification):**
-> - **Runtime:** Single process (React/Vite frontend + one Supabase project + one deployment).
-> - **Domain shape:** 28 logical domains under `src/domains/dXX_*`. Each domain is the sole writer of its tables.
-> - **Public API:** Each domain exports its public API exclusively through `index.ts`. Other modules and Admin consume public APIs only.
-> - **Boundary tests:** Enforce public API usage and prohibit unauthorized cross-domain writes.
-> - **Gradual migration:** Non-destructive migration from features/ and services/ into domain folders while maintaining runtime parity. S00 is mandatory first.
-> - **Admin Control Room:** Pure orchestration over domain public APIs, not a second writer.
 
 # Post-Baseline Architecture & Ownership Updates — Master Plan Controlled
 
 > **Authority notice:** This document remains the Product Owner-approved architecture/domain/module baseline. Newer explicit Product Owner decisions and the approved Master Plan implementation/operational architecture control execution where they supersede conflicting, incomplete, OPEN/UNSPECIFIED or absent older wording. Latest explicit Product Owner direction remains highest authority; the approved Master Plan controls implementation sequencing and newer operational architecture below it.
+
+**Modular Monolith runtime (directed; additive):** The existing `funmarket/VQgemini` React/Vite application remains one frontend, one Supabase project (PostgreSQL/PostGIS, Auth, Storage and Edge Functions as needed), and one deployment. The 28 numbered domains under `src/domains/dXX_*` are internal modules, not separate services; each is the sole authorized writer of its canonical tables. Domain public commands and queries are exported through `index.ts` only. UI, features, screens, hooks, other domains and Admin use those public APIs (or non-writing thin application orchestration); nobody writes another domain's tables. Admin is orchestration, not D29 or a second writer. S00 must satisfy its existing full preservation, genuine test identity, D13 media migration and visual/data parity acceptance **before structural transfer**. Transfer existing working code gradually from `features/`, `screens/`, `components/`, `services/` and `hooks/`, one real feature at a time; retain previous functionality until verified backend, RLS/authorization, functional and visual parity plus authorized cutover. Boundary tests must enforce public-only imports and no cross-domain writes; no mocks, shadow writers or service extraction. The domain directories currently exist, and some contain `index.ts`; inspect their actual contents at execution time rather than treating them as empty or completed.
+
+## Modular Monolith Rules (additive; existing Structure Deltas unchanged)
+
+**Domain folder shape (example, adjusted to actual verified source):**
+
+```text
+src/domains/d05_places/
+  index.ts          // only public API
+  commands.ts       // canonical authorized writes
+  queries.ts        // permitted reads
+  types.ts          // contracts
+  rules.ts          // business invariants
+```
+
+**Logical module grouping is organizational only; ownership remains D01–D28:**
+
+| Module | Domains | Notes |
+|---|---|---|
+| Identity & Profile | D01, D02, D03 | Distinct canonical writers |
+| Places & Trails | D04, D05, D06 | Spatial evidence, Places, Trails remain separate |
+| Social & Content | D12, D13, D16 | Content, media, communities retain owners |
+| Matching & Challenges | D17, D18 | Pulls/Vibes versus challenges |
+| Economy | D20, D22, D26 | VQ, Handshakes, Marketplace remain independent |
+| Admin & Trust | D21 + Admin application shell | Admin is not D29 or a second writer |
+| Remaining | D07–D11, D14, D15, D19, D23–D25, D27, D28 | Remain numbered modules |
+
+**Boundary enforcement and gradual migration:** Code outside an owning `src/domains/dXX_*` folder may import only from the owner's public `index.ts` interface. The sole owning domain invokes authorized persistence writes; no direct Supabase table writes outside the owner, no private cross-domain imports, no shadow records and no service extraction. Enforce with ESLint or an architecture test at each slice, in addition to its original acceptance tests. Complete and accept S00 first. Migrate a single real feature into the owning domain while the old working path remains available; verify real persistence, cross-account behavior, access controls, UX and visual parity before authorized removal. The actual 28 domain directories already exist, with some `index.ts` files; do not assume they are all empty or fully implemented.
+
+## Structure Delta K — S00 preservation and domain-by-domain rehabilitation of the existing app — DIRECTED 2026-11-03
+
+**Current implementation target:** The existing `funmarket/VQgemini` React/Vite application already has screens, `src/features`, `src/domains`, a Supabase client, static content catalogs and relationships. It is the implementation baseline to **repair**, not a disposable historical ZIP or an empty project. The proposed `apps/client` / `apps/api` / `apps/worker` tree remains a logical target to reconcile against current source, not permission to replace running frontend features with placeholder scaffolding. Split monolithic scripts by independently testable presentation, domain commands, records/reads, permissions, capture and media responsibilities. Preserve the five equal destinations, current look, images and user journeys while adapting verified source code. One canonical business writer per fact; frontend feature boundaries do not create domains 29+.
+
+**Strict S00 before S01:** First establish complete source/data/media inventories and recoverable checkpoints; create genuine authorized Supabase Auth test accounts with 1:1 D01 identity/D02 profile links; transfer sample D12 post authorship, D06 Trail authors/stops/remix, D07 Guardian/Legend/offer identities and appropriate D05 Place, D09 Business, D16 community and related records to canonical owner paths. D08 Tour offers/reservations remain separate from D06 Trail origin, D22 Handshake remains accepted-agreement-only. Migrate permitted media bytes into Supabase Storage with D13 asset/provenance metadata and consuming-domain attachment permission. Compare stored data, image access and live rendered visual baseline **before** cutting over each React sample read path. Keep test content accessible during later development, with restricted fixture provenance and future separately authorized cleanup. S00 migration operations are not automatically granted by this documentation change.
+
+**Runtime ownership contract:** React owns styling, navigation, components, loading/empty/error state and transient presentation; it must not own persistent accounts, posts, Places, Trails, Guardian identity, canonical coordinates, reward balances or media objects. Domain-owned authorized reads/writes use the existing Supabase integration only within actual security/RLS limits, or secured API/DB functions for privileged transactional operations. A client SDK's presence is not permission for unrestricted direct-to-database business mutation. Server-authenticated identity, canonical single-writer invariants, idempotent side effects, RLS/auth authorization and media delivery are required. The S00 test users are legitimate test principals but not evidence of verified real-world participation, location, provider acceptance, payments or Handshakes. Static design assets/icons remain frontend presentation; hardcoded sample business content/images masquerading as persisted records do not.
+
+**Preservation gate:** Establish before/after evidence for every affected module: source record IDs/counts, author IDs, profile/Guardian/Trail lineage, Place facts, D13 objects and permissions, post visibility, navigation, visual screenshots across current phone widths, error handling and rollback/retry. Remove original template fixtures only when their persisted replacement passes its acceptance contract. Maintain correct Web/Telegram host/permission boundaries throughout; never introduce a second identity or parallel writer.
 
 ## Structure Delta A — Master Plan execution authority
 
@@ -27,6 +57,8 @@ The approved `Master Plan.md` is the consolidated living implementation and prod
 ## Structure Delta B — Admin Control Room architecture
 
 The Admin Control Room is a first-class application surface and dedicated frontend/application orchestration module. It is progressively built, protected by scoped Admin authorization, uses canonical owner-domain commands, reads authorized projections and emits privileged audit records. It is **not** direct SQL, an unrestricted god-mode subsystem or a second writer.
+
+**Modular Monolith Admin ownership clarification (ADDITIVE):** Admin commands call the owning D01–D28 domain's public `index.ts` API and never directly mutate a domain's business tables; authorization and auditing remain under the original approved controls.
 
 ## Structure Delta C — Admin Control Room is NOT D29
 
@@ -97,11 +129,18 @@ No fabricated source-domain record may be created merely to claim D14 acceptance
 
 Cross-cutting privileged-action auditing may exist as application/platform infrastructure without becoming a business domain. Audit entries may record actor, validated capability/role, target, linked case/report, action, reason, owning-domain command, result/failure, timestamp and correlation/causation ID. Audit infrastructure records privileged execution history; it does not become the canonical writer of the business facts being changed.
 
+## Structure Delta L — Canonical D06 Trails & D07 Guardians Backend Architecture & Anti-Mock Discipline (DIRECTED 2026-11-04)
+
+1. **Strict Anti-Mock and Anti-Monolithic Architecture:** In-memory mock APIs (`vqApi.ts`), fake client databases, and monolithic multi-domain scripts are strictly prohibited. Every business capability must be handled by its specific canonical domain module (`src/domains/d01..d28`), communicating with real Supabase persistence via typed domain services.
+2. **D06 Vibe Trails Domain Ownership:** `src/domains/d06_trails` is the canonical domain authority for Trails and Tours. It synchronizes directly with Supabase `vibe_trails`, attributes authors to real profiles (`author_id = profiles.id`, `author_name = profiles.display_name`), preserves versioned stops and remix trees, and prohibits hardcoded sample arrays inside React components.
+3. **D07 Guardians & Local Legends Domain Ownership:** `src/domains/d07_guardians` hydrates Guardian and Local Legend profiles directly from Supabase `profiles` (with Pro qualification `account_type = 'pro'` or Local Legend `vibe`), maintaining real avatars, bios, and handles. Handshakes persist to `handshakes` table and reviews persist to `place_reviews` table.
+4. **No Stock Photo Fallbacks:** Text-only posts and trails do not inject random Unsplash images or placeholders.
+
 ## 1. Purpose, scope and architectural decision hierarchy
 
 This document defines **how to organize the new application**, not what the product experience should be or the SQL schema. `Requirements.md` specifies the intended UI/UX and behavior recovered from `vibequest-fixed-v2 (2).zip`, the attached source-behavior narratives, and Product Owner decisions. The ZIP is **behavior and visual reference, not reusable engineering authority**. Historical Gemini's suggested structure/schema are **ideas**, not accepted configuration, schema or deployment evidence.
 
-**Engineering objective:** preserve Home / Explore / Share / Vibe / Purse, their distinct sections and modal journeys, and the original aesthetic while rebuilding with genuine authenticated records, server-owned invariants, real media, notifications, geolocation and transactions. Avoid silent feature removal because a legacy function was fake. No fake users, seeded production interactions, mock payments, success-on-failure fallbacks or localStorage pretending to be business authority.
+**Engineering objective:** preserve and progressively repair the **existing** Home / Explore / Share / Vibe / Purse app, populated content, distinct sections, modal journeys, and visual design while refactoring its current monolithic code into domain-owned authenticated records, server-owned invariants, Supabase-managed media, notifications, geolocation and transactions. Avoid silent feature removal because a legacy function was fake. No fake users, seeded production interactions, mock payments, success-on-failure fallbacks or localStorage pretending to be business authority.
 
 **Decision precedence:** latest explicit Product Owner decision → approved `Master Plan.md` → approved `Requirements.md` → approved `structure.md` → approved `Database.md` → historical/reference/think-tank material. Where no implementation choice is approved, this document specifies a testable architecture option rather than pretending a provider or technology is locked. **All 28 logical domains are in the target initial application; logical domains are not 28 databases, deployables, teams or migrations.**
 
@@ -255,13 +294,13 @@ The following is a **target logical layout**, not a claim these paths exist or a
     testing/                     # fixtures restricted to tests; no production fakes
   database/
     migrations/                  # Database.md-derived versioned migrations
-    seed/                        # explicitly identified safe reference catalog ONLY
+    seed/                        # controlled S00 data-import/test fixture sources only, never frontend canonical records
   .github/workflows/             # CI checks; releases after approval
 ```
 
 **Binding feature-boundary rule:** Every independent user-facing experience has an explicit feature owner and cohesive state/interaction boundary; a page composes features and must not recreate legacy 700–1,100-line orchestration components. Feature folders above are a readable proposed mapping, not a fixed number of files or separate backend domains. Shared components remain reusable without merging feature responsibilities; a component's scope is evaluated by cohesion and dependencies, not arbitrary line limits. Each feature defines its public entry point, internal presentation/state/capability adapters, required domain commands/queries, loading/denied/failure states and permitted cross-feature navigation. No feature imports another feature's private state or persistence implementation. Domain commands always go through authorized typed contracts.
 
-**Legacy code adaptation contract:** Inspect the exact original control and dependency chain; recover the user-visible purpose; distinguish usable bounded algorithms/presentation techniques from simulation and backend coupling; adapt only verified useful logic into the new owner's interface and test it in isolation. Never copy old screens/services wholesale or port their localStorage, Firebase/Firestore, fallback accounts, mock coordinates, fake media, simulated messaging, auto-accepted reservations or pretend credits. A broken backend is a reason to implement the behavior properly, never to omit the user-facing feature.
+**Existing-app rehabilitation contract:** Inspect the exact current control, screen, hook, service and dependency chain; preserve its user-facing interaction while separating viable presentation/algorithms from embedded business datasets, simulated outcomes, fake coordinates, legacy fallback and conflicting persistence. Refactor the **current** implementation incrementally into the canonical owner, verifying visual and content parity before removing any prior code. Historical Firebase/Firestore, browser-local identity, mock media, simulated messaging, auto-accepted reservations and pretend credits never become canonical data. Broken backend code is a reason to implement genuine behavior, not delete the feature.
 
 ## 4. Canonical 28 business modules and single writers
 
@@ -350,7 +389,7 @@ Preserve equal tab sizing, mobile-first Midnight Obsidian/neon styling, visible 
 
 ## 6C. Geo, map, external discovery and navigation boundaries — DIRECTED
 
-**Canonical flow:** host-specific device capability → shared location adapter/permission boundary → **D04 Geo & Presence** → PostgreSQL/PostGIS-backed authorized spatial query/evidence → owning domain or read projection → UI. D04 owns consent, precision, accuracy/freshness, temporary presence, proximity assertions and geofence transitions; it does not become the writer of D05 Places, D06 Trails, **D07 Guardian/Legend service-area business rules**, D08 Tours, D09 Businesses, D10 Activities, D11 Events, D17 matches, D18 challenges or D23 notifications. D07 owns any configured Guardian/Legend service-area eligibility or offer boundary while consuming provider-neutral geographic context and D04-authorized spatial evidence/query results. PostGIS is the intended VibeQuest-owned spatial engine; exact types/index definitions remain Database/implementation work. Server-side `ST_DWithin`-style proximity querying is the intended pattern for protected/canonical distance operations—including applicable nearby canonical Places/Trails/Tours/Activities/Events, permitted presence/Find Hub queries and D07 service-area filtering—rather than downloading all coordinates and deciding authority in the client. Client Haversine remains presentation-only.
+**Canonical flow:** host-specific device capability → shared location adapter/permission boundary → **D04 Geo & Presence** → PostgreSQL/PostGIS-backed authorized spatial query/evidence → owning domain or read projection → UI. D04 owns consent, precision, accuracy/freshness, temporary presence, proximity assertions and geofence transitions; it does not become the writer of D05 Places, D06 Trails, **D07 Guardian/Legend service-area business rules**, D08 Tours, D09 Businesses, D10 Activities, D11 Events, D17 matches, D18 challenges or D23 notifications. D07 owns any configured Guardian/Legend service-area eligibility or offer boundary while consuming provider-neutral geographic context and D04-authorized spatial evidence/query results. PostGIS is the intended VQgemni-owned spatial engine; exact types/index definitions remain Database/implementation work. Server-side `ST_DWithin`-style proximity querying is the intended pattern for protected/canonical distance operations—including applicable nearby canonical Places/Trails/Tours/Activities/Events, permitted presence/Find Hub queries and D07 service-area filtering—rather than downloading all coordinates and deciding authority in the client. Client Haversine remains presentation-only.
 
 **Map presentation:** `MapLibre` is the intended interactive in-app renderer for Explore, Place pins, Radar results, Trail route/numbered stops, city Trail/Tour discovery, permitted Find Hub/geofence views and other approved map surfaces. A `MapTileStylePort` keeps style/tile sources replaceable; the current low-cost stage may use a compliant OSM-compatible source. Rendering, tile/style choice and camera state never own canonical geographic facts. Public OSM-compatible tile infrastructure must not be bulk/offline-prefetched where prohibited.
 
@@ -358,13 +397,13 @@ Preserve equal tab sizing, mobile-first Midnight Obsidian/neon styling, visible 
 
 **Geocoding:** address/search/reverse-geocoding use a replaceable provider port; the current stage may use a compliant OSM-derived provider. Provider IDs/provenance may be retained as metadata where permitted, but no `GooglePlace`, `OSMNode` or `OverpassResult` becomes a business owner. Manual city/district selection remains a browse context and cannot satisfy physical-presence proof.
 
-**External navigation:** canonical D05 Place coordinates or canonical D06 ordered Trail stops → `ExternalNavigationPort` → supported device Google Maps/Waze/other navigation application. `Maps Route` / `Navigate Trail` may preserve the historical multi-stop Google Maps handoff when valid, but VibeQuest does not initially own turn-by-turn routing and opening the external app cannot itself complete a Trail, check in, create a Handshake or award VQ. A future routing provider seam may exist without provisioning OSRM/GraphHopper now.
+**External navigation:** canonical D05 Place coordinates or canonical D06 ordered Trail stops → `ExternalNavigationPort` → supported device Google Maps/Waze/other navigation application. `Maps Route` / `Navigate Trail` may preserve the historical multi-stop Google Maps handoff when valid, but VQgemni does not initially own turn-by-turn routing and opening the external app cannot itself complete a Trail, check in, create a Handshake or award VQ. A future routing provider seam may exist without provisioning OSRM/GraphHopper now.
 
 **Truth and privacy:** provider failure permits valid cache, retry, partial/empty/unavailable/offline states only—never fabricated POIs, businesses, coordinates, contacts, movement, routes, ratings, crowd counts, arrivals or success. Device coordinates are untrusted inputs; PostGIS proves geometric relations between supplied facts, not human authenticity. Precise temporary location is disclosed only where specifically authorized; public/social surfaces receive coarse city/area or permitted approximate distance. Find Hub temporary pings retain the 2-hour maximum; blocking/revocation stops disclosure. The directed **23 km** Secrets/Find Hub/near-feed discovery scope is a query policy, not an individual geofence, Secret claim, Place check-in or D18 participation radius.
 
 ## 7. Data and database boundary — schema intentionally deferred
 
-Structure chooses **PostgreSQL with PostGIS spatial capabilities** as the intended transactional persistence/query boundary for VibeQuest-owned geographic records and server-authoritative distance/proximity operations. Exact tables, SQL types, constraints, spatial indexes, migrations and provider/version details belong in later physical implementation work derived from **Database.md**. The database model follows domain ownership, real data sensitivity and transaction requirements; it is **not derived from Gemini's printed ERD**.
+Structure chooses **PostgreSQL with PostGIS spatial capabilities** as the intended transactional persistence/query boundary for VQgemni-owned geographic records and server-authoritative distance/proximity operations. Exact tables, SQL types, constraints, spatial indexes, migrations and provider/version details belong in later physical implementation work derived from **Database.md**. The database model follows domain ownership, real data sensitivity and transaction requirements; it is **not derived from Gemini's printed ERD**.
 
 Proposed persistence partitions: private identity; public profile; consented ephemeral precise location with short retention and separate geofence rules; Places/check-ins; Trails/stop versions/remix links; Guardians/entitlements and Tour availability; social posts/media/reactions; conversations/rooms; challenge state; recognition; VQ ledger and rules; notifications; Marketplace; payments; independent tickets. Avoid shared write tables and invented cross-domain FKs that create circular service authority. A shared DB may enforce legitimate relational constraints while modules retain code-level write boundaries.
 
@@ -417,7 +456,7 @@ As an ongoing architecture-conformance gate, verify independently against Requir
 |---|---|
 | Domain-oriented server modules, layered business logic | **Adapt** as bounded modules, avoid boilerplate/28 deployables |
 | React responsive client and Telegram SDK adapter | **Candidate**, confirm existing repository and target stack before hard lock |
-| PostgreSQL + PostGIS | **Directed target** for VibeQuest-owned spatial records/proximity; verify provider/version/extension, spatial indexes and operational needs during implementation |
+| PostgreSQL + PostGIS | **Directed target** for VQgemni-owned spatial records/proximity; verify provider/version/extension, spatial indexes and operational needs during implementation |
 | MapLibre interactive rendering | **Directed target** presentation adapter; canonical domains remain owners of geographic facts |
 | OSM Overpass external POI discovery | **Directed current low-cost adapter**, bounded/cached/rate-controlled and replaceable; never canonical Place authority |
 | OSM-compatible map style/tile source | **Directed current low-cost seam where compliant**, replaceable and not bulk/offline-prefetched when terms prohibit it |
