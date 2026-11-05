@@ -72,86 +72,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const hydrate = async (authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
-    if (!authUser) { setUser(null); setProfile(null); setIsPlatformAdmin(false); return; }
+  const hydrate = async (authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null): Promise<UserProfile | null> => {
+    if (!authUser) {
+      setUser(null);
+      setProfile(null);
+      setIsPlatformAdmin(false);
+      return null;
+    }
+
     const metadata = authUser.user_metadata || {};
     setUser({
-      uid: authUser.id, email: authUser.email || '',
+      uid: authUser.id,
+      email: authUser.email || '',
       displayName: typeof metadata.display_name === 'string' ? metadata.display_name : '',
     });
+
     let row: Record<string, unknown> | null = null;
-    let resolvedProfileId = 'usr_' + authUser.id;
-
-    // Canonical link for protected Hannibal account
-    if (authUser.id === 'd45d581e-631c-45e1-a686-6f9d764aaf04') {
-      resolvedProfileId = 'usr_hannibal_1337';
-    }
-
-    // 1. Try legacy identity link if table exists
     try {
-      const { data: link, error: linkError } = await supabase.from('s00_test_identity_links')
-        .select('legacy_profile_id').eq('auth_user_id', authUser.id).maybeSingle();
-      if (!linkError && link?.legacy_profile_id) {
-        resolvedProfileId = link.legacy_profile_id;
-      }
-    } catch (_) {}
-
-    // 2. Direct query by resolved profile ID
-    const { data: directRow, error: directError } = await supabase.from('profiles').select('*').eq('id', resolvedProfileId).maybeSingle();
-    if (directRow) {
-      row = directRow;
-    } else {
-      // 3. Fallback to raw auth UID
-      const { data: rawRow } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
-      if (rawRow) {
-        row = rawRow;
-        resolvedProfileId = String(rawRow.id);
-      } else if (metadata.handle) {
-        // 4. Fallback to metadata handle
+      let query = supabase.from('profiles').select('*');
+      const filters = [`id.eq.${authUser.id}`, `id.eq.usr_${authUser.id}`];
+      if (metadata.handle) {
         const cleanHandle = String(metadata.handle).replace(/^@/, '').toLowerCase().trim();
-        const { data: handleRow } = await supabase.from('profiles').select('*').ilike('handle', cleanHandle).maybeSingle();
-        if (handleRow) {
-          row = handleRow;
-          resolvedProfileId = String(handleRow.id);
+        filters.push(`handle.ilike.${cleanHandle}`);
+      }
+      
+      const { data: profileRows } = await query.or(filters.join(','));
+      if (profileRows && profileRows.length > 0) {
+        row = profileRows.find(r => r.id === authUser.id) || 
+              profileRows.find(r => r.id === 'usr_' + authUser.id) || 
+              profileRows[0];
+      }
+
+      if (!row) {
+        const { data: link } = await supabase.from('s00_test_identity_links')
+          .select('legacy_profile_id').eq('auth_user_id', authUser.id).maybeSingle();
+        if (link?.legacy_profile_id) {
+          const { data: legacyRow } = await supabase.from('profiles')
+            .select('*').eq('id', link.legacy_profile_id).maybeSingle();
+          row = legacyRow;
         }
       }
+    } catch (err) {
+      console.warn('Profile hydration failure:', err);
     }
-    const profileId = resolvedProfileId;
-    if (directError && !row) console.warn('Profile lookup notice:', directError.message);
-    // Never fabricate a logged-in local account or silently impersonate a legacy identity.
-    const { data: adminAssignment, error: adminError } = await supabase.from('vq_admin_assignments')
+
+    const { data: adminAssignment } = await supabase.from('vq_admin_assignments')
       .select('role').eq('auth_user_id', authUser.id).eq('active', true).maybeSingle();
-    if (adminError) console.warn('Admin assignment lookup failed:', adminError.message);
     setIsPlatformAdmin(Boolean(adminAssignment && adminAssignment.role === 'platform_admin'));
+
     if (row) {
+      const profileId = String(row.id);
       let avatarUrl = typeof row.photo_url === 'string' ? row.photo_url : '';
       try {
         const uploadedUrl = await uploadPendingProfileAvatar(authUser.id, profileId);
         if (uploadedUrl) avatarUrl = uploadedUrl;
-      } catch (avatarError) {
-        console.warn('Pending avatar upload not completed:', avatarError);
-      }
-      const { data: preferences, error: preferencesError } = await supabase.from('profile_preferences')
+      } catch (_) {}
+
+      const { data: preferences } = await supabase.from('profile_preferences')
         .select('telegram_handle,x_handle,preferred_contact_method,cozy_diary_mode')
         .eq('profile_id', profileId).maybeSingle();
-      if (preferencesError) console.warn('Profile preferences unavailable:', preferencesError.message);
-      setProfile({
+
+      const freshProfile = {
         ...fromRow(row),
         photoUrl: avatarUrl,
         telegramHandle: preferences?.telegram_handle || '',
         xHandle: preferences?.x_handle || '',
         contactMethod: preferences?.preferred_contact_method || 'none',
         oracleMode: Boolean(preferences?.cozy_diary_mode),
-      });
-    } else setProfile(null);
-    if (row) setUser(prev => prev?.uid === authUser.id ? { ...prev, displayName: String(row.display_name || row.handle) } : prev);
+      };
+      
+      setProfile(freshProfile);
+      setUser(prev => prev?.uid === authUser.id 
+        ? { ...prev, displayName: String(row?.display_name || row?.handle || prev.displayName) } 
+        : prev
+      );
+      return freshProfile;
+    } else {
+      setProfile(null);
+      return null;
+    }
   };
 
   useEffect(() => {
     let active = true;
-    // Preserve historical browser data for S00 recovery. Supabase alone controls the active session.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Defer Supabase queries outside the auth callback to avoid client auth lock reentrancy.
       Promise.resolve().then(() => { if (active) void hydrate(session?.user || null); });
     });
     void supabase.auth.getUser().then(({ data, error }) => {
@@ -171,23 +175,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       const handle = value.replace(/^@/, '').toLowerCase();
       if (!/^[a-z0-9_]{3,32}$/.test(handle)) throw new Error('Invalid username.');
-      // The trusted Edge Function resolves the username without revealing another user's email.
       const { data, error } = await supabase.functions.invoke('sign-in-by-username', { body: { username: handle, password } });
       if (error || !data?.access_token || !data?.refresh_token) throw new Error('Invalid username or password.');
       const { error: sessionError } = await supabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
       if (sessionError) throw new Error(sessionError.message);
     }
     const { data: result } = await supabase.auth.getUser();
-    await hydrate(result.user || null);
-    const { data: link } = await supabase.from('s00_test_identity_links').select('legacy_profile_id').eq('auth_user_id', result.user?.id || '').maybeSingle();
-    const { data: row } = await supabase.from('profiles').select('*').eq('id', link?.legacy_profile_id || 'usr_' + result.user?.id).maybeSingle();
-    if (!row) {
+    if (!result.user) throw new Error('Authentication failed.');
+    
+    const freshProfile = await hydrate(result.user);
+    
+    if (!freshProfile) {
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
-      throw new Error('Your account exists but its profile is not linked yet. Contact the administrator.');
+      throw new Error('Your account exists but its profile is not linked or recognized. Contact the administrator.');
     }
-    return fromRow(row);
+    
+    return freshProfile;
   };
 
   const registerProfile = async (data: Registration): Promise<RegistrationResult> => {

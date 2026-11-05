@@ -75,14 +75,10 @@ export const PublicProfileModal: React.FC<PublicProfileModalProps> = ({
             id: row.id,
             handle: row.handle || targetHandle,
             displayName: row.display_name || row.handle || targetHandle,
-            photoUrl: row.photo_url || (targetHandle === 'yassine_medina' ? '/assets/aistudio/image_29f0b009.png' : undefined),
-            bio: row.bio || (targetHandle === 'yassine_medina' ? 'Exploring hidden corners of the Medina, local culture, music and coffee.' : 'Curating spontaneous urban adventures and local culture.'),
+            photoUrl: row.photo_url || undefined,
+            bio: row.bio || '',
             city: row.city || 'Tunis',
-            interests: Array.isArray(row.interests) && row.interests.length > 0 
-              ? row.interests 
-              : targetHandle === 'yassine_medina' 
-                ? ['Culture', 'Photography', 'Coffee'] 
-                : ['Local Gems', 'Espresso', 'Heritage'],
+            interests: Array.isArray(row.interests) ? row.interests : [],
             accountType: row.account_type || 'vibe',
           };
           setProfileData(loaded);
@@ -98,10 +94,8 @@ export const PublicProfileModal: React.FC<PublicProfileModalProps> = ({
             id: seedProfile.id,
             handle: seedProfile.handle,
             displayName: seedProfile.displayName,
-            photoUrl: targetHandle === 'yassine_medina' || seedProfile.handle === 'yassine_medina' 
-              ? '/assets/aistudio/image_29f0b009.png' 
-              : undefined,
-            bio: seedProfile.bio || 'Exploring hidden corners of the Medina, local culture, music and coffee.',
+            photoUrl: undefined,
+            bio: seedProfile.bio || '',
             city: seedProfile.city || 'Tunis',
             interests: ['Culture', 'Photography', 'Coffee'],
             vibeScore: seedProfile.vibeScore || 95,
@@ -118,10 +112,10 @@ export const PublicProfileModal: React.FC<PublicProfileModalProps> = ({
             id: initialProfile.id || targetId || `usr_${targetHandle}`,
             handle: initialProfile.handle || targetHandle,
             displayName: initialProfile.displayName || targetHandle,
-            photoUrl: initialProfile.photoUrl || (targetHandle === 'yassine_medina' ? '/assets/aistudio/image_29f0b009.png' : undefined),
-            bio: initialProfile.bio || (targetHandle === 'yassine_medina' ? 'Exploring hidden corners of the Medina, local culture, music and coffee.' : 'Exploring local cultural trails.'),
+            photoUrl: initialProfile.photoUrl || undefined,
+            bio: initialProfile.bio || '',
             city: initialProfile.city || 'Tunis',
-            interests: initialProfile.interests || ['Culture', 'Photography', 'Coffee'],
+            interests: initialProfile.interests || [],
             accountType: initialProfile.accountType || 'vibe',
           };
           setProfileData(loaded);
@@ -150,8 +144,8 @@ export const PublicProfileModal: React.FC<PublicProfileModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentUid = currentProfile?.id || currentAuthUser?.uid || 'current_user';
-  const isSelf = profileData && (
+  const currentUid = currentProfile?.id || currentAuthUser?.uid;
+  const isSelf = profileData && currentUid && (
     profileData.id === currentProfile?.id || 
     profileData.handle === currentProfile?.handle ||
     profileData.id === currentAuthUser?.uid
@@ -159,6 +153,10 @@ export const PublicProfileModal: React.FC<PublicProfileModalProps> = ({
 
   const handleToggleEcho = () => {
     if (!profileData) return;
+    if (!currentAuthUser && !currentProfile) {
+      alert('Please sign in to follow explorers.');
+      return;
+    }
     const key = profileData.handle || profileData.id;
     if (isFollowing) {
       socialGraphDomain.unfollow(key);
@@ -171,11 +169,15 @@ export const PublicProfileModal: React.FC<PublicProfileModalProps> = ({
 
   const handleTogglePull = () => {
     if (!profileData || pullSent) return;
+    if (!currentAuthUser && !currentProfile) {
+      alert('Please sign in to send connection Pulls.');
+      return;
+    }
     matchingDomain.sendPull({
       targetUserId: profileData.id,
       targetHandle: profileData.handle,
       targetName: profileData.displayName,
-      senderId: currentUid,
+      senderId: currentUid || 'current_user',
       senderHandle: currentProfile?.handle || 'me',
       senderName: currentProfile?.displayName || 'Explorer',
       senderAvatar: currentProfile?.photoUrl || '✨',

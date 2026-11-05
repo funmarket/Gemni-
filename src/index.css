@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Caveat:wght@700&family=Montserrat:wght@300;400;500;700;850&family=Inter:wght@400;500;600;700&family=Lato:wght@400;700;900&family=Sacramento&family=Great+Vibes&display=swap');
 @import "tailwindcss";
 
-@@theme { 
+@theme { 
   --color-vibe-primary: #FF6D00; /* Vibe Orange default */
   --color-vibe-secondary: #FF2E93; /* Electric Pink default */
   --font-sans: "Geist", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

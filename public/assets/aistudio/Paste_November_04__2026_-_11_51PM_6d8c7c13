@@ -1,0 +1,524 @@
+this is codex report about your past implemntations"i — Audit of Gemini's two latest commits
+Issues found · No changes made
+I inspected both commits against their actual diffs and the current Master_Plan.md, structure.md and Database.md.
+The Explore page is working again, as you confirmed. We should preserve that achievement. However, the review found several changes that either exceeded the original repair scope or introduced behavior that conflicts with our Profile rehabilitation plan.
+Commit audit summary
+Commit Scope Finding
+bec2d5a Explore repair, 19 files Includes native camera/media work unrelated to the immediate Explore crash
+d5e9b49 Profiles, ECHO, PULL, social feeds, 8 files New public-profile UI exists, but identity and relationship persistence are not yet correctly integrated
+Confirmed issues requiring attention
+P0 — Public profiles can display fabricated identities and photos
+PublicProfileModal.tsx, lines 61–128.
+The new component uses Supabase profiles first, but falls back to seeded profiles or feed-provided identity fields. It also hardcodes a particular user's avatar, biography, city and interests.
+This means a public profile can look complete even when its canonical profile was not resolved.
+Required correction: Resolve identity through the canonical profile record. Do not manufacture missing personal attributes.
+P0 — ECHO and PULL do not yet deliver real cross-account behavior
+src/domains/d03_social_graph/index.ts, lines 80–172, and src/domains/d17_matching/index.ts, lines 78–214.
+Both implementations persist relationship state in browser localStorage. The newly added sendPull() updates only that local state, not a recipient's authoritative backend inbox.
+The UI may show ECHOED or PULLED, but this does not establish that the other account received the action.
+Required correction: Use D03 and D17's approved backend authority and verify sender/recipient behavior with two accounts.
+P0 — Authentication has contradictory profile-resolution paths
+src/lib/auth.tsx, lines 75–119 and 164–190.
+The new code adds a hardcoded Auth UUID-to-profile mapping and falls back to profile lookup using editable Auth metadata.
+But the explicit login function still performs the older identity-link lookup after hydration. An account can therefore resolve during hydration yet fail the login function's separate profile check.
+Required correction: Establish one verified, canonical Auth-to-profile resolution path. Do not select ownership from editable handles or arbitrary client metadata.
+P1 — Public-profile lookup can mix two different identities
+PublicProfileModal.tsx, lines 61–71.
+When both an ID and handle are supplied, the Supabase query uses an OR condition. If they disagree, the query may return an unintended profile or fail because multiple records match.
+The component does not establish which identifier is authoritative before opening the profile.
+Required correction: Resolve canonical profile ID first; use the handle only as a lookup/display attribute.
+P1 — ECHO/PULL actions lack authenticated-user gating
+PublicProfileModal.tsx, lines 160–185.
+The action handlers do not require a verified current user. They can fall back to the string current_user, allowing local UI relationships that are not tied to a real authenticated principal.
+Required correction: Guest users may view public profiles, but relationship writes must require valid authenticated identity.
+Explore commit — scope warning investigated
+The 19-file Explore commit is not uniformly problematic. Several changes directly address the broken page, including Search props, Heatmap props, validator wiring and null-safe rendering.
+Other changes deserve a separate review:
+Files Actual change Assessment
+src/native/VibeShotResponse.tsx Replaced random stock photos with generated canvas images Outside EXP-P0; still produces synthetic camera imagery
+src/native/VibeFlashShotResponse.tsx Same generated canvas fallback Outside EXP-P0; not evidence of genuine device capture
+src/native/vibeFlashService.ts Removed random stock-photo substitution Relevant to media integrity, but not the Explore crash
+src/lib/mediaStorage.ts New Supabase upload helper, with avatar-bucket and data/blob fallback New cross-domain media behavior outside EXP-P0
+public/assets/aistudio/Paste_November_04__2026_-_8_23PM_5b631b91 Added a 373-line copy of the earlier Explore audit report Unrelated documentation placed under public assets
+src/features/explore/components/VibeGuardians/services/vibeGuardianStorage.ts Added default and hardcoded badge counts Creates unsupported social-proof display values
+src/features/explore/components/CreateTrailModal.tsx Removed one duplicate Trail creation path Useful correction, but changes Trail publishing behavior and requires D06 verification
+Important media finding
+The new mediaStorage.ts helper returns a public URL for the media bucket and can fall back to uploading into avatars. Previous Supabase inspection identified media as private and avatars as public.
+That is not a verified durable, authorized D13 media delivery contract. Returning a public URL does not make a private object publicly readable, and a blob/data URI does not establish cross-device persistence.
+Important validator finding
+ProximityValidator.tsx, line 66, contains:
+canValidateVenue ? canValidateVenue(validatingVenue) : true
+If the authorization callback is absent, the UI treats the venue as eligible. That weakens the prior fail-closed behavior and should be reviewed against D04/D05. It does not by itself prove a server-side authorization bypass.
+4. What should be done next?
+Do not revert the entire Explore commit. You have confirmed the page works, and reverting it would risk reintroducing the original failure.
+I recommend one bounded Profile integration repair that tackles the confirmed issues in dependency order:
+P02 identity: Make Auth UUID → canonical Profile ID resolution consistent across hydration, login and public-profile lookup.
+P04 public profiles: Remove fabricated profile attributes and ensure correct author navigation.
+P05/P06 relationships: Connect ECHO and PULL to real D03/D17 authoritative state, with proper authentication and recipient handling.
+Cross-account verification: Test real profile resolution, follow, invitation, acceptance and visibility with two accounts.
+The additional Explore native/media changes should be retained as separately identified findings for their proper domain workstream—not used to expand the immediate Profile repair.
+Audit limitations and status
+These are source-confirmed implementation findings, not a claim that every affected path has been reproduced in a browser. I did not run a full local build, two-account acceptance suite or new media-upload test. I also did not modify any code.
+The current GitHub main revision inspected was d5e9b49.
+Recommended disposition:
+Explore initial page regression: user-confirmed resolved.
+Gemini's Explore scope expansion: review findings recorded; no wholesale rollback recommended.
+Profile/public identity and ECHO/PULL: implementation exists but acceptance remains open.
+D12 author and attachment integrity: still requires its separate verified repair."and this is you task "# VQGEMINI — GEMINI STRICT DOMAIN-OWNERSHIP REPAIR COMMAND
+Task: Profile, identity, ECHO/PULL and cross-domain integrity corrections
+Mode: EXECUTE — INSPECT → FIX → TEST → VERIFY → REPORT
+Project: Existing VQgemini application
+Repository: funmarket/VQgemini
+Starting reference: d5e9b49f65f5bb4a184dc41f94eb46ad3a71f0b4 — verify current HEAD before work
+Authorization: Local implementation, debugging and verification
+Publication: Product Owner approval required before any remote push, PR, merge or deployment
+Database mutations: Not authorized
+1. YOUR MISSION
+You are Gemini, acting as the senior engineering implementation agent for VQgemini.
+Your responsibility is to correct the verified defects introduced or exposed by recent Explore/Profile changes, while respecting the approved domain ownership architecture and preserving existing functionality.
+This is an engineering repair assignment.
+DO NOT STOP AFTER WRITING A PLAN.
+You are authorized to:
+Inspect current source and dependencies.
+Identify the actual failing implementation.
+Trace the complete frontend-to-backend ownership path.
+Reproduce defects.
+Design the smallest coherent corrections.
+Implement changes locally.
+Add and execute regression tests.
+Debug your own changes.
+Correct in-scope failures.
+Verify cross-account behavior where a suitable isolated test environment exists.
+Inspect the complete final diff.
+Deliver the finished patch for Product Owner review.
+Do not request approval for ordinary engineering operations.
+Do not treat safety rules as permission to abandon the repair.
+Your objective is working, domain-correct functionality—not a report claiming that the architecture is correct.
+2. ABSOLUTE RULES
+NO guessing.
+NO speculation presented as fact.
+NO unrelated improvisation.
+NO scope drift.
+NO fake implementations.
+NO mock business records in production.
+NO simulated users standing in for real identity.
+NO fabricated public-profile information.
+NO client-side ownership of persistent business relationships.
+NO invented backend APIs or database tables.
+NO hardcoded account-specific identity mappings.
+NO silent success after failed persistence.
+NO weakening authentication or authorization to fix UI errors.
+NO duplicate canonical writers.
+NO unrelated architecture refactoring.
+NO removal of existing features.
+NO premature completion claims.
+NO unauthorized GitHub publication.
+NO production database mutations.
+NO destructive cleanup or rollback without authorization.
+A feature that merely looks functional is not considered functional.
+3. SOURCE-OF-TRUTH HIERARCHY
+Use the current approved sources in this order:
+Latest explicit Product Owner instructions.
+Master_Plan.md.
+requirements.md.
+structure.md.
+Database.md.
+Existing approved Profile/ECHO/PULL living plan v1.7.
+Verified current repository source and relevant installed runtime/database state.
+Prior investigation reports, screenshots and historical references.
+The current source determines what is implemented.
+The governing documents determine what behavior and architecture are approved.
+Historical VibeQuest code is reference material, never implementation authority.
+Do not import corrupted legacy behavior.
+If documentation and runtime disagree, identify the precise disagreement. Do not silently invent a third architecture.
+4. MANDATORY DOMAIN-OWNERSHIP CONTRACT
+All corrections must preserve the approved 28-domain model.
+Relevant canonical owners:
+Domain	Exclusive responsibility
+D01 Identity	Authentication, member identity, credential/session authority
+D02 Profiles	Canonical public profile, handle, display name, owner profile fields
+D03 Social Graph	Directed ECHO follows, followers, following, blocks
+D04 Geo & Presence	Real location evidence, consent, proximity eligibility
+D05 Places	Canonical Places and authorized validation lifecycle
+D06 Trails	Trail creation, author, publication, versioning, adoption
+D07 Guardians	Guardian identity, qualifications and Guardian-specific state
+D08 Tours	Commercial Tour offers and relevant reservations
+D12 Social Content	Posts, publishing, content ownership and engagement
+D13 Media	Media assets, ownership, storage, access and retention
+D14 Messaging	Authorized conversations and messages
+D17 Matching	PULL invitations, Accept/Pass, confirmed mutual Vibes
+D18 VibeCheck/VibeFlash	Challenge invitations, capture and response lifecycles
+D20 VQ Ledger	Authoritative reward postings and balances
+D22 Handshakes	Approved service Handshake issuance/lifecycle
+D23 Notifications	Delivery of notifications originating from domain events
+The frontend owns:
+Rendering.
+Transient interaction state.
+Loading indicators.
+Error messages.
+Navigation.
+Presentation.
+The frontend must not become a second source of truth for persistent social relationships, identities, posts, bookings, rewards or media ownership.
+One business responsibility = one canonical owner.
+Do not create competing domain services or shortcut through unrelated tables.
+PART A — PROFILE AND IDENTITY CORRECTIONS
+5. REPAIR CANONICAL AUTH-TO-PROFILE RESOLUTION
+Inspect:
+src/lib/auth.tsx
+Current Supabase Auth/profile mappings.
+Relevant profile policies and approved migrations.
+All profile-resolution callers.
+The current implementation contains inconsistent identity-resolution paths.
+Previous evidence identified:
+A hardcoded account UUID/profile mapping.
+Optional dependency on s00_test_identity_links.
+Metadata-handle fallback during hydration.
+A different legacy lookup during username login.
+Potentially contradictory profile-resolution outcomes.
+Required outcome
+Every authenticated user must resolve to exactly their authorized canonical D02 profile.
+Preserve the distinction between:
+auth.uid() — authenticated internal identity.
+Canonical profile identity.
+profiles.handle — public username.
+profiles.display_name — display name.
+Never make handle and Auth UUID interchangeable.
+A public username is an identifier for display/discovery, not proof that a session owns that account.
+Implementation requirements
+Inspect actual profile IDs and installed ownership rules before modifying source.
+Identify the approved canonical identity-resolution contract.
+Consolidate hydration and login onto the same verified resolution behavior.
+Remove hardcoded account-specific exceptions only through a verified, preserving replacement.
+Do not impersonate or reassign historical accounts.
+Preserve existing valid accounts and post authorship.
+Require explicit authorization for any schema, RLS or data migration.
+If the installed backend cannot support the canonical contract, implement the safe authorized source changes and report the exact backend blocker.
+Do not delete s00_test_identity_links merely because its retirement is planned.
+First establish that its dependencies can be safely replaced.
+Acceptance tests
+Email login resolves correct profile.
+Username login resolves same profile.
+Refresh preserves identity.
+Multiple real accounts remain separate.
+Profile editing affects only the authorized account.
+Unknown or conflicting identities fail safely.
+No fallback impersonates another user.
+PART B — REAL PUBLIC PROFILES
+6. CORRECT PUBLIC PROFILE RESOLUTION
+Inspect:
+src/features/profile/components/PublicProfileModal.tsx
+and its callers in Home, Share and Vibe.
+The newly introduced public-profile component contains:
+Hardcoded profile photos.
+Hardcoded biographies.
+Fabricated interests and location defaults.
+Fallback seeded identities.
+Constructed profile IDs.
+Queries combining ID and handle using OR conditions.
+Identity derived from display strings.
+These patterns must be corrected.
+Required outcome
+Clicking an author's photo, display name or handle opens the actual public profile for that account.
+Use the canonical D02 profile projection.
+Required behavior
+Resolve canonical profile identity using the approved lookup mechanism.
+Display the real saved avatar.
+Display the real public display name.
+Display the real @handle.
+Display actual authorized biography/interests/location fields.
+Respect public/private field visibility.
+Display a truthful empty state when optional fields are absent.
+Display a truthful unavailable state when a profile cannot be resolved.
+Never manufacture a user merely because a feed supplied a name.
+Never silently substitute an unrelated person's photograph.
+A legitimate decorative placeholder is allowed only as clearly generic UI decoration, not as a stored or attributed personal photo.
+Identity safety
+If supplied userId and handle disagree, do not select whichever record matches first.
+Resolve the canonical account, validate the identifiers and prevent mismatched profiles from being displayed.
+Preserve existing interactions
+Public-profile viewing must remain accessible from:
+Home posts.
+Vibe/Gossip posts.
+Share activity where a real author identity exists.
+Other authorized profile entry points already implemented.
+Do not create separate identity behavior for each screen.
+PART C — ECHO / D03 SOCIAL GRAPH
+7. REPAIR ECHO TO USE REAL DOMAIN AUTHORITY
+Inspect:
+src/domains/d03_social_graph/index.ts
+and all ECHO consumers.
+The previous source inspection confirmed that existing following/follower state is managed through browser localStorage.
+That implementation does not establish authoritative cross-account persistence.
+Required outcome
+ECHO must use D03's approved canonical follow-relationship authority.
+Required behavior
+Authenticated user A follows user B.
+The relationship persists in the approved backend.
+User A sees B in their following/Orbit projection.
+User B sees A in their followers/ECHO projection.
+Refresh does not lose the relationship.
+A second device sees authoritative state.
+Unfollow removes the directed relationship correctly.
+No duplicate follow edges.
+No self-follow.
+Block/privacy rules are enforced.
+Failure to persist does not display successful ECHO state.
+Do not infer follows from matching display names or handles.
+Do not retain localStorage as the authoritative follow database.
+It may only cache non-authoritative state if the approved architecture supports that usage.
+Do not invent a Supabase table or RPC name. Inspect the actual installed contract first.
+PART D — PULL / D17 MATCHING
+8. REPAIR PULL INVITATIONS
+Inspect:
+src/domains/d17_matching/index.ts
+and all public-profile PULL controls.
+The current implementation uses local state and supplies hardcoded/fallback values, including:
+current_user.
+Fixed compatibility score.
+Default sender identity.
+Client-generated invitation records.
+Browser-local recipient matching.
+Required outcome
+PULL must be a real D17 directed invitation with a server-authoritative lifecycle.
+Required behavior
+Authenticated user A sends PULL to B.
+D17 validates the sender and recipient.
+The invitation is durably persisted.
+User B can see the incoming invitation.
+User B can Accept or Pass.
+Accepted relationships follow the approved D17 confirmed-Vibe lifecycle.
+Refresh and separate devices preserve real state.
+Duplicate pending invitations are rejected or handled idempotently.
+Self-invitations are prohibited.
+Block/privacy rules apply.
+No fabricated compatibility metrics.
+No hardcoded sender or recipient identity.
+Failed writes do not display PULLED.
+PULL must not silently become ECHO.
+ECHO is a directed follow.
+PULL is a connection invitation with its own lifecycle.
+A confirmed Vibe is not created merely because one person clicked PULL.
+Do not fake backend completeness using React state or localStorage.
+PART E — PROFILE-RELATED MESSAGING
+9. ENFORCE CORRECT MESSAGE ELIGIBILITY
+Public profiles may expose messaging only when allowed by the approved D14/D17/D03 relationship and authorization rules.
+Requirements:
+Use real relationship state.
+Respect blocks and privacy.
+Never use a seeded mutual Vibe as proof of messaging eligibility.
+Never open a conversation using a fabricated account ID.
+Do not create a second messaging implementation inside Profile.
+Do not automatically grant DM access because two handles look similar.
+Preserve already approved messaging interactions.
+Do not expand this task into a D14 messaging-system rewrite.
+PART F — EXPLORE COMMIT CROSS-DOMAIN CORRECTIONS
+10. PRESERVE THE RESTORED EXPLORE PAGE
+EXP-P0 is user-confirmed working.
+Do not revert its commit.
+Do not redesign Explore.
+Do not remove repaired component connections.
+Review only the cross-domain integrity concerns introduced or exposed in:
+bec2d5af9fe8789d0662d5a68773e6da464a766a
+10.1 Native camera and generated imagery
+Inspect:
+src/native/VibeShotResponse.tsx
+src/native/VibeFlashShotResponse.tsx
+src/native/vibeFlashService.ts
+The commit replaced stock-photo fallback behavior with generated canvas imagery in certain camera-unavailable paths.
+A generated canvas image is not a real camera capture.
+Verify the actual capture and permission contract.
+Do not present synthetic frames as real evidence.
+When capture is unavailable, preserve a truthful unavailable/retry path.
+Do not invent alternative proof of physical presence.
+Do not introduce a new camera subsystem.
+10.2 New media helper
+Inspect:
+src/lib/mediaStorage.ts
+Audit:
+D13 ownership.
+Real authenticated uploader identity.
+Installed Storage buckets.
+Access permissions.
+File type handling.
+Upload failures.
+Public versus private delivery.
+Expiration/retention requirements.
+Cross-device durability.
+The current helper attempts an alternate avatars bucket and may return a base64/blob URL after upload failure.
+That fallback must not be treated as successful durable media persistence.
+Verify whether the helper is actually used before modifying it.
+If used in the affected flow, correct only the proven violation through the existing D13 media owner.
+Do not create another media owner.
+10.3 Venue eligibility
+Inspect:
+src/features/explore/components/ProximityValidator.tsx
+The fallback:
+canValidateVenue ? canValidateVenue(validatingVenue) : true
+must not silently authorize validation when the required eligibility evidence is missing.
+Correct the behavior through the existing D04/D05 contract.
+Do not create a client-side shortcut that bypasses server eligibility.
+Preserve the working validation dialog.
+10.4 Guardian badges
+Inspect:
+src/features/explore/components/VibeGuardians/services/vibeGuardianStorage.ts
+The recent commit added hardcoded badge counts.
+Do not display fabricated reputation, earned badges or review evidence as genuine user achievements.
+Verify provenance and canonical domain ownership before changing the projection.
+10.5 Trail creation
+Inspect:
+src/features/explore/components/CreateTrailModal.tsx
+The commit removed one duplicate Trail creation path.
+Verify that Trail creation still respects D06 and preserves:
+Canonical author.
+Title and story.
+City.
+Ordered stops.
+Vibe tags.
+Media references.
+Original author attribution.
+Remix/fork lineage.
+Tour eligibility.
+Do not reintroduce duplicate writers.
+Do not rewrite Trail architecture as part of the Profile task.
+If the existing D06 path is valid, retain it.
+10.6 Audit text under public assets
+Inspect the added historical audit file in:
+public/assets/aistudio/
+Determine whether anything references it.
+Do not expose internal audit material as a necessary public asset or remove it blindly.
+If it is genuinely unused, document its disposition; remove it only when that cleanup is explicitly within the approved correction scope.
+PART G — DEPENDENCY AND ACCEPTANCE TESTS
+11. REQUIRED IDENTITY TESTS
+Use at least two distinct authorized test accounts.
+Verify:
+A logs in and sees A's actual profile.
+B logs in and sees B's actual profile.
+A sees B's correct public name, handle and avatar.
+B sees A's correct public name, handle and avatar.
+A cannot change B's profile.
+Refresh preserves the correct accounts.
+Logout does not retain another user's privileged state.
+A missing profile cannot silently become another identity.
+Use controlled test accounts and isolated/staging data when available.
+Never fabricate production test success.
+12. REQUIRED ECHO TESTS
+Verify:
+A follows B.
+B can see A as a follower.
+A sees B as following.
+Refresh maintains relationship.
+Unfollow works.
+Duplicate follow does not create duplicates.
+Guest follow is rejected.
+Block rules prevent prohibited interactions.
+13. REQUIRED PULL TESTS
+Verify:
+A sends PULL to B.
+B receives it.
+B can Accept.
+A and B see the confirmed relationship when eligible.
+Pass does not create a confirmed Vibe.
+Repeated requests respect idempotency.
+A cannot PULL themselves.
+Guests cannot send invitations.
+Backend failure produces a truthful error.
+Relationship state survives refresh.
+14. REQUIRED CROSS-SCREEN TESTS
+Verify:
+Home author → correct public profile.
+Vibe/Gossip author → correct public profile.
+Share author → correct public profile.
+Public-profile ECHO control.
+Public-profile PULL control.
+Authorized messaging entry.
+Existing Profile dropdown.
+Existing Profile editing.
+Explore opens normally.
+Existing Explore search and map render.
+Existing Trail/Guardian entry points remain.
+No unrelated navigation regression.
+Do not claim tests were run unless their actual output is available.
+PART H — STRICT EXECUTION RULES
+15. AUTONOMY WITHIN THE REPAIR
+Execute the work continuously.
+You are authorized to inspect, modify local code, test, correct mistakes and verify without asking permission for each operation.
+Do not stop because:
+A focused test initially fails.
+A TypeScript error appears.
+An import needs correction.
+A test fixture needs adjustment.
+A source file needs further inspection.
+More than one directly related file is necessary.
+The first implementation attempt needs refinement.
+These are ordinary engineering activities.
+Correct them without changing the approved semantic outcome.
+16. REAL STOP CONDITIONS
+Stop only the affected action when:
+A required backend schema/migration is missing and creating it would require unauthorized database mutation.
+A new canonical owner would be necessary.
+An unrelated domain must be rewritten.
+An architectural decision is not already established.
+The proposed change requires deleting existing content.
+The operation requires unauthorized deployment or publication.
+A verified concurrent change invalidates the current edit.
+Safe execution requires fabricated data or unsupported assumptions.
+Continue independent in-scope corrections where feasible.
+Do not automatically roll back a working feature.
+Do not perform compensating changes after an unauthorized side effect without explicit authorization.
+PART I — DELIVERABLE AND PUBLICATION GATE
+17. COMPLETE THE WORK BEFORE REPORTING
+Your final deliverable must include:
+A. Verified baseline
+Current repository HEAD, relevant runtime evidence and governing decisions.
+B. Root causes
+For each issue, distinguish:
+Verified implementation defect.
+Verified architectural contradiction.
+Previously existing incomplete feature.
+Unverified runtime behavior.
+Genuine backend blocker.
+C. Implemented corrections
+Exact files changed and why.
+D. Domain ownership verification
+Demonstrate that D01, D02, D03, D13 and D17 retain their correct responsibilities.
+E. Tests
+Actual results for identity, public profiles, ECHO, PULL and cross-screen behavior.
+F. Complete diff
+Provide the exact local patch for review.
+G. No-mock compliance
+Show that no new fake users, fake relationships, fabricated biographies, simulated persistence or synthetic proof was introduced.
+H. Unresolved dependencies
+Identify only genuine blockers, with precise evidence.
+I. Publication status
+Confirm no unapproved remote publication or production change occurred.
+18. PUBLICATION REQUIRES PRODUCT OWNER APPROVAL
+You are authorized to complete the local engineering repair.
+You are NOT authorized to:
+Push to GitHub.
+Create a remote branch or PR.
+Merge code.
+Deploy.
+Execute Supabase migrations.
+Modify production data.
+Delete existing user/content records.
+Prepare the complete changes for review.
+Once the Product Owner approves a specific publication action, execute only that approved action.
+Do not infer merge approval from implementation authorization.
+FINAL COMMAND TO GEMINI
+START THE REPAIR NOW.
+Inspect the current source.
+Verify the domain ownership contracts.
+Correct the broken identity paths.
+Make public profiles resolve real accounts.
+Make ECHO use real D03 follow authority.
+Make PULL use real D17 invitation authority.
+Remove fabricated business behavior from the affected implementation paths.
+Preserve the working Explore page.
+Verify the relevant media, validator, Guardian and Trail concerns without expanding into unrelated domain rehabilitation.
+Test everything that can be safely tested.
+Fix your own in-scope mistakes.
+Review the final diff.
+Deliver the completed local correction for Product Owner review.
+NO MOCK BACKEND. NO FAKE USERS. NO FAKE SUCCESS. NO DUPLICATE OWNERS. NO DRIFT.
+DO NOT PUSH, MERGE, DEPLOY OR MODIFY PRODUCTION WITHOUT EXPLICIT APPROVAL.
+END OF COMMAND.
